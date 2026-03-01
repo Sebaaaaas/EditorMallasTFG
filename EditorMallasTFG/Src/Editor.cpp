@@ -2,13 +2,18 @@
 
 #include <iostream>
 
+#include "Shader.h"
+
 Editor::Editor()
 {
+    shader = nullptr;
     window = nullptr;
 }
 
 Editor::~Editor()
 {
+    delete shader;
+    shader = nullptr;
 }
 
 static void error_callback(int error, const char* description)
@@ -29,12 +34,6 @@ float points[] = {
    0.5f, -0.5f,  0.0f, // x,y,z of second point.
   -0.5f, -0.5f,  0.0f  // x,y,z of third point.
 
-};
-
-float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
 };
 
 bool Editor::init()
@@ -62,12 +61,12 @@ bool Editor::init()
 
     glfwMakeContextCurrent(window);
 
-
     // Deteccion de pulsaciones para esta ventana, que glfwPollEvents captura
     glfwSetKeyCallback(window, key_callback);
+
     glfwSwapInterval(1);
 
-    // Start Glad, so we can call OpenGL functions.
+    // Inicializamos glad para poder llamar a funciones de OpenGL
     int version_glad = gladLoadGL(glfwGetProcAddress);
     if (version_glad == 0) {
         fprintf(stderr, "ERROR: Failed to initialize OpenGL context.\n");
@@ -75,14 +74,13 @@ bool Editor::init()
     }
     printf("Loaded OpenGL %i.%i\n", GLAD_VERSION_MAJOR(version_glad), GLAD_VERSION_MINOR(version_glad));
 
-    // Try to call some OpenGL functions, and print some more version info.
+    // Ejemplo de funciones de OpenGL, dandonos informacion sobre nuestro sistema y version OpenGL
     printf("Renderer: %s.\n", glGetString(GL_RENDERER));
     printf("OpenGL version supported %s.\n", glGetString(GL_VERSION));
 
-    
-    /*int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);*/
+
+    // Creacion de shader
+    shader = new Shader("Bin/Assets/test.vert", "Bin/Assets/test.frag");
 
 	return true;
 }
@@ -93,9 +91,7 @@ void Editor::release() {
 
 void Editor::run()
 {
-    glEnable(GL_DEPTH_TEST);
-
-    /////
+    //glEnable(GL_DEPTH_TEST); No se para que se usa esto
     
     // Vertex buffer object, podemos guardar un gran numero de vertices en la memoria de la GPU
     GLuint vbo = 0; // aqui guardaremos el id del buffer que vamos a usar
@@ -116,71 +112,29 @@ void Editor::run()
                                                               // 3 * sizeof(float) (que tambien se podria poner en este caso)
 
 
-    // Creacion de shaders
-    const char* vertex_shader =
-        "#version 410 core\n"
-        "in vec3 vp;"
-        "void main() {"
-        "  gl_Position = vec4( vp, 1.0 );"
-        "}";
+    //// Creacion de un programa de shader, donde linkeamos nuestros shaders anteriores
+    //GLuint shader_program = glCreateProgram();
+    //glAttachShader(shader_program, vs);
+    //glAttachShader(shader_program, fs);
+    //glLinkProgram(shader_program);
 
-    const char* fragment_shader =
-        "#version 410 core\n"
-        "out vec4 frag_colour;"
-        "void main() {"
-        "  frag_colour = vec4( 0.5, 0.0, 0.5, 1.0 );"
-        "}";
+    //// Comprobacion de si hemos tenido exito
+    //glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+    //if (!success) {
+    //    glGetProgramInfoLog(shader_program, 512, NULL, infoLog);
+    //    std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
 
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vertex_shader, NULL);
-    glCompileShader(vs);
+    //}
 
-    // Comprobacion de si ha tenido exito la compilacion del shader
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
+    //// Una vez linkeados, los podemos borrar
+    //glDeleteShader(vs);
+    //glDeleteShader(fs);
 
-    if (!success)
-    {
-        glGetShaderInfoLog(vs, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
+    //// Put the shader program, and the VAO, in focus in OpenGL's state machine.
+    //glUseProgram(shader_program);
+    //glBindVertexArray(vao);
 
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fragment_shader, NULL);
-    glCompileShader(fs);
-
-    // Comprobacion de si ha tenido exito la compilacion del shader
-    glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-        glGetShaderInfoLog(fs, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-
-    // Creacion de un programa de shader, donde linkeamos nuestros shaders anteriores
-    GLuint shader_program = glCreateProgram();
-    glAttachShader(shader_program, vs);
-    glAttachShader(shader_program, fs);
-    glLinkProgram(shader_program);
-
-    // Comprobacion de si hemos tenido exito
-    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shader_program, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
-
-    }
-
-    // Una vez linkeados, los podemos borrar
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    // Put the shader program, and the VAO, in focus in OpenGL's state machine.
-    glUseProgram(shader_program);
-    glBindVertexArray(vao);
+    shader->use();
 
     while (!glfwWindowShouldClose(window)) {
         // Update window events.
@@ -196,11 +150,6 @@ void Editor::run()
         // Put the stuff we've been drawing onto the visible area.
         glfwSwapBuffers(window);
     }
-   ///* while (!glfwWindowShouldClose(window))
-   // {
-   //     glClear(GL_COLOR_BUFFER_BIT);
-   //     glfwSwapBuffers(window);
-   //     glfwPollEvents();
-   // }*/
 
 }
+

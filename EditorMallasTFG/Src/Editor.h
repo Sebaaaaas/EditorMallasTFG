@@ -9,6 +9,8 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
+class Shader;
+
 class Editor
 {
 public:
@@ -22,5 +24,7 @@ public:
 private:
 	std::string windowTitle;
 	GLFWwindow* window;
+
+	Shader* shader;
 };
 

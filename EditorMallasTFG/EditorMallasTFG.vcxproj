@@ -28,11 +28,13 @@
     <ClCompile Include="Src\Editor.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Mesh.cpp" />
+    <ClCompile Include="Src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\checkML.h" />
     <ClInclude Include="Src\Editor.h" />
     <ClInclude Include="Src\Mesh.h" />
+    <ClInclude Include="Src\Shader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
