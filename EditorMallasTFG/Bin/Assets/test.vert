@@ -1,5 +1,12 @@
 #version 410 core
-in vec3 vp;
+
+in vec3 vertex_position;
+uniform float time;
+out vec3 pos;            // <-- pos now declared here
+
 void main() {
-  gl_Position = vec4( vp, 1.0 );
-};
+	pos = vertex_position; // <-- removed declaration
+	pos.y += sin( time );
+
+	gl_Position = vec4( pos, 1.0 );
+}
