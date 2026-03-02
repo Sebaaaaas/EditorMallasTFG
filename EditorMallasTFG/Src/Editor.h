@@ -22,9 +22,13 @@ public:
 	void run();
 
 private:
-	std::string windowTitle;
+
+	const std::string windowTitle = "Mesh editor";
+	int win_w = 800, win_h = 600; // Dimensiones iniciales de la pantalla, en pixeles
 	GLFWwindow* window;
 
 	Shader* shader;
+
+	bool initializeWindow();
 };
 

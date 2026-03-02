@@ -1,8 +1,13 @@
 #include "Editor.h"
 
 #include <iostream>
+#include <assert.h>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 #include "Shader.h"
+#include "Mesh.h"
 
 Editor::Editor()
 {
@@ -16,55 +21,34 @@ Editor::~Editor()
     shader = nullptr;
 }
 
-static void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
+static void error_callback(int error, const char* description) {
+    fprintf(stderr, "GLFW ERROR: code %i msg: %s.\n", error, description);
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
 }
 
-
-float points[] = {
-   0.0f,  0.5f,  0.0f, // x,y,z of first point.
-   0.5f, -0.5f,  0.0f, // x,y,z of second point.
-  -0.5f, -0.5f,  0.0f  // x,y,z of third point.
-
-};
-
 bool Editor::init()
 {
-	if (!glfwInit())
-		return false;
-
 	// Deteccion de errores
     glfwSetErrorCallback(error_callback);
 
-    // Inicializacion de la ventana
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    windowTitle = "Mesh editor";
-    window = glfwCreateWindow(640, 480, windowTitle.c_str(), NULL, NULL);
-
-    if (!window) {
-        // Window or OpenGL context creation failed
-        glfwTerminate();
-
-        return false;
+    if (!glfwInit()) {
+        fprintf(stderr, "ERROR: could not start GLFW3.\n");
+		return false;
     }
 
-    glfwMakeContextCurrent(window);
+    // Inicializacion de la ventana
+    initializeWindow();
 
     // Deteccion de pulsaciones para esta ventana, que glfwPollEvents captura
     glfwSetKeyCallback(window, key_callback);
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(1); // FPS limitados a velocidad de refresco del monitor, a 0 para que sea inmediato(causa posible "tearing")
 
     // Inicializamos glad para poder llamar a funciones de OpenGL
     int version_glad = gladLoadGL(glfwGetProcAddress);
@@ -94,22 +78,22 @@ void Editor::run()
     //glEnable(GL_DEPTH_TEST); No se para que se usa esto
     
     // Vertex buffer object, podemos guardar un gran numero de vertices en la memoria de la GPU
-    GLuint vbo = 0; // aqui guardaremos el id del buffer que vamos a usar
-    glGenBuffers(1, &vbo); // Genera id's para buffers
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
-                                                                              // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
-                                                                              // GL_STATIC_DRAW: the data is set only once and used many times. 
-                                                                              // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
+    //GLuint vbo = 0; // aqui guardaremos el id del buffer que vamos a usar
+    //glGenBuffers(1, &vbo); // Genera id's para buffers
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
+    //                                                                          // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
+    //                                                                          // GL_STATIC_DRAW: the data is set only once and used many times. 
+    //                                                                          // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
 
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL); // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);, 0 es el "stride", o espacio entre valores, que como
-                                                              // tenemos "tightly-packed", ponerlo a 0 se puede hacer y OpenGL sabe como separarlos, en caso contrario indicar con, por ejemplo,
-                                                              // 3 * sizeof(float) (que tambien se podria poner en este caso)
+    //GLuint vao = 0;
+    //glGenVertexArrays(1, &vao);
+    //glBindVertexArray(vao);
+    //glEnableVertexAttribArray(0);
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL); // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);, 0 es el "stride", o espacio entre valores, que como
+    //                                                          // tenemos "tightly-packed", ponerlo a 0 se puede hacer y OpenGL sabe como separarlos, en caso contrario indicar con, por ejemplo,
+    //                                                          // 3 * sizeof(float) (que tambien se podria poner en este caso)
 
 
     //// Creacion de un programa de shader, donde linkeamos nuestros shaders anteriores
@@ -134,22 +118,90 @@ void Editor::run()
     //glUseProgram(shader_program);
     //glBindVertexArray(vao);
 
+    Shader shader2("Bin/Assets/testcube.vert", "Bin/Assets/testcube.frag");
+
+    Mesh cube = Mesh::LoadOBJ("Bin/Assets/modelo.obj");
+
+    glEnable(GL_DEPTH_TEST);
+
     shader->use();
+    shader2.use();
+
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
     while (!glfwWindowShouldClose(window)) {
+
+        double curr_s = glfwGetTime(); // Get the current time. 
+
+        int time_loc = glGetUniformLocation(shader->getID(), "time"); // Para mover triangulo
+        assert(time_loc > -1);
+
         // Update window events.
         glfwPollEvents();
+
+        // Manejo de redimensionamiento de la pantalla
+        glfwGetWindowSize(window, &win_w, &win_h);
+        glViewport(0, 0, win_w, win_h);
 
         // Wipe the drawing surface clear.
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
+        glUniform1f(time_loc, (float)curr_s);
+        //glBindVertexArray(vao);
         // Draw points 0-3 from the currently bound VAO with current in-use shader.
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        //glDrawArrays(GL_TRIANGLES, 0, 3);
+        // Create MVP matrix
+        glm::mat4 model = glm::rotate(glm::mat4(1.0f),
+            (float)glfwGetTime(),
+            glm::vec3(0.5f, 1.0f, 0.0f));
+
+        glm::mat4 view = glm::translate(glm::mat4(1.0f),
+            glm::vec3(0.0f, 0.0f, -3.0f));
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f),
+            800.0f / 600.0f,
+            0.1f,
+            100.0f
+        );
+
+        glm::mat4 MVP = projection * view * model;
+
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader2.getID(), "MVP"),
+            1,
+            GL_FALSE,
+            glm::value_ptr(MVP)
+        );
+
+        cube.Draw(shader2);
 
         // Put the stuff we've been drawing onto the visible area.
         glfwSwapBuffers(window);
     }
 
+}
+
+bool Editor::initializeWindow()
+{
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // Ayuda a evitar usar partes antiguas no soportadas de la API sin querer
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 8); // Como de "lisas" son las lineas diagonales
+
+    window = glfwCreateWindow(win_w, win_h, windowTitle.c_str(), NULL, NULL);
+
+    if (!window) {
+        // Window or OpenGL context creation failed
+        glfwTerminate();
+
+        return false;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    return true;
 }
 

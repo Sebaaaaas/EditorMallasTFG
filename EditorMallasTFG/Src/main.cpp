@@ -11,10 +11,10 @@ int main()
 
     Editor* editor = new Editor();
 
-    if (editor->init())
-        std::cout << "success" << std::endl;
-    else
-        std::cout << "failure" << std::endl;
+    if (!editor->init()) {
+        delete editor;
+        return 1;
+    }
 
     editor->run();
 
