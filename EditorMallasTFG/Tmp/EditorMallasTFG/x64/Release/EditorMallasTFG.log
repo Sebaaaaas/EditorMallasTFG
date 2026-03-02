@@ -1,18 +1,9 @@
-﻿  gl.c
-  Editor.cpp
+﻿  Editor.cpp
+C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Editor.cpp(156,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   main.cpp
-  Mesh.cpp
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Mesh.cpp(84,43): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Mesh.cpp(84,43): warning C4267:         with
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Mesh.cpp(84,43): warning C4267:         [
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Mesh.cpp(84,43): warning C4267:             _Ty=unsigned int
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Mesh.cpp(84,43): warning C4267:         ]
-  Shader.cpp
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Shader.cpp(21,10): warning C4101: 'infoLog': unreferenced local variable
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Shader.cpp(92,10): warning C4101: 'infoLog': unreferenced local variable
   Generating code
-  1736 of 1737 functions (99.9%) were compiled, the rest were copied from previous compilation.
-    1642 functions were new in current compilation
+  0 of 1738 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   EditorMallasTFG.vcxproj -> C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Bin\EditorMallasTFG.exe

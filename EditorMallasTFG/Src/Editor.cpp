@@ -43,7 +43,11 @@ bool Editor::init()
     }
 
     // Inicializacion de la ventana
-    initializeWindow();
+    if (!initializeWindow()) {
+        glfwTerminate();
+
+        return false;
+    }
 
     // Deteccion de pulsaciones para esta ventana, que glfwPollEvents captura
     glfwSetKeyCallback(window, key_callback);
@@ -64,7 +68,7 @@ bool Editor::init()
 
 
     // Creacion de shader
-    shader = new Shader("Bin/Assets/test.vert", "Bin/Assets/test.frag");
+    shader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");
 
 	return true;
 }
@@ -118,23 +122,20 @@ void Editor::run()
     //glUseProgram(shader_program);
     //glBindVertexArray(vao);
 
-    Shader shader2("Bin/Assets/testcube.vert", "Bin/Assets/testcube.frag");
+    Mesh cube = Mesh::LoadOBJ("Assets/modelo.obj");
 
-    Mesh cube = Mesh::LoadOBJ("Bin/Assets/modelo.obj");
-
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
 
     shader->use();
-    shader2.use();
 
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
     while (!glfwWindowShouldClose(window)) {
 
-        double curr_s = glfwGetTime(); // Get the current time. 
+        //double curr_s = glfwGetTime(); // Get the current time. 
 
-        int time_loc = glGetUniformLocation(shader->getID(), "time"); // Para mover triangulo
-        assert(time_loc > -1);
+        //int time_loc = glGetUniformLocation(shader->getID(), "time"); // Para mover triangulo
+        //assert(time_loc > -1);
 
         // Update window events.
         glfwPollEvents();
@@ -147,35 +148,48 @@ void Editor::run()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-        glUniform1f(time_loc, (float)curr_s);
+        //glUniform1f(time_loc, (float)curr_s);
         //glBindVertexArray(vao);
         // Draw points 0-3 from the currently bound VAO with current in-use shader.
         //glDrawArrays(GL_TRIANGLES, 0, 3);
         // Create MVP matrix
-        glm::mat4 model = glm::rotate(glm::mat4(1.0f),
-            (float)glfwGetTime(),
-            glm::vec3(0.5f, 1.0f, 0.0f));
+        float time = glfwGetTime();
+
+        glm::mat4 model = glm::mat4(1.0f);
+
+        model = glm::rotate(model,
+            time,
+            glm::vec3(0.0f, 1.0f, 0.0f));
+
+        model = glm::scale(model,
+            glm::vec3(0.4f));
 
         glm::mat4 view = glm::translate(glm::mat4(1.0f),
-            glm::vec3(0.0f, 0.0f, -3.0f));
+            glm::vec3(0.0f, -1.0f, -5.0f));
 
         glm::mat4 projection = glm::perspective(
             glm::radians(45.0f),
-            800.0f / 600.0f,
+            (float)win_w / win_h,
             0.1f,
             100.0f
         );
 
         glm::mat4 MVP = projection * view * model;
 
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader2.getID(), "MVP"),
-            1,
-            GL_FALSE,
-            glm::value_ptr(MVP)
-        );
+        glUniformMatrix4fv(glGetUniformLocation(shader->getID(), "MVP"),
+            1, GL_FALSE, glm::value_ptr(MVP));
 
-        cube.Draw(shader2);
+        glUniformMatrix4fv(glGetUniformLocation(shader->getID(), "model"),
+            1, GL_FALSE, glm::value_ptr(model));
+
+        // Sun coming from top-right
+        glUniform3f(glGetUniformLocation(shader->getID(), "lightDir"),
+            -0.5f, -1.0f, -0.3f);
+
+        glUniform3f(glGetUniformLocation(shader->getID(), "objectColor"),
+            0.6f, 0.7f, 1.0f);
+
+        cube.Draw(*shader);
 
         // Put the stuff we've been drawing onto the visible area.
         glfwSwapBuffers(window);
