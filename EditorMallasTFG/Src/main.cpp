@@ -1,8 +1,6 @@
 #include "Editor.h"
 
-#include <iostream>
 #include "checkML.h"
-
 
 int main()
 {
@@ -17,8 +15,6 @@ int main()
     }
 
     editor->run();
-
-    editor->release();
 
     delete editor;
     

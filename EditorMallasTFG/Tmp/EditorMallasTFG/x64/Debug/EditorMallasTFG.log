@@ -1,3 +1,2 @@
 ﻿  Editor.cpp
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
   EditorMallasTFG.vcxproj -> C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Bin\EditorMallasTFG.exe

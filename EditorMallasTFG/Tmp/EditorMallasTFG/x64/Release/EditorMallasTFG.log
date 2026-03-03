@@ -1,9 +1,8 @@
 ﻿  Editor.cpp
-C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Editor.cpp(156,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-  main.cpp
+C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Src\Editor.cpp(150,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   Generating code
-  0 of 1738 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+  3 of 1737 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
+    4 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   EditorMallasTFG.vcxproj -> C:\Users\sebas\Desktop\EditorMallasTFG\EditorMallasTFG\Bin\EditorMallasTFG.exe

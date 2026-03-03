@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 class Shader;
+class Mesh;
 
 class Editor
 {
@@ -18,7 +19,6 @@ public:
 	~Editor();
 
 	bool init();
-	void release();
 	void run();
 
 private:
@@ -27,8 +27,10 @@ private:
 	int win_w = 800, win_h = 600; // Dimensiones iniciales de la pantalla, en pixeles
 	GLFWwindow* window;
 
-	Shader* shader;
+	Mesh* defaultMesh;
+	Shader* defaultShader;
 
-	bool initializeWindow();
+	bool initializeGLFWAndWindow();
+	bool initializeGlad();
 };
 
