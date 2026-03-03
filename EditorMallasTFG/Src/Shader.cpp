@@ -1,6 +1,5 @@
 #include "Shader.h"
 
-#include <cstdio>
 #include <iostream>
 #include <glad/gl.h>
 
@@ -72,7 +71,7 @@ std::string Shader::readFile(const std::string& path) {
     errno_t err = fopen_s(&file, path.c_str(), "rb");
     if (err != 0 || file == nullptr)
     {
-        std::cout << "Failed to open shader file: " << path << std::endl;
+        std::cout << "Error al intentar abrir el fichero: " << path << std::endl;
         return "";
     }
 

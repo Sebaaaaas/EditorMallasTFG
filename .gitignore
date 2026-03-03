@@ -1,5 +1,7 @@
 .vs
 
+Tmp/
+
 *.tlog
 
 # Prerequisites
