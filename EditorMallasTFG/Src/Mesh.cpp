@@ -3,10 +3,29 @@
 #include <iostream>
 #include <glad/gl.h>
 
-#define TINYOBJLOADER_IMPLEMENTATION // tener esto en mas de un archivo causara errores de linker segun entiendo
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 #include "Shader.h"
+
+// Vertex buffer object, podemos guardar un gran numero de vertices en la memoria de la GPU
+    //GLuint vbo = 0; // aqui guardaremos el id del buffer que vamos a usar
+    //glGenBuffers(1, &vbo); // Genera id's para buffers
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
+    //                                                                          // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
+    //                                                                          // GL_STATIC_DRAW: the data is set only once and used many times. 
+    //                                                                          // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
+
+    //GLuint vao = 0;
+    //glGenVertexArrays(1, &vao);
+    //glBindVertexArray(vao);
+    //glEnableVertexAttribArray(0);
+    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL); // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);, 0 es el "stride", o espacio entre valores, que como
+    //                                                          // tenemos "tightly-packed", ponerlo a 0 se puede hacer y OpenGL sabe como separarlos, en caso contrario indicar con, por ejemplo,
+    //                                                          // 3 * sizeof(float) (que tambien se podria poner en este caso)
+
 
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices)
 {

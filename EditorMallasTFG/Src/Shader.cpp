@@ -2,7 +2,30 @@
 
 #include <cstdio>
 #include <iostream>
-#include <string>
+#include <glad/gl.h>
+
+
+//// Creacion de un programa de shader, donde linkeamos nuestros shaders anteriores
+   //GLuint shader_program = glCreateProgram();
+   //glAttachShader(shader_program, vs);
+   //glAttachShader(shader_program, fs);
+   //glLinkProgram(shader_program);
+
+   //// Comprobacion de si hemos tenido exito
+   //glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+   //if (!success) {
+   //    glGetProgramInfoLog(shader_program, 512, NULL, infoLog);
+   //    std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
+
+   //}
+
+   //// Una vez linkeados, los podemos borrar
+   //glDeleteShader(vs);
+   //glDeleteShader(fs);
+
+   //// Put the shader program, and the VAO, in focus in OpenGL's state machine.
+   //glUseProgram(shader_program);
+   //glBindVertexArray(vao);
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) // CUIDADO, SI FALLA CONSTRUCTORA DEJA LEAK, MEJOR CON INICIALIZACION EN DOS FASES
 {
@@ -88,8 +111,7 @@ unsigned int Shader::compileShader(const std::string& source, unsigned int type)
     glCompileShader(shader);
 
     // Comprobacion de si ha tenido exito la compilacion del shader
-    int  success;
-    char infoLog[512];
+    int success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
     if (!success)
@@ -102,19 +124,4 @@ unsigned int Shader::compileShader(const std::string& source, unsigned int type)
     }
 
     return shader;
-}
-
-void Shader::setBool(const std::string& name, bool value) const
-{
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
-}
-
-void Shader::setInt(const std::string& name, int value) const
-{
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-}
-
-void Shader::setFloat(const std::string& name, float value) const
-{
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
