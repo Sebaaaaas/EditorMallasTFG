@@ -1,9 +1,16 @@
 #include "Editor.h"
 
-#include <assert.h>
+#define GLFW_INCLUDE_NONE
+
+#include <glad/gl.h>
+// GLFW include siempre despues de glad
+#include <GLFW/glfw3.h>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
+
+#include <stdio.h>
+#include <assert.h>
 
 #include "Shader.h"
 #include "Mesh.h"
@@ -17,14 +24,14 @@ Editor::Editor()
 
 Editor::~Editor()
 {
-    //glfwDestroyWindow(window); glfwTerminate cierra y borra todas las ventanas, en este caso es suficiente
-    glfwTerminate();
-
     delete defaultShader;
     defaultShader = nullptr;
 
     delete defaultMesh;
     defaultMesh = nullptr;
+
+    //glfwDestroyWindow(window); glfwTerminate cierra y borra todas las ventanas, en este caso es suficiente y no hace falta esto
+    glfwTerminate();
 }
 
 static void error_callback(int error, const char* description) {
@@ -69,11 +76,6 @@ void Editor::run()
 {
     while (!glfwWindowShouldClose(window)) {
 
-        //double curr_s = glfwGetTime(); // Get the current time. 
-
-        //int time_loc = glGetUniformLocation(shader->getID(), "time"); // Para mover triangulo
-        //assert(time_loc > -1);
-
         // Update window events.
         glfwPollEvents();
 
@@ -84,11 +86,6 @@ void Editor::run()
         // Wipe the drawing surface clear.
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        //glUniform1f(time_loc, (float)curr_s);
-        //glBindVertexArray(vao);
-        // Draw points 0-3 from the currently bound VAO with current in-use shader.
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
         // Create MVP matrix
         double time = glfwGetTime();
 
@@ -128,7 +125,6 @@ void Editor::run()
 
         defaultMesh->Draw(*defaultShader);
 
-        // Put the stuff we've been drawing onto the visible area.
         glfwSwapBuffers(window);
     }
 
