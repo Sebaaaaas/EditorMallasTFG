@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "Camera.h"
 #include "Shader.h"
 #include "Mesh.h"
 
@@ -19,6 +20,7 @@ Editor::Editor()
 {
     defaultMesh = nullptr;
     defaultShader = nullptr;
+    camera = nullptr;
     window = nullptr;
 }
 
@@ -29,6 +31,9 @@ Editor::~Editor()
 
     delete defaultMesh;
     defaultMesh = nullptr;
+
+    delete camera;
+    camera = nullptr;
 
     //glfwDestroyWindow(window); glfwTerminate cierra y borra todas las ventanas, en este caso es suficiente y no hace falta esto
     glfwTerminate();
@@ -63,6 +68,7 @@ bool Editor::init()
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
+    camera = new Camera((float)win_w, (float)win_h);
 
     defaultMesh = new Mesh(Mesh::LoadOBJ("Assets/modelo.obj"));
     // Creacion de shader
@@ -89,6 +95,8 @@ void Editor::run()
         // Create MVP matrix
         double time = glfwGetTime();
 
+        camera->setAspectRatio((float)win_w, (float)win_h);
+
         glm::mat4 model = glm::mat4(1.0f);
 
         model = glm::rotate(model,
@@ -98,7 +106,9 @@ void Editor::run()
         model = glm::scale(model,
             glm::vec3(0.4f));
 
-        glm::mat4 view = glm::translate(glm::mat4(1.0f),
+        glm::mat4 view = camera->getViewMatrix();
+        glm::mat4 projection = camera->getProjectionMatrix();
+        /*glm::mat4 view = glm::translate(glm::mat4(1.0f),
             glm::vec3(0.0f, -1.0f, -5.0f));
 
         glm::mat4 projection = glm::perspective(
@@ -106,7 +116,7 @@ void Editor::run()
             (float)win_w / win_h,
             0.1f,
             100.0f
-        );
+        );*/
 
         glm::mat4 MVP = projection * view * model;
 

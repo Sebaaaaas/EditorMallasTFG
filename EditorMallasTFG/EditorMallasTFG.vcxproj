@@ -12,12 +12,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\glad\src\gl.c" />
+    <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\Editor.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\Mesh.cpp" />
     <ClCompile Include="Src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Camera.h" />
     <ClInclude Include="Src\checkML.h" />
     <ClInclude Include="Src\Editor.h" />
     <ClInclude Include="Src\Mesh.h" />

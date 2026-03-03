@@ -3,6 +3,7 @@
 #include <string>
 
 struct GLFWwindow;
+class Camera;
 class Shader;
 class Mesh;
 
@@ -19,7 +20,10 @@ private:
 
 	const std::string windowTitle = "Mesh editor";
 	int win_w = 800, win_h = 600; // Dimensiones iniciales de la pantalla, en pixeles
+	
 	GLFWwindow* window;
+
+	Camera* camera;
 
 	Mesh* defaultMesh;
 	Shader* defaultShader;
