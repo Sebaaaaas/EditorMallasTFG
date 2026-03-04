@@ -8,14 +8,8 @@
 
 #include "Shader.h"
 
-// Vertex buffer object, podemos guardar un gran numero de vertices en la memoria de la GPU
-    //GLuint vbo = 0; // aqui guardaremos el id del buffer que vamos a usar
-    //glGenBuffers(1, &vbo); // Genera id's para buffers
-    //glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    //glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
-    //                                                                          // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
-    //                                                                          // GL_STATIC_DRAW: the data is set only once and used many times. 
-    //                                                                          // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
+using namespace std;
+
 
     //GLuint vao = 0;
     //glGenVertexArrays(1, &vao);
@@ -27,10 +21,10 @@
     //                                                          // 3 * sizeof(float) (que tambien se podria poner en este caso)
 
 
-Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices)
+Mesh::Mesh(vector<Vertex> vertices_, vector<unsigned int> indices_)
 {
-    this->vertices = vertices;
-    this->indices = indices;
+    vertices = vertices_;
+    indices = indices_;
 
     setupMesh();
 }
@@ -42,7 +36,7 @@ Mesh::~Mesh()
     glDeleteBuffers(1, &EBO);
 }
 
-void Mesh::Draw(Shader& shader)
+void Mesh::draw(Shader& shader)
 {
     shader.use();
 
@@ -54,7 +48,7 @@ void Mesh::Draw(Shader& shader)
     glBindVertexArray(0);
 }
 
-Mesh Mesh::LoadOBJ(const std::string& path)
+Mesh Mesh::loadOBJ(const std::string& path)
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -71,7 +65,7 @@ Mesh Mesh::LoadOBJ(const std::string& path)
         std::cerr << err << std::endl;
 
     if (!success)
-        throw std::runtime_error("Failed to load OBJ");
+        throw std::runtime_error("Fallo en la carga de OBJ");
 
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
@@ -93,11 +87,11 @@ Mesh Mesh::LoadOBJ(const std::string& path)
                 vertex.Normal[2] = attrib.normals[3 * index.normal_index + 2];
             }
 
-            if (!attrib.texcoords.empty())
+            /*if (!attrib.texcoords.empty())
             {
                 vertex.TexCoords[0] = attrib.texcoords[2 * index.texcoord_index + 0];
                 vertex.TexCoords[1] = attrib.texcoords[2 * index.texcoord_index + 1];
-            }
+            }*/
 
             vertices.push_back(vertex);
             indices.push_back(indices.size());
@@ -109,41 +103,42 @@ Mesh Mesh::LoadOBJ(const std::string& path)
 
 void Mesh::setupMesh()
 {
+    // Creacion de buffers
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
+
+    // Asignacion de buffers
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER,
-        vertices.size() * sizeof(Vertex),
-        &vertices[0],
-        GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
+                                                                                                     // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
+                                                                                                     // GL_STATIC_DRAW: the data is set only once and used many times. 
+                                                                                                     // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-        indices.size() * sizeof(unsigned int),
-        &indices[0],
-        GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
-    // Positions
+    // Indicamos cómo se deben leer los VBO a base de "rellenar" la info del VAO
+    // Posiciones
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
-        sizeof(Vertex),
-        (void*)0);
-
-    // Normals
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, // indice de atributo (igual que en el vertex shader - layout (location = 0) in), numero de componentes (x, y, z), que tipo es, deberia OpenGL normalizar los valores?
+        sizeof(Vertex),                             // stride: tamaño total de un vertice
+        (void*)0);                                  // offset: donde comienza este atributo
+    
+    // Normales         
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
         sizeof(Vertex),
         (void*)offsetof(Vertex, Normal));
 
-    // TexCoords
-    glEnableVertexAttribArray(2);
+    // Coordenadas de textura - no usado actualmente
+    /*glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE,
         sizeof(Vertex),
-        (void*)offsetof(Vertex, TexCoords));
+        (void*)offsetof(Vertex, TexCoords));*/
 
     glBindVertexArray(0);
 }

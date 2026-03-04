@@ -11,10 +11,10 @@ public:
 
     void use() const;
 
-    unsigned int getID() const { return ID; }
+    unsigned int getID() const { return shaderID; }
 
 private:
-    unsigned int ID;
+    unsigned int shaderID;
 
     std::string readFile(const std::string& path);
     unsigned int compileShader(const std::string& source, unsigned int type);

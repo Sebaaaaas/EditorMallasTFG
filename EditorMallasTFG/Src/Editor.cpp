@@ -70,7 +70,7 @@ bool Editor::init()
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    defaultMesh = new Mesh(Mesh::LoadOBJ("Assets/modelo.obj"));
+    defaultMesh = new Mesh(Mesh::loadOBJ("Assets/modelo.obj"));
     // Creacion de shader
     defaultShader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");
     defaultShader->use();
@@ -108,15 +108,6 @@ void Editor::run()
 
         glm::mat4 view = camera->getViewMatrix();
         glm::mat4 projection = camera->getProjectionMatrix();
-        /*glm::mat4 view = glm::translate(glm::mat4(1.0f),
-            glm::vec3(0.0f, -1.0f, -5.0f));
-
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f),
-            (float)win_w / win_h,
-            0.1f,
-            100.0f
-        );*/
 
         glm::mat4 MVP = projection * view * model;
 
@@ -133,7 +124,7 @@ void Editor::run()
         glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"),
             0.6f, 0.7f, 1.0f);
 
-        defaultMesh->Draw(*defaultShader);
+        defaultMesh->draw(*defaultShader);
 
         glfwSwapBuffers(window);
     }
