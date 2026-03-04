@@ -3,29 +3,6 @@
 #include <iostream>
 #include <glad/gl.h>
 
-
-//// Creacion de un programa de shader, donde linkeamos nuestros shaders anteriores
-   //GLuint shader_program = glCreateProgram();
-   //glAttachShader(shader_program, vs);
-   //glAttachShader(shader_program, fs);
-   //glLinkProgram(shader_program);
-
-   //// Comprobacion de si hemos tenido exito
-   //glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-   //if (!success) {
-   //    glGetProgramInfoLog(shader_program, 512, NULL, infoLog);
-   //    std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
-
-   //}
-
-   //// Una vez linkeados, los podemos borrar
-   //glDeleteShader(vs);
-   //glDeleteShader(fs);
-
-   //// Put the shader program, and the VAO, in focus in OpenGL's state machine.
-   //glUseProgram(shader_program);
-   //glBindVertexArray(vao);
-
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) // CUIDADO, SI FALLA CONSTRUCTORA DEJA LEAK, MEJOR CON INICIALIZACION EN DOS FASES
 {
     std::string vertexCode = readFile(vertexPath);
@@ -34,21 +11,19 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) /
     unsigned int vertex = compileShader(vertexCode, GL_VERTEX_SHADER);
     unsigned int fragment = compileShader(fragmentCode, GL_FRAGMENT_SHADER);
 
-    ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
-    glLinkProgram(ID);
+    shaderID = glCreateProgram();
+    glAttachShader(shaderID, vertex);
+    glAttachShader(shaderID, fragment);
+    glLinkProgram(shaderID);
 
     int success;
     char infoLog[1024];
 
-    glGetProgramiv(ID, GL_LINK_STATUS, &success);
+    glGetProgramiv(shaderID, GL_LINK_STATUS, &success);
     if (!success)
     {
-        int max_length = 2048, actual_length = 0;
-        char plog[2048];
-        glGetProgramInfoLog(ID, max_length, &actual_length, plog);
-        fprintf(stderr, "ERROR: Could not link shader program GL index %u.\n%s\n", ID, plog);
+        glGetProgramInfoLog(shaderID, 1024, NULL, infoLog);
+        std::cout << "Error al compilar shader: " << shaderID << "\n" << infoLog << std::endl;
     }
 
     glDeleteShader(vertex);
@@ -57,19 +32,19 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) /
 
 Shader::~Shader()
 {
-    //glDeleteProgram(ID);
+    //glDeleteProgram(shaderID); // You might want to do this if you wish to live edit, and recreate your shaders interactively while your program is still running. - https://antongerdelan.net/opengl/
 }
 
 void Shader::use() const
 {
-    glUseProgram(ID);
+    glUseProgram(shaderID);
 }
 
 std::string Shader::readFile(const std::string& path) {
+
     FILE* file = nullptr;
 
-    errno_t err = fopen_s(&file, path.c_str(), "rb");
-    if (err != 0 || file == nullptr)
+    if (fopen_s(&file, path.c_str(), "rb"))
     {
         std::cout << "Error al intentar abrir el fichero: " << path << std::endl;
         return "";
@@ -86,7 +61,6 @@ std::string Shader::readFile(const std::string& path) {
         return "";
     }
 
-    // Allocate string with correct size
     std::string result(fileSize, '\0');
 
     size_t bytesRead = fread(&result[0], 1, fileSize, file);
@@ -94,7 +68,7 @@ std::string Shader::readFile(const std::string& path) {
 
     if (bytesRead != static_cast<size_t>(fileSize))
     {
-        std::cout << "Error reading shader file: " << path << std::endl;
+        std::cout << "Error leyendo fichero de shader: " << path << std::endl;
         return "";
     }
 
@@ -118,7 +92,7 @@ unsigned int Shader::compileShader(const std::string& source, unsigned int type)
         int max_length = 2048, actual_length = 0;
         char slog[2048];
         glGetShaderInfoLog(shader, max_length, &actual_length, slog);
-        fprintf(stderr, "ERROR: Shader index %u did not compile.\n%s\n", shader, slog);
+        fprintf(stderr, "ERROR: Shader con indice %u no se ha podido compilar.\n%s\n", shader, slog);
         return 1;
     }
 
