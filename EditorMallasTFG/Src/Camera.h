@@ -13,15 +13,29 @@ public:
     // ProjectionMatrix transforma el mundo 3D y lo pasa a 2D para poder renderizarlo en la pantalla(view to projection)
     glm::mat4 getProjectionMatrix() const;
 
+    void manageInput();
+
     void setAspectRatio(float width, float height);
 
     void setPosition(const glm::vec3& pos);
     void setTarget(const glm::vec3& newTarget);
 
+    // Resetea la camara a su posicion inicial
+    void reset();
+    void orbit(float xoffset, float yoffset);
+    void pan(float xoffset, float yoffset);
+    void zoom(float amount);
+
 private:
     glm::vec3 position; // Posicion de la camara
     glm::vec3 target; // Posicion a la que estamos mirando
     glm::vec3 up; // Direccion hacia arriba del mundo, por lo general siempre sera (0, 1, 0)
+
+    // Variables para la rotacion de la camara
+    float yaw, pitch;
+    float orbitSensitivity, panSensitivity, zoomSensitivity;
+    // Distancia hasta el objeto de focus de la camara
+    float distance; 
 
     // Mas info sobre variables en https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml
     float fov; // Angulo del field of view, en la direccion y
