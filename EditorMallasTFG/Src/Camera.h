@@ -7,6 +7,8 @@ class Camera
 public:
     Camera(float width, float height);
 
+    glm::vec3 getPosition() const;
+
     // El viewMatrix transforma coordenadas 3D del mundo a la vista de la camara(tecnicamente, camara no gira, el mundo entero gira alrededor de la camara) (world to view)
     glm::mat4 getViewMatrix() const;
 

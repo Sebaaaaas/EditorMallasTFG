@@ -5,7 +5,8 @@
 #include <glad/gl.h>
 // GLFW include siempre despues de glad
 #include <GLFW/glfw3.h>
-#include <glm.hpp>
+
+//#include <glm.hpp> - actualmente en el .h
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 
@@ -16,6 +17,31 @@
 #include "Shader.h"
 #include "Mesh.h"
 #include "Input.h"
+
+void drawDebugPoint(const glm::vec3& pos)
+{
+    glPointSize(10.0f);
+
+    float v[3] = { pos.x, pos.y, pos.z };
+
+    GLuint vao, vbo;
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+
+    glBindVertexArray(vao);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glDrawArrays(GL_POINTS, 0, 1);
+
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &vao);
+}
 
 Editor::Editor()
 {
@@ -75,15 +101,10 @@ bool Editor::init()
 
 void Editor::run()
 {
-    double lastX = 0;
-    double lastY = 0;
-    bool rotating = false;
-
     while (!glfwWindowShouldClose(window)) {
 
         Input::beginFrame();
 
-        // Update window events
         glfwPollEvents();
 
         Input::update();
@@ -94,11 +115,15 @@ void Editor::run()
             glfwSetWindowShouldClose(window, GLFW_TRUE);
 
         
+
         // Manejo de redimensionamiento de la pantalla
         glfwGetWindowSize(window, &win_w, &win_h);
         glViewport(0, 0, win_w, win_h);
 
-        camera->setAspectRatio((float)win_w, (float)win_h); //-> weird stuff happening sometimes!
+        camera->setAspectRatio((float)win_w, (float)win_h);
+
+
+
 
         // Renderizado
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -106,9 +131,7 @@ void Editor::run()
         // Create MVP matrix
         double time = glfwGetTime();
 
-
         glm::mat4 model = glm::mat4(1.0f);
-
         glm::mat4 view = camera->getViewMatrix();
         glm::mat4 projection = camera->getProjectionMatrix();
 
@@ -128,6 +151,36 @@ void Editor::run()
             0.6f, 0.7f, 1.0f);
 
         defaultMesh->draw(*defaultShader);
+
+
+
+        glm::vec3 mouseCastRay = mouseClickRay(Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
+        glm::vec3 rayOrigin = camera->getPosition();
+
+        int selectedVertex = -1;
+        float minDist = 0.05f;
+
+        for (int i = 0; i < defaultMesh->vertices.size(); i++)
+        {
+            glm::vec3 v(defaultMesh->vertices[i].Position[0], defaultMesh->vertices[i].Position[1], defaultMesh->vertices[i].Position[2]);
+
+            float dist = pointToRayDistance(v, rayOrigin, mouseCastRay);
+
+            if (dist < minDist)
+            {
+                minDist = dist;
+                selectedVertex = i;
+                defaultMesh->selectedVertex = i;
+            }
+        }
+        if (defaultMesh->selectedVertex != -1)
+        {
+            glm::vec3 pos(defaultMesh->vertices[defaultMesh->selectedVertex].Position[0], defaultMesh->vertices[defaultMesh->selectedVertex].Position[1], defaultMesh->vertices[defaultMesh->selectedVertex].Position[2]);
+
+            drawDebugPoint(pos);
+        }
+
+
 
         glfwSwapBuffers(window);
     }
@@ -174,5 +227,33 @@ bool Editor::initializeGlad()
     }
 
     return true;
+}
+
+// https://antongerdelan.net/opengl/raycasting.html
+glm::vec3 Editor::mouseClickRay(float mouseX, float mouseY, int w, int h, glm::mat4 view, glm::mat4 proj)
+{
+    // Dejamos los valores en los rangos [-1...1], invirtiendo la y por ir al reves en OpenGL. Z es innecesaria
+    float x = (2.0f * mouseX) / w - 1.0f;
+    float y = 1.0f - (2.0f * mouseY) / h;
+
+    // Apuntamos hacia delante, que en OpenGL es negativo en el eje Z, y convertimos a vec4 para posteriores calculos
+    glm::vec4 rayClip = glm::vec4(x, y, -1.0, 1.0);
+
+    // Coordenadas de la camara
+    glm::vec4 rayEye = glm::inverse(proj) * rayClip;
+    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0, 0.0);
+
+    // Coordenadas en el mundo
+    glm::vec3 rayWorld = glm::normalize(glm::vec3(glm::inverse(view) * rayEye));
+
+    return rayWorld;
+}
+
+float Editor::pointToRayDistance(glm::vec3 point, glm::vec3 rayOrigin, glm::vec3 rayDir)
+{
+    glm::vec3 diff = point - rayOrigin;
+    glm::vec3 proj = glm::dot(diff, rayDir) * rayDir;
+
+    return glm::length(diff - proj);
 }
 
