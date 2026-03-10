@@ -15,6 +15,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "Input.h"
 
 Editor::Editor()
 {
@@ -43,12 +44,6 @@ static void error_callback(int error, const char* description) {
     fprintf(stderr, "GLFW ERROR: code %i msg: %s.\n", error, description);
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-
-}
-
 bool Editor::init()
 {
 	// Deteccion de errores
@@ -58,8 +53,8 @@ bool Editor::init()
     if (!initializeGLFWAndWindow())
         return false;
 
-    // Deteccion de pulsaciones para esta ventana, que glfwPollEvents captura
-    glfwSetKeyCallback(window, key_callback);
+    // Deteccion de input
+    Input::init(window);
 
     // Inicializamos glad para poder llamar a funciones de OpenGL
     if (!initializeGlad())
@@ -80,31 +75,39 @@ bool Editor::init()
 
 void Editor::run()
 {
+    double lastX = 0;
+    double lastY = 0;
+    bool rotating = false;
+
     while (!glfwWindowShouldClose(window)) {
 
-        // Update window events.
+        Input::beginFrame();
+
+        // Update window events
         glfwPollEvents();
 
+        Input::update();
+
+        camera->manageInput();
+
+        if (Input::isKeyDown(GLFW_KEY_ESCAPE))
+            glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+        
         // Manejo de redimensionamiento de la pantalla
         glfwGetWindowSize(window, &win_w, &win_h);
         glViewport(0, 0, win_w, win_h);
 
-        // Wipe the drawing surface clear.
+        camera->setAspectRatio((float)win_w, (float)win_h); //-> weird stuff happening sometimes!
+
+        // Renderizado
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Create MVP matrix
         double time = glfwGetTime();
 
-        camera->setAspectRatio((float)win_w, (float)win_h);
 
         glm::mat4 model = glm::mat4(1.0f);
-
-        model = glm::rotate(model,
-            (float)time,
-            glm::vec3(0.0f, 1.0f, 0.0f));
-
-        model = glm::scale(model,
-            glm::vec3(0.4f));
 
         glm::mat4 view = camera->getViewMatrix();
         glm::mat4 projection = camera->getProjectionMatrix();

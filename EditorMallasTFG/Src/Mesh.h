@@ -24,6 +24,7 @@ private:
                                 // Element Buffer Objects (o Index Buffer) - Si quieres reutilizar info en lugar de repetirte, guarda indices que hacen referencia a vertices en el VBO
 
     void setupMesh();
+
 public:
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
