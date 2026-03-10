@@ -28,6 +28,10 @@ Camera::Camera(float width, float height)
     distance = glm::length(position - target);
 }
 
+glm::vec3 Camera::getPosition() const {
+    return position;
+}
+
 glm::mat4 Camera::getViewMatrix() const {
     return glm::lookAt(position, target, up);
 }

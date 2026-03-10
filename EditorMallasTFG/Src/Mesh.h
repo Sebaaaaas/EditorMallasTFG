@@ -35,5 +35,7 @@ public:
     void draw(Shader& shader);
 
     static Mesh loadOBJ(const std::string& path);
+
+    int selectedVertex = -1;
 };
 
