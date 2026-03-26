@@ -4,9 +4,14 @@
 #include <glm.hpp>
 
 struct GLFWwindow;
+
+class MeshManipulator;
+class Selector;
 class Camera;
 class Shader;
 class Mesh;
+
+class DebugRenderer;
 
 class Editor
 {
@@ -28,13 +33,23 @@ private:
 
 	Mesh* defaultMesh;
 	Shader* defaultShader;
+	Shader* debugShader;
+
+	// Clase que sirve para escoger vertices de la malla
+	Selector* selector;
+
+	MeshManipulator* meshManipulator;
+
+	DebugRenderer* debugRenderer;
 
 	bool initializeGLFWAndWindow();
 	bool initializeGlad();
 
-	// Cuando hacemos click con el raton, devuelve un rayo casteado que usaremos para ver que puntos de una malla 3D interactuarian
-	glm::vec3 mouseClickRay(float mouseX, float mouseY, int w, int h, glm::mat4 view, glm::mat4 proj);
+	void manageInput();
 
-	float pointToRayDistance(glm::vec3 point, glm::vec3 rayOrigin, glm::vec3 rayDir);
+	// Mover vertice
+	int selectedVertex = -1;
+
+
 };
 
