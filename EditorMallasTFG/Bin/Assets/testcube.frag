@@ -5,7 +5,7 @@ out vec4 FragColor;
 in vec3 FragPos;
 in vec3 Normal;
 
-uniform vec3 lightDir;   // Direction TO light
+uniform vec3 lightDir;
 uniform vec3 objectColor;
 
 void main()

@@ -40,8 +40,7 @@ glm::mat4 Camera::getProjectionMatrix() const {
     return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
 }
 
-void Camera::manageInput()
-{
+void Camera::manageInput() {
 
     if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE))
     {
@@ -68,22 +67,23 @@ void Camera::manageInput()
     }
 }
 
-void Camera::setAspectRatio(float width, float height)
-{
+void Camera::setAspectRatio(float width, float height) {
     if (height == 0.0f)
         return;
 
     aspectRatio = width / height;
 }
 
-void Camera::setPosition(const glm::vec3& pos)
-{
+void Camera::setPosition(const glm::vec3& pos) {
     position = pos;
 }
 
-void Camera::setTarget(const glm::vec3& newTarget)
-{
+void Camera::setTarget(const glm::vec3& newTarget) {
     target = newTarget;
+}
+
+glm::vec3 Camera::getTarget() const {
+    return target;
 }
 
 void Camera::reset() {
@@ -97,8 +97,7 @@ void Camera::reset() {
     distance = glm::length(position - target);
 }
 
-void Camera::orbit(float xoffset, float yoffset)
-{
+void Camera::orbit(float xoffset, float yoffset) {
     yaw += xoffset * orbitSensitivity;
     pitch += yoffset * orbitSensitivity;
 
@@ -116,8 +115,7 @@ void Camera::orbit(float xoffset, float yoffset)
     position = target - direction * distance;
 }
 
-void Camera::pan(float xoffset, float yoffset)
-{
+void Camera::pan(float xoffset, float yoffset) {
     glm::vec3 forward = glm::normalize(target - position);
     glm::vec3 right = glm::normalize(glm::cross(forward, up));
     glm::vec3 camUp = glm::normalize(glm::cross(right, forward));
@@ -128,12 +126,9 @@ void Camera::pan(float xoffset, float yoffset)
     target += move;
 }
 
-void Camera::zoom(float amount)
-{
+void Camera::zoom(float amount) {
     // Zoom que dependa de la distancia al objeto lo hace mas "intuitivo"
     distance -= amount * (distance * zoomSensitivity);
-
-    pitch = glm::clamp(pitch, 0.1f, 100.0f);
 
     glm::vec3 direction = glm::normalize(position - target);
     position = target + direction * distance;

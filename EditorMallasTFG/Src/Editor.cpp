@@ -13,54 +13,51 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "Selector.h"
 #include "Camera.h"
 #include "Shader.h"
-#include "Mesh.h"
 #include "Input.h"
+#include "Mesh.h"
+#include "MeshManipulator.h"
+#include "DebugRenderer.h"
 
-void drawDebugPoint(const glm::vec3& pos)
-{
-    glPointSize(10.0f);
-
-    float v[3] = { pos.x, pos.y, pos.z };
-
-    GLuint vao, vbo;
-
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-
-    glBindVertexArray(vao);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(v), v, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glEnableVertexAttribArray(0);
-
-    glDrawArrays(GL_POINTS, 0, 1);
-
-    glDeleteBuffers(1, &vbo);
-    glDeleteVertexArrays(1, &vao);
-}
+#include <iostream>
 
 Editor::Editor()
 {
     defaultMesh = nullptr;
     defaultShader = nullptr;
+    debugShader = nullptr;
+
     camera = nullptr;
     window = nullptr;
+    selector = nullptr;
+    meshManipulator = nullptr;
+    debugRenderer = nullptr;
 }
 
-Editor::~Editor()
-{
+Editor::~Editor() {
     delete defaultShader;
     defaultShader = nullptr;
+    
+    delete debugShader;
+    debugShader = nullptr;
 
     delete defaultMesh;
     defaultMesh = nullptr;
 
     delete camera;
     camera = nullptr;
+
+    delete selector;
+    selector = nullptr;
+
+    delete meshManipulator;
+    meshManipulator = nullptr;
+
+    delete debugRenderer;
+    debugRenderer = nullptr;
+
 
     //glfwDestroyWindow(window); glfwTerminate cierra y borra todas las ventanas, en este caso es suficiente y no hace falta esto
     glfwTerminate();
@@ -92,9 +89,14 @@ bool Editor::init()
     camera = new Camera((float)win_w, (float)win_h);
 
     defaultMesh = new Mesh(Mesh::loadOBJ("Assets/modelo.obj"));
+
     // Creacion de shader
     defaultShader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");
-    defaultShader->use();
+    debugShader = new Shader("Assets/testcube.vert", "Assets/debugShader.frag");
+
+    selector = new Selector();
+    meshManipulator = new MeshManipulator();
+    debugRenderer = new DebugRenderer();
 
 	return true;
 }
@@ -103,18 +105,8 @@ void Editor::run()
 {
     while (!glfwWindowShouldClose(window)) {
 
-        Input::beginFrame();
-
-        glfwPollEvents();
-
-        Input::update();
-
-        camera->manageInput();
-
-        if (Input::isKeyDown(GLFW_KEY_ESCAPE))
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-
-        
+        // Input
+        manageInput();
 
         // Manejo de redimensionamiento de la pantalla
         glfwGetWindowSize(window, &win_w, &win_h);
@@ -123,64 +115,66 @@ void Editor::run()
         camera->setAspectRatio((float)win_w, (float)win_h);
 
 
-
-
         // Renderizado
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Create MVP matrix
-        double time = glfwGetTime();
+        defaultShader->use();
 
+        // Creamos matriz MVP
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera->getViewMatrix();
         glm::mat4 projection = camera->getProjectionMatrix();
 
         glm::mat4 MVP = projection * view * model;
 
-        glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"),
-            1, GL_FALSE, glm::value_ptr(MVP));
+        glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
-        glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"),
-            1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
 
-        // Sun coming from top-right
-        glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"),
-            -0.5f, -1.0f, -0.3f);
+        glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"), -0.5f, -1.0f, -0.3f);
 
-        glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"),
-            0.6f, 0.7f, 1.0f);
+        glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
 
         defaultMesh->draw(*defaultShader);
 
+        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
+        std::cout << selectedVertex << std::endl;
 
-
-        glm::vec3 mouseCastRay = mouseClickRay(Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
-        glm::vec3 rayOrigin = camera->getPosition();
-
-        int selectedVertex = -1;
-        float minDist = 0.05f;
-
-        for (int i = 0; i < defaultMesh->vertices.size(); i++)
-        {
-            glm::vec3 v(defaultMesh->vertices[i].Position[0], defaultMesh->vertices[i].Position[1], defaultMesh->vertices[i].Position[2]);
-
-            float dist = pointToRayDistance(v, rayOrigin, mouseCastRay);
-
-            if (dist < minDist)
-            {
-                minDist = dist;
-                selectedVertex = i;
-                defaultMesh->selectedVertex = i;
-            }
+        // Input
+        if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {  
+            meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
         }
-        if (defaultMesh->selectedVertex != -1)
-        {
-            glm::vec3 pos(defaultMesh->vertices[defaultMesh->selectedVertex].Position[0], defaultMesh->vertices[defaultMesh->selectedVertex].Position[1], defaultMesh->vertices[defaultMesh->selectedVertex].Position[2]);
-
-            drawDebugPoint(pos);
+        
+        if (meshManipulator->isDragging() && !Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
+            meshManipulator->endDrag();
+            selectedVertex = -1;
         }
 
+        // Arrastrar punto
+        if (meshManipulator->isDragging()) {
+            //std::cout << "Dragging" << std::endl;
+            meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
+        }
+        
+        //std::cout << selectedVertex << std::endl;
+        if (selectedVertex != -1) {
+            glm::vec3 v(defaultMesh->vertices[selectedVertex].Position[0],
+                defaultMesh->vertices[selectedVertex].Position[1],
+                defaultMesh->vertices[selectedVertex].Position[2]);
 
+            debugShader->use();
+
+            glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"),
+                1, GL_FALSE, glm::value_ptr(MVP));
+
+            debugRenderer->drawPoint(v);
+        }
+        
+
+
+        if (Input::isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input::isKeyDown(GLFW_KEY_S)) {
+            defaultMesh->saveOBJ("Assets/edited.obj");
+        }
 
         glfwSwapBuffers(window);
     }
@@ -229,31 +223,17 @@ bool Editor::initializeGlad()
     return true;
 }
 
-// https://antongerdelan.net/opengl/raycasting.html
-glm::vec3 Editor::mouseClickRay(float mouseX, float mouseY, int w, int h, glm::mat4 view, glm::mat4 proj)
-{
-    // Dejamos los valores en los rangos [-1...1], invirtiendo la y por ir al reves en OpenGL. Z es innecesaria
-    float x = (2.0f * mouseX) / w - 1.0f;
-    float y = 1.0f - (2.0f * mouseY) / h;
+void Editor::manageInput() {
 
-    // Apuntamos hacia delante, que en OpenGL es negativo en el eje Z, y convertimos a vec4 para posteriores calculos
-    glm::vec4 rayClip = glm::vec4(x, y, -1.0, 1.0);
+    Input::beginFrame();
 
-    // Coordenadas de la camara
-    glm::vec4 rayEye = glm::inverse(proj) * rayClip;
-    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0, 0.0);
+    glfwPollEvents();
 
-    // Coordenadas en el mundo
-    glm::vec3 rayWorld = glm::normalize(glm::vec3(glm::inverse(view) * rayEye));
+    Input::update();
 
-    return rayWorld;
-}
+    camera->manageInput();
 
-float Editor::pointToRayDistance(glm::vec3 point, glm::vec3 rayOrigin, glm::vec3 rayDir)
-{
-    glm::vec3 diff = point - rayOrigin;
-    glm::vec3 proj = glm::dot(diff, rayDir) * rayDir;
-
-    return glm::length(diff - proj);
+    if (Input::isKeyDown(GLFW_KEY_ESCAPE))
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 

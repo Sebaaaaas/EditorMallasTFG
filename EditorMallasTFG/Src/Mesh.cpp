@@ -101,6 +101,34 @@ Mesh Mesh::loadOBJ(const std::string& path)
     return Mesh(vertices, indices/*, {}*/);
 }
 
+void Mesh::saveOBJ(const std::string& path)
+{
+    std::ofstream file(path);
+
+    if (!file.is_open())
+        return;
+
+    // Write vertices
+    for (const auto& v : vertices)
+    {
+        file << "v "
+            << v.Position[0] << " "
+            << v.Position[1] << " "
+            << v.Position[2] << "\n";
+    }
+
+    // Write faces (indices)
+    for (size_t i = 0; i < indices.size(); i += 3)
+    {
+        file << "f "
+            << indices[i] + 1 << " "
+            << indices[i + 1] + 1 << " "
+            << indices[i + 2] + 1 << "\n";
+    }
+
+    file.close();
+}
+
 void Mesh::setupMesh()
 {
     // Creacion de buffers
@@ -113,13 +141,13 @@ void Mesh::setupMesh()
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
                                                                                                      // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
                                                                                                      // GL_STATIC_DRAW: the data is set only once and used many times. 
                                                                                                      // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_DYNAMIC_DRAW);
 
     // Indicamos cómo se deben leer los VBO a base de "rellenar" la info del VAO
     // Posiciones
@@ -141,4 +169,17 @@ void Mesh::setupMesh()
         (void*)offsetof(Vertex, TexCoords));*/
 
     glBindVertexArray(0);
+}
+
+void Mesh::updateVertex(int index)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        index * sizeof(Vertex),
+        sizeof(Vertex),
+        &vertices[index]
+    );
+
 }

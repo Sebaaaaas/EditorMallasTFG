@@ -5,7 +5,6 @@
 
 class Shader;
 
-
 struct Vertex
 {
     float Position[3];
@@ -36,6 +35,8 @@ public:
 
     static Mesh loadOBJ(const std::string& path);
 
-    int selectedVertex = -1;
+    void saveOBJ(const std::string& path);
+
+    void updateVertex(int index);
 };
 
