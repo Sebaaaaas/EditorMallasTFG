@@ -92,7 +92,7 @@ bool Editor::init()
 
     // Creacion de shader
     defaultShader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");
-    debugShader = new Shader("Assets/testcube.vert", "Assets/debugShader.frag");
+    debugShader = new Shader("Assets/debugShader.vert", "Assets/debugShader.frag");
 
     selector = new Selector();
     meshManipulator = new MeshManipulator();
@@ -118,7 +118,7 @@ void Editor::run()
         // Renderizado
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        defaultShader->use();
+        //defaultShader->use();
 
         // Creamos matriz MVP
         glm::mat4 model = glm::mat4(1.0f);
@@ -127,12 +127,10 @@ void Editor::run()
 
         glm::mat4 MVP = projection * view * model;
 
+        // Asignamos valores al defaultShader
         glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
-
         glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
-
         glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"), -0.5f, -1.0f, -0.3f);
-
         glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
 
         defaultMesh->draw(*defaultShader);
@@ -162,10 +160,9 @@ void Editor::run()
                 defaultMesh->vertices[selectedVertex].Position[1],
                 defaultMesh->vertices[selectedVertex].Position[2]);
 
-            debugShader->use();
+            //debugShader->use();
 
-            glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"),
-                1, GL_FALSE, glm::value_ptr(MVP));
+            glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
             debugRenderer->drawPoint(v);
         }

@@ -9,7 +9,7 @@
 #include <iostream>
 
 Selector::Selector() {
-    minSelectDistance = 1.2f;
+    minSelectDistance = 5.2f;
 
     ray = new Ray();
     dbRenderer = new DebugRenderer();
@@ -24,6 +24,7 @@ Selector::~Selector() {
 }
 
 int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, const Camera& camera) {
+
     glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, width, height, camera.getViewMatrix(), camera.getProjectionMatrix());
     glm::vec3 rayOrigin = camera.getPosition();
     //std::cout << rayOrigin[0] << ", " << rayOrigin[1] << ", " << rayOrigin[2] << std::endl;

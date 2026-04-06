@@ -41,10 +41,7 @@ void Mesh::draw(Shader& shader)
     shader.use();
 
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES,
-        static_cast<GLsizei>(indices.size()),
-        GL_UNSIGNED_INT,
-        0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -55,8 +52,7 @@ Mesh Mesh::loadOBJ(const std::string& path)
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    bool success = tinyobj::LoadObj(&attrib, &shapes, &materials,
-        &warn, &err, path.c_str());
+    bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str());
 
     if (!warn.empty())
         std::cout << warn << std::endl;
@@ -76,15 +72,19 @@ Mesh Mesh::loadOBJ(const std::string& path)
         {
             Vertex vertex{};
 
-            vertex.Position[0] = attrib.vertices[3 * index.vertex_index + 0];
-            vertex.Position[1] = attrib.vertices[3 * index.vertex_index + 1];
-            vertex.Position[2] = attrib.vertices[3 * index.vertex_index + 2];
+            vertex.Position = glm::vec3(
+                attrib.vertices[3 * index.vertex_index + 0],
+                attrib.vertices[3 * index.vertex_index + 1],
+                attrib.vertices[3 * index.vertex_index + 2]
+            );
 
             if (!attrib.normals.empty())
             {
-                vertex.Normal[0] = attrib.normals[3 * index.normal_index + 0];
-                vertex.Normal[1] = attrib.normals[3 * index.normal_index + 1];
-                vertex.Normal[2] = attrib.normals[3 * index.normal_index + 2];
+                vertex.Normal = glm::vec3(
+                    attrib.normals[3 * index.normal_index + 0],
+                    attrib.normals[3 * index.normal_index + 1],
+                    attrib.normals[3 * index.normal_index + 2]
+                );
             }
 
             /*if (!attrib.texcoords.empty())
@@ -158,9 +158,7 @@ void Mesh::setupMesh()
     
     // Normales         
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE,
-        sizeof(Vertex),
-        (void*)offsetof(Vertex, Normal));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
 
     // Coordenadas de textura - no usado actualmente
     /*glEnableVertexAttribArray(2);
