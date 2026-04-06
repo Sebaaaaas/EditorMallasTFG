@@ -2,11 +2,12 @@
 
 #include <iostream>
 #include <glad/gl.h>
+#include <unordered_map>
+
+#include "Shader.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
-
-#include "Shader.h"
 
 using namespace std;
 
@@ -66,6 +67,9 @@ Mesh Mesh::loadOBJ(const std::string& path)
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
 
+    std::unordered_map<Vertex, unsigned int> uniqueVertices;
+
+
     for (const auto& shape : shapes)
     {
         for (const auto& index : shape.mesh.indices)
@@ -78,7 +82,7 @@ Mesh Mesh::loadOBJ(const std::string& path)
                 attrib.vertices[3 * index.vertex_index + 2]
             );
 
-            if (!attrib.normals.empty())
+            if (!attrib.normals.empty() && index.normal_index >= 0)
             {
                 vertex.Normal = glm::vec3(
                     attrib.normals[3 * index.normal_index + 0],
@@ -87,14 +91,13 @@ Mesh Mesh::loadOBJ(const std::string& path)
                 );
             }
 
-            /*if (!attrib.texcoords.empty())
+            if (uniqueVertices.count(vertex) == 0)
             {
-                vertex.TexCoords[0] = attrib.texcoords[2 * index.texcoord_index + 0];
-                vertex.TexCoords[1] = attrib.texcoords[2 * index.texcoord_index + 1];
-            }*/
+                uniqueVertices[vertex] = static_cast<unsigned int>(vertices.size());
+                vertices.push_back(vertex);
+            }
 
-            vertices.push_back(vertex);
-            indices.push_back(indices.size());
+            indices.push_back(uniqueVertices[vertex]);
         }
     }
 
