@@ -13,7 +13,7 @@ Ray::~Ray()
 // https://antongerdelan.net/opengl/raycasting.html
 glm::vec3 Ray::mouseRay(float mouseX, float mouseY, int w, int h, const glm::mat4& view, const glm::mat4& proj) {
 
-    // Dejamos los valores en los rangos [-1...1], invirtiendo la y por ir al reves en OpenGL. Z es innecesaria
+    // Dejamos los valores en los rangos [-1...1](normalizamos), invirtiendo la y por ir al reves en OpenGL. Z es innecesaria
     float x = (2.0f * mouseX) / w - 1.0f;
     float y = 1.0f - (2.0f * mouseY) / h;
 

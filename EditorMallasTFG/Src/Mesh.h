@@ -3,12 +3,18 @@
 #include <vector>
 #include <string>
 
+#include <glm.hpp>
+
 class Shader;
 
 struct Vertex
 {
-    float Position[3];
-    float Normal[3];
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec3 TexCoords;
+    
+    /*float Position[3];
+    float Normal[3];*/
     //float TexCoords[2];
 };
 
