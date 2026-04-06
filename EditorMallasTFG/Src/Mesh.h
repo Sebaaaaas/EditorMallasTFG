@@ -7,15 +7,38 @@
 
 class Shader;
 
+
 struct Vertex
 {
     glm::vec3 Position;
     glm::vec3 Normal;
-    glm::vec3 TexCoords;
-    
-    /*float Position[3];
-    float Normal[3];*/
-    //float TexCoords[2];
+    //glm::vec3 TexCoords;
+
+    bool operator==(const Vertex& other) const
+    {
+        return Position == other.Position && Normal == other.Normal;
+    }
+};
+
+// Con esto mapeamos la informacion de cada Vertex a un rango determinado - https://en.cppreference.com/w/cpp/utility/hash.html
+//                                                                        - https://en.wikipedia.org/wiki/Hash_function
+template<>
+struct std::hash<Vertex>
+{
+    size_t operator()(const Vertex& v) const
+    {
+        size_t h1 = hash<float>()(v.Position.x);
+        size_t h2 = hash<float>()(v.Position.y);
+        size_t h3 = hash<float>()(v.Position.z);
+
+        size_t h4 = hash<float>()(v.Normal.x);
+        size_t h5 = hash<float>()(v.Normal.y);
+        size_t h6 = hash<float>()(v.Normal.z);
+
+        // Combinamos los hashes
+        return (((((h1 ^ (h2 << 1)) ^ (h3 << 1)) ^
+                    (h4 << 1)) ^ (h5 << 1)) ^ (h6 << 1));
+    }
 };
 
 class Mesh
