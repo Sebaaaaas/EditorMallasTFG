@@ -13,7 +13,7 @@ public:
     Selector();
     ~Selector();
 
-    int pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, const Camera& camera);
+    int pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera);
 
 private:
     // Minimum distance from vertex to be selected
