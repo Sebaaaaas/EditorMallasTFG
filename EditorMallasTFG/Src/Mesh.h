@@ -36,8 +36,7 @@ struct std::hash<Vertex>
         size_t h6 = hash<float>()(v.Normal.z);
 
         // Combinamos los hashes
-        return (((((h1 ^ (h2 << 1)) ^ (h3 << 1)) ^
-                    (h4 << 1)) ^ (h5 << 1)) ^ (h6 << 1));
+        return (((((h1 ^ (h2 << 1)) ^ (h3 << 1)) ^ (h4 << 1)) ^ (h5 << 1)) ^ (h6 << 1));
     }
 };
 

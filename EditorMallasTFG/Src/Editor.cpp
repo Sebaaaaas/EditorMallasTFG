@@ -84,7 +84,7 @@ bool Editor::init()
         return false;
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f); // magicky number !
 
     camera = new Camera((float)win_w, (float)win_h);
 
@@ -135,8 +135,8 @@ void Editor::run()
 
         defaultMesh->draw(*defaultShader);
 
-        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
-        std::cout << selectedVertex << std::endl;
+        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+        //std::cout << selectedVertex << std::endl;
 
         // Input
         if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {  
@@ -153,21 +153,18 @@ void Editor::run()
             //std::cout << "Dragging" << std::endl;
             meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
         }
+
         
         //std::cout << selectedVertex << std::endl;
         if (selectedVertex != -1) {
-            glm::vec3 v(defaultMesh->vertices[selectedVertex].Position[0],
-                defaultMesh->vertices[selectedVertex].Position[1],
-                defaultMesh->vertices[selectedVertex].Position[2]);
+            glm::vec3 v(defaultMesh->vertices[selectedVertex].Position);
 
             //debugShader->use();
 
             glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
             debugRenderer->drawPoint(v);
-        }
-        
-
+        }        
 
         if (Input::isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input::isKeyDown(GLFW_KEY_S)) {
             defaultMesh->saveOBJ("Assets/edited.obj");

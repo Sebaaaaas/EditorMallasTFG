@@ -19,14 +19,29 @@ MeshManipulator::~MeshManipulator() {
 }
 
 void MeshManipulator::beginDrag(const Mesh* mesh, int vertexIndex, const Camera& camera) {
-    if (vertexIndex != -1)
-    {
+
+    /*if (vertexIndex != -1) {
         selectedVertex = vertexIndex;
         dragging = true;
-    }
+    }*/
+
+    if (vertexIndex == -1) return;
+
+    selectedVertex = vertexIndex;
+    dragging = true;
+
+    const auto& v = mesh->vertices[selectedVertex];
+
+    // Plane goes through the vertex
+    dragStartPoint = v.Position;
+
+    // Plane faces the camera
+    dragPlaneNormal = camera.getPosition() - v.Position;
+    // OR: (camera.getPosition() - v.Position)
 }
 
 void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera) {
+
     glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, w, h, camera.getViewMatrix(), camera.getProjectionMatrix());
 
     glm::vec3 rayOrigin = camera.getPosition();
@@ -39,14 +54,15 @@ void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, 
 
     auto& v = mesh->vertices[selectedVertex];
     std::cout << selectedVertex << std::endl;
+    //std::cout << "Pre: " << v.Position.x << std::endl;
 
-    v.Position[0] += delta.x;
-    v.Position[1] += delta.y;
-    v.Position[2] += delta.z;
+    v.Position += delta;
+
+    //std::cout << "Pos: " << v.Position.x << std::endl;
+
 
     dragStartPoint = hit;
 
-    // Update GPU
     mesh->updateVertex(selectedVertex);
 }
 

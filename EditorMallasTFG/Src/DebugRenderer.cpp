@@ -1,6 +1,6 @@
 #include "DebugRenderer.h"
 
-#include <glad/gl.h>
+//#include <glad/gl.h>
 
 void DebugRenderer::drawPoint(const glm::vec3& pos)
 {
@@ -8,7 +8,7 @@ void DebugRenderer::drawPoint(const glm::vec3& pos)
 
     float v[3] = { pos.x, pos.y, pos.z };
 
-    GLuint vao, vbo;
+    //GLuint vao, vbo;
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -34,7 +34,7 @@ void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
         b.x, b.y, b.z
     };
 
-    GLuint vao, vbo;
+    //GLuint vao, vbo;
 
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
