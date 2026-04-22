@@ -9,7 +9,7 @@
 #include <iostream>
 
 Selector::Selector() {
-    minSelectDistance = 1.7f;
+    minSelectDistance = 0.7f; // ! deberia cambiar con la distancia
 
     ray = new Ray();
     dbRenderer = new DebugRenderer();
@@ -46,20 +46,18 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
     float bestDist = minSelectDistance;
     float bestT = FLT_MAX;
 
-    for (int i = 0; i < mesh.vertices.size(); i++)
-    {
+    for (int i = 0; i < mesh.vertices.size(); i++) {
         glm::vec3 v = mesh.vertices[i].Position;
 
         glm::vec3 toPoint = v - rayOrigin;
         float t = glm::dot(toPoint, rayDir);
 
-        if (t < 0.0f) continue; // behind camera
+        if (t < 0.0f) continue; // Detras de la camara
 
         glm::vec3 closestPoint = rayOrigin + rayDir * t;
         float dist = glm::length(v - closestPoint);
 
-        if (dist < bestDist && t < bestT)
-        {
+        if (dist < bestDist && t < bestT) {
             bestDist = dist;
             bestT = t;
             selectedVertex = i;
