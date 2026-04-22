@@ -6,6 +6,7 @@ class Mesh;
 class Camera;
 class Ray;
 
+// Dada una malla e input de raton, permite editar la malla
 class MeshManipulator
 {
 public:
