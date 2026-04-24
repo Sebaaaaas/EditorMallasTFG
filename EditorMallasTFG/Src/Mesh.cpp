@@ -49,6 +49,58 @@ void Mesh::draw(Shader& shader)
     glBindVertexArray(0);
 }
 
+//void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
+//{
+//    tinyobj::attrib_t attrib;
+//    std::vector<tinyobj::shape_t> shapes;
+//    std::vector<tinyobj::material_t> materials;
+//    std::string warn, err;
+//    
+//    bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str());
+//    
+//    if (!warn.empty()) std::cout << warn << std::endl;
+//    if (!err.empty()) std::cerr << err << std::endl;
+//    if (!success) throw std::runtime_error("Fallo en la carga de OBJ");
+// 
+//    std::unordered_map<Vertex, unsigned int> uniqueVertices;
+//
+//    std::cout << shapes.size() << std::endl;
+//    for (const tinyobj::shape_t shape : shapes)
+//    {
+//        std::cout << shape.mesh.indices.size() << std::endl;
+//        for (const auto& index : shape.mesh.indices)
+//        {
+//            Vertex vertex{};
+//
+//            vertex.Position = glm::vec3(
+//                attrib.vertices[3 * index.vertex_index + 0],
+//                attrib.vertices[3 * index.vertex_index + 1],
+//                attrib.vertices[3 * index.vertex_index + 2]
+//            );
+//
+//            if (!attrib.normals.empty() && index.normal_index >= 0)
+//            {
+//                vertex.Normal = glm::vec3(
+//                    attrib.normals[3 * index.normal_index + 0],
+//                    attrib.normals[3 * index.normal_index + 1],
+//                    attrib.normals[3 * index.normal_index + 2]
+//                );
+//            }
+//
+//            if (uniqueVertices.count(vertex) == 0)
+//            {
+//                uniqueVertices[vertex] = static_cast<unsigned int>(vertices.size());
+//                vertices.push_back(vertex);
+//            }
+//
+//            indices.push_back(uniqueVertices[vertex]);
+//
+//        }
+//    }
+//    std::cout << uniqueVertices.size() << std::endl;
+//
+//}
+
 void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
 {
     tinyobj::attrib_t attrib;
@@ -58,31 +110,27 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
 
     bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str());
 
-    if (!warn.empty())
-        std::cout << warn << std::endl;
+    if (!warn.empty()) std::cout << warn << std::endl;
+    if (!err.empty()) std::cerr << err << std::endl;
+    if (!success) throw std::runtime_error("Fallo en la carga de OBJ");
 
-    if (!err.empty())
-        std::cerr << err << std::endl;
 
-    if (!success)
-        throw std::runtime_error("Fallo en la carga de OBJ");
+    std::unordered_map<int, unsigned int> positionIndexToGroup;
 
-    std::unordered_map<Vertex, unsigned int> uniqueVertices;
-
-    std::cout << shapes.size() << std::endl;
-    for (const tinyobj::shape_t shape : shapes)
+    for (const auto& shape : shapes)
     {
-        std::cout << shape.mesh.indices.size() << std::endl;
         for (const auto& index : shape.mesh.indices)
         {
             Vertex vertex{};
 
+            // Position
             vertex.Position = glm::vec3(
                 attrib.vertices[3 * index.vertex_index + 0],
                 attrib.vertices[3 * index.vertex_index + 1],
                 attrib.vertices[3 * index.vertex_index + 2]
             );
 
+            // Normal
             if (!attrib.normals.empty() && index.normal_index >= 0)
             {
                 vertex.Normal = glm::vec3(
@@ -91,18 +139,29 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
                     attrib.normals[3 * index.normal_index + 2]
                 );
             }
+                        
+            unsigned int vertexIndex = vertices.size(); // Siguiente espacio disponible
+            vertices.push_back(vertex);
+            indices.push_back(vertexIndex);
 
-            if (uniqueVertices.count(vertex) == 0)
+            // Asignamos al grupo que comparta posicion del vertice
+            unsigned int groupIndex;
+
+            if (positionIndexToGroup.count(index.vertex_index) == 0) // Si no habia ningun vertice previo compartiendo posicion
             {
-                uniqueVertices[vertex] = static_cast<unsigned int>(vertices.size());
-                vertices.push_back(vertex);
+                groupIndex = vertexGroups.size();
+                positionIndexToGroup[index.vertex_index] = groupIndex;
+                vertexGroups.push_back({});
+            }
+            else
+            {
+                groupIndex = positionIndexToGroup[index.vertex_index];
             }
 
-            indices.push_back(uniqueVertices[vertex]);
+            vertexGroups[groupIndex].push_back(vertexIndex);
+            vertexToGroup.push_back(groupIndex);
         }
     }
-    std::cout << uniqueVertices.size() << std::endl;
-
 }
 
 void Mesh::saveOBJ(const std::string& path)
@@ -146,13 +205,13 @@ void Mesh::setupMesh()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW); // Copia los vertices a la memoria del buffer, el ultimo parametro: 
                                                                                                      // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times. 
                                                                                                      // GL_STATIC_DRAW: the data is set only once and used many times. 
                                                                                                      // GL_DYNAMIC_DRAW : the data is changed a lot and used many times.
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_DYNAMIC_DRAW);
 
     // Indicamos cómo se deben leer los VBO a base de "rellenar" la info del VAO
     // Posiciones
