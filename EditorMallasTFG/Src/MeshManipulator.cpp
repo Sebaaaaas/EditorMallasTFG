@@ -20,24 +20,16 @@ MeshManipulator::~MeshManipulator() {
 
 void MeshManipulator::beginDrag(const Mesh* mesh, int vertexIndex, const Camera& camera) {
 
-    /*if (vertexIndex != -1) {
-        selectedVertex = vertexIndex;
-        dragging = true;
-    }*/
-
     if (vertexIndex == -1) return;
 
     selectedVertex = vertexIndex;
     dragging = true;
 
     const auto& v = mesh->vertices[selectedVertex];
-
-    // Plane goes through the vertex
+    
     dragStartPoint = v.Position;
-
-    // Plane faces the camera
-    dragPlaneNormal = camera.getPosition() - v.Position;
-    // OR: (camera.getPosition() - v.Position)
+    
+    dragPlaneNormal = camera.getPosition() - v.Position;    
 }
 
 void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera) {

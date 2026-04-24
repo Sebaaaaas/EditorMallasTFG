@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <glad/gl.h>
-#include <unordered_map>
 
 #include "Shader.h"
 
@@ -46,7 +45,7 @@ void Mesh::draw(Shader& shader)
     shader.use();
 
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, /*static_cast<GLsizei>(*/indices.size()/*)*/, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -70,8 +69,10 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
 
     std::unordered_map<Vertex, unsigned int> uniqueVertices;
 
+    std::cout << shapes.size() << std::endl;
     for (const tinyobj::shape_t shape : shapes)
     {
+        std::cout << shape.mesh.indices.size() << std::endl;
         for (const auto& index : shape.mesh.indices)
         {
             Vertex vertex{};
@@ -100,6 +101,8 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
             indices.push_back(uniqueVertices[vertex]);
         }
     }
+    std::cout << uniqueVertices.size() << std::endl;
+
 }
 
 void Mesh::saveOBJ(const std::string& path)
