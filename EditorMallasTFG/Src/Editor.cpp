@@ -88,7 +88,7 @@ bool Editor::init()
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    defaultMesh = new Mesh("Assets/cubo.obj");
+    defaultMesh = new Mesh("Assets/modelo.obj");
 
     // Creacion de shader
     defaultShader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");

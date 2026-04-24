@@ -44,7 +44,6 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
     }*/
     int selectedVertex = -1;
     float bestDist = minSelectDistance;
-    float bestT = FLT_MAX;
 
     for (int i = 0; i < mesh.vertices.size(); i++) {
         glm::vec3 v = mesh.vertices[i].Position;
@@ -57,9 +56,8 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
         glm::vec3 closestPoint = rayOrigin + rayDir * t;
         float dist = glm::length(v - closestPoint);
 
-        if (dist < bestDist && t < bestT) {
+        if (dist < bestDist) {
             bestDist = dist;
-            bestT = t;
             selectedVertex = i;
         }
     }
