@@ -73,10 +73,20 @@ void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, 
     glm::vec3 delta = hit - dragStartPoint;
 
     int group = mesh->vertexToGroup[selectedVertex];
+    /*int group = mesh->indices[selectedVertex];
+    mesh->vertices[group].Position += delta;*/
 
     for (unsigned int idx : mesh->vertexGroups[group])
     {
         mesh->vertices[idx].Position += delta;
+    }
+
+
+    mesh->recalculateNormals();
+
+    //mesh->updateVertex(group);
+    for (unsigned int idx : mesh->vertexGroups[group])
+    {
         mesh->updateVertex(idx);
     }
 

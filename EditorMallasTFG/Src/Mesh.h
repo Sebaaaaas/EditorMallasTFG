@@ -14,10 +14,10 @@ struct Vertex
     glm::vec3 Normal;
     //glm::vec2 TexCoords;
 
-    /*bool operator==(const Vertex& other) const
+    bool operator==(const Vertex& other) const
     {
         return Position == other.Position && Normal == other.Normal;
-    }*/
+    }
 };
 
 //struct Texture {
@@ -27,23 +27,23 @@ struct Vertex
 
 // Con esto mapeamos cada Vertex a un rango determinado - https://en.cppreference.com/w/cpp/utility/hash.html
 //                                                      - https://en.wikipedia.org/wiki/Hash_function
-//template<>
-//struct std::hash<Vertex>
-//{
-//    size_t operator()(const Vertex& v) const noexcept
-//    {
-//        size_t h1 = hash<float>()(v.Position.x);
-//        size_t h2 = hash<float>()(v.Position.y);
-//        size_t h3 = hash<float>()(v.Position.z);
-//
-//        size_t h4 = hash<float>()(v.Normal.x);
-//        size_t h5 = hash<float>()(v.Normal.y);
-//        size_t h6 = hash<float>()(v.Normal.z);
-//
-//        // Combinamos los hashes
-//        return (((((h1 ^ (h2 << 1)) ^ (h3 << 1)) ^ (h4 << 1)) ^ (h5 << 1)) ^ (h6 << 1));
-//    }
-//};
+template<>
+struct std::hash<Vertex>
+{
+    size_t operator()(const Vertex& v) const noexcept
+    {
+        size_t h1 = hash<float>()(v.Position.x);
+        size_t h2 = hash<float>()(v.Position.y);
+        size_t h3 = hash<float>()(v.Position.z);
+
+        size_t h4 = hash<float>()(v.Normal.x);
+        size_t h5 = hash<float>()(v.Normal.y);
+        size_t h6 = hash<float>()(v.Normal.z);
+
+        // Combinamos los hashes
+        return (((((h1 ^ (h2 << 1)) ^ (h3 << 1)) ^ (h4 << 1)) ^ (h5 << 1)) ^ (h6 << 1));
+    }
+};
 
 class Mesh
 {
@@ -57,13 +57,13 @@ private:
     void setupMesh();
 
 public:
-    std::vector<Vertex> vertices;
+    std::vector<Vertex> vertices; // Vertices de renderizado, no total de vertices(en un cubo deben salir 24, ya que al no repetir, quedamos con 4 por cara, que conservan normales)
     std::vector<unsigned int> indices;
     //std::vector<Texture> textures;
 
     // Mapeado para mover vertices en misma posicion
     std::vector<std::vector<unsigned int>> vertexGroups; // Grupos de vertices con la misma posicion
-    std::vector<unsigned int> vertexToGroup;             // vertex -> group
+    std::vector<unsigned int> vertexToGroup;             // Mapeado de vertice a su grupo
 
     unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
 
@@ -78,5 +78,7 @@ public:
     void saveOBJ(const std::string& path);
 
     void updateVertex(int index);
+
+    void recalculateNormals();
 };
 
