@@ -27,21 +27,7 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
 
     glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, width, height, camera->getViewMatrix(), camera->getProjectionMatrix());
     glm::vec3 rayOrigin = camera->getPosition();
-
-    /*int selectedVertex = -1;
-    int minDistFound = minSelectDistance;
-
-    for (int i = 0; i < mesh.vertices.size(); i++)
-    {
-        glm::vec3 v = mesh.vertices[i].Position;
-
-        float dist = ray->pointToRayDistance(v, rayOrigin, rayDir);
-
-        if (dist < minDistFound) {
-            minDistFound = dist;
-            selectedVertex = i;
-        }
-    }*/
+    
     int selectedVertex = -1;
     float bestDist = minSelectDistance;
 
@@ -49,7 +35,7 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
         glm::vec3 v = mesh.vertices[i].Position;
 
         glm::vec3 toPoint = v - rayOrigin;
-        float t = glm::dot(toPoint, rayDir);
+        float t = glm::dot(toPoint, rayDir); // Proyectamos el vertice sobre el rayo lanzado
 
         if (t < 0.0f) continue; // Detras de la camara
 

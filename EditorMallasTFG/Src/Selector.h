@@ -7,6 +7,8 @@ class Camera;
 class Ray;
 class DebugRenderer;
 
+#include <vector>
+
 class Selector
 {
 public:
