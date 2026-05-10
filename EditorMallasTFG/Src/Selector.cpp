@@ -6,10 +6,8 @@
 
 #include "DebugRenderer.h"
 
-#include <iostream>
-
 Selector::Selector() {
-    minSelectDistance = 0.7f; // ! deberia cambiar con la distancia
+    minSelectDistance = 0.7f; // !! deberia cambiar con la distancia?
 
     ray = new Ray();
     dbRenderer = new DebugRenderer();
@@ -48,9 +46,9 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
         }
     }
 
-    glm::vec3 end = rayOrigin + rayDir * 10.0f; // ! magic number
+    glm::vec3 end = rayOrigin + rayDir * 10.0f; // !! numero magico
 
-    dbRenderer->drawLine(rayOrigin, end);
+    dbRenderer->drawLine(rayOrigin, end); // !! problema con shader
     dbRenderer->drawPoint(end);
 
     return selectedVertex;

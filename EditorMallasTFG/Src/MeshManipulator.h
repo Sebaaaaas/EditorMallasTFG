@@ -15,9 +15,7 @@ public:
     MeshManipulator();
     ~MeshManipulator();
 
-    void beginDragLegacy(const Mesh* mesh, int vertexIndex, const Camera& camera);
     void beginDrag(const Mesh* mesh, int vertexIndex, const Camera& camera);
-    void updateDragLegacy(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
     void updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
     void endDrag();
 
@@ -29,8 +27,6 @@ public:
 
 private:
     bool dragging = false;
-
-    int selectedVertex = -1; // Legacy
 
     std::unordered_set<unsigned int> selectedGroups;
 
