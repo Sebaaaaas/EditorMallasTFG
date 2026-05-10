@@ -116,8 +116,6 @@ void Editor::run()
         // Renderizado
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //defaultShader->use();
-
         // Creamos matriz MVP
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera->getViewMatrix();
@@ -133,31 +131,47 @@ void Editor::run()
 
         defaultMesh->draw(*defaultShader);
 
-        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
-        //std::cout << selectedVertex << std::endl;
+
+
+        // Seleccion
+        if(!meshManipulator->isDragging())
+            selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
 
         // Input
-        if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {  
-            meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
+        if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {
+
+            // Shift = selección aditiva
+            bool additive = Input::isKeyDown(GLFW_KEY_LEFT_SHIFT);
+
+            // Si hemos hecho click sobre un vértice
+            if (selectedVertex != -1) {
+
+                // Actualiza la selección por grupos
+                meshManipulator->selectVertex(defaultMesh, selectedVertex, additive);
+
+                // Comienza el arrastre usando el vértice clicado (solo se usa para calcular dragStartPoint)
+                meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
+            }
+            else {
+                // Click en el vacío sin shift limpia la selección
+                if (!additive) {
+                    meshManipulator->clearSelection();
+                }
+            }
         }
         
         if (meshManipulator->isDragging() && !Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
             meshManipulator->endDrag();
-            selectedVertex = -1;
         }
 
-        // Arrastrar punto
+        // Arrastrar puntos
         if (meshManipulator->isDragging()) {
-            //std::cout << "Dragging" << std::endl;
             meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
         }
 
-        
-        //std::cout << selectedVertex << std::endl;
+        // Dibujado de punto bajo cursor
         if (selectedVertex != -1) {
             glm::vec3 v(defaultMesh->vertices[selectedVertex].Position);
-
-            //debugShader->use();
 
             glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
