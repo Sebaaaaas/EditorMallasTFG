@@ -7,15 +7,13 @@ class Camera;
 class Ray;
 class DebugRenderer;
 
-#include <vector>
-
 class Selector
 {
 public:
     Selector();
     ~Selector();
 
-    // Seleccionamos un vertice ada la posicion del raton, lanzando un rayo desde la camara y encontrando el vertice mas proximo
+    // Dada la malla mesh, devolvemos el vertice del vector Mesh::vertices mas proximo al raton
     int pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera);
 
 private:
