@@ -76,9 +76,15 @@ public:
     void loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
 
     void saveOBJ(const std::string& path);
+    
+    // Actualiza las normales de TODA la malla >> !! posible mejora es que solo recalcule normales que cambien
+    void recalculateNormals();
 
+    // NO USAR: SI SE EDITA UNA MALLA GRANDE, EN VEZ DE MUCHAS LLAMADAS A ESTA FUNCION(MUCHAS LLAMADAS A GPU) LLAMAR UNA SOLA VEZ A "updateAllVertices"
+    // Manda informacion a la GPU para que actualice la posicion de un vertice.
     void updateVertex(int index);
 
-    void recalculateNormals();
+    // Manda a la GPU la informacion de toda la malla para que se vean cambios en pantalla
+    void updateAllVertices();
 };
 

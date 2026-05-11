@@ -130,72 +130,6 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
 
 }
 
-//void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
-//{
-//    tinyobj::attrib_t attrib;
-//    std::vector<tinyobj::shape_t> shapes;
-//    std::vector<tinyobj::material_t> materials;
-//    std::string warn, err;
-//
-//    bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str());
-//
-//    if (!warn.empty()) std::cout << warn << std::endl;
-//    if (!err.empty()) std::cerr << err << std::endl;
-//    if (!success) throw std::runtime_error("Fallo en la carga de OBJ");
-//
-//
-//    std::unordered_map<int, unsigned int> positionIndexToGroup;
-//
-//    for (const auto& shape : shapes)
-//    {
-//        for (const auto& index : shape.mesh.indices)
-//        {
-//            Vertex vertex{};
-//
-//            // Position
-//            vertex.Position = glm::vec3(
-//                attrib.vertices[3 * index.vertex_index + 0],
-//                attrib.vertices[3 * index.vertex_index + 1],
-//                attrib.vertices[3 * index.vertex_index + 2]
-//            );
-//
-//            // Normal
-//            if (!attrib.normals.empty() && index.normal_index >= 0)
-//            {
-//                vertex.Normal = glm::vec3(
-//                    attrib.normals[3 * index.normal_index + 0],
-//                    attrib.normals[3 * index.normal_index + 1],
-//                    attrib.normals[3 * index.normal_index + 2]
-//                );
-//            }
-//
-//            unsigned int vertexIndex = vertices.size(); // Siguiente espacio disponible
-//            vertices.push_back(vertex);
-//            indices.push_back(vertexIndex);
-//
-//            // Asignamos al grupo que comparta posicion del vertice
-//            unsigned int groupIndex;
-//
-//            if (positionIndexToGroup.count(index.vertex_index) == 0) // Si no habia ningun vertice previo compartiendo posicion
-//            {
-//                groupIndex = vertexGroups.size();
-//                positionIndexToGroup[index.vertex_index] = groupIndex;
-//                vertexGroups.push_back({});
-//            }
-//            else
-//            {
-//                groupIndex = positionIndexToGroup[index.vertex_index];
-//            }
-//
-//            vertexGroups[groupIndex].push_back(vertexIndex);
-//            vertexToGroup.push_back(groupIndex);
-//        }
-//    }
-//
-//    std::cout << "Indices size: " << indices.size() << "\nVertex size: " << vertices.size() << std::endl;
-//
-//}
-
 void Mesh::saveOBJ(const std::string& path)
 {
     std::ofstream file(path);
@@ -264,14 +198,6 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::updateVertex(int index)
-{
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(Vertex), sizeof(Vertex), &vertices[index]);
-
-}
-
 void Mesh::recalculateNormals()
 {
     // Reset normals
@@ -298,4 +224,18 @@ void Mesh::recalculateNormals()
     // Normalize
     for (auto& v : vertices)
         v.Normal = glm::normalize(v.Normal);
+}
+
+void Mesh::updateVertex(int index)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(Vertex), sizeof(Vertex), &vertices[index]);
+}
+
+void Mesh::updateAllVertices()
+{
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
 }

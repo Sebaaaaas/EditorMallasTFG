@@ -56,10 +56,7 @@ void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, 
     // Recalculamos normales para pintado con shading correcto
     mesh->recalculateNormals();
 
-    for (unsigned int i = 0; i < mesh->vertices.size(); i++) // POCO EFICIENTE REVISAR !!
-    {
-        mesh->updateVertex(i);
-    }
+    mesh->updateAllVertices();
 
     dragStartPoint = hit;
 }
