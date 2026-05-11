@@ -82,11 +82,11 @@ bool Editor::init()
         return false;
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f); // magicky number !
+    glClearColor(1.f, 1.f, 1.f, 1.0f); // magicky number !
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    defaultMesh = new Mesh("Assets/cubo.obj");
+    defaultMesh = new Mesh("Assets/modelo.obj");
 
     // Creacion de shader
     defaultShader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");
