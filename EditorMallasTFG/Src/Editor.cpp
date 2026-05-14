@@ -89,7 +89,7 @@ bool Editor::init()
     defaultMesh = new Mesh("Assets/modelo.obj");
 
     // Creacion de shader
-    defaultShader = new Shader("Assets/testcube.vert", "Assets/testcube.frag");
+    defaultShader = new Shader("Assets/mainShader.vert", "Assets/mainShader.frag");
     debugShader = new Shader("Assets/debugShader.vert", "Assets/debugShader.frag");
 
     selector = new Selector();
@@ -103,7 +103,7 @@ void Editor::run()
 {
     while (!glfwWindowShouldClose(window)) {
 
-        // Input
+        // "Cazamos" input para posterior uso
         manageInput();
 
         // Manejo de redimensionamiento de la pantalla
@@ -123,19 +123,40 @@ void Editor::run()
 
         glm::mat4 MVP = projection * view * model;
 
-        // Asignamos valores al defaultShader
+        // Activamos shader al que le vamos a asignar las variables
+        defaultShader->use();
+
+        // Asignamos valores a las variables del shader
         glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
         glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
         glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"), -0.5f, -1.0f, -0.3f);
         glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
 
-        defaultMesh->draw(*defaultShader);
+        defaultMesh->draw();
 
 
 
         // Seleccion
-        if(!meshManipulator->isDragging())
+        if (!meshManipulator->isDragging()) {
+
             selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+
+            if (selectedVertex != -1) {
+
+                debugShader->use();
+
+                glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+
+                glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
+
+                debugRenderer->drawLine(
+                    camera->getPosition(),
+                    pos
+                );
+
+                debugRenderer->drawPoint(pos);
+            }
+        }
 
         // Input
         if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {
@@ -175,6 +196,7 @@ void Editor::run()
 
             glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
+            //debugShader->use();
             debugRenderer->drawPoint(v);
         }        
 

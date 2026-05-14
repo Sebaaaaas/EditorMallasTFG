@@ -4,21 +4,15 @@
 #include "Mesh.h"
 #include "Camera.h"
 
-#include "DebugRenderer.h"
-
 Selector::Selector() {
     minSelectDistance = 0.7f; // !! deberia cambiar con la distancia?
 
     ray = new Ray();
-    dbRenderer = new DebugRenderer();
 }
 
 Selector::~Selector() {
     delete ray;
     ray = nullptr;
-
-    delete dbRenderer;
-    dbRenderer = nullptr;
 }
 
 int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
@@ -47,9 +41,6 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
     }
 
     glm::vec3 end = rayOrigin + rayDir * 10.0f; // !! numero magico
-
-    dbRenderer->drawLine(rayOrigin, end); // !! problema con shader
-    dbRenderer->drawPoint(end);
 
     return selectedVertex;
 }

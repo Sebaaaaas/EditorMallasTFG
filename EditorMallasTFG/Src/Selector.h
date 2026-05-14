@@ -5,7 +5,6 @@
 class Mesh;
 class Camera;
 class Ray;
-class DebugRenderer;
 
 class Selector
 {
@@ -21,5 +20,5 @@ private:
     float minSelectDistance;
 
     Ray* ray;
-    DebugRenderer* dbRenderer;
+
 };
