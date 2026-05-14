@@ -3,7 +3,7 @@
 #include <iostream>
 #include <glad/gl.h>
 
-Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) // CUIDADO, SI FALLA CONSTRUCTORA DEJA LEAK, MEJOR CON INICIALIZACION EN DOS FASES
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) // !! CUIDADO, SI FALLA CONSTRUCTORA DEJA LEAK, MEJOR CON INICIALIZACION EN DOS FASES
 {
     std::string vertexCode = readFile(vertexPath);
     std::string fragmentCode = readFile(fragmentPath);
@@ -92,7 +92,8 @@ unsigned int Shader::compileShader(const std::string& source, unsigned int type)
         int max_length = 2048, actual_length = 0;
         char slog[2048];
         glGetShaderInfoLog(shader, max_length, &actual_length, slog);
-        fprintf(stderr, "ERROR: Shader con indice %u no se ha podido compilar.\n%s\n", shader, slog);
+        std::cout << "Error al compilar shader con indice: " << shader << "\n" << slog << std::endl;
+
         return 1;
     }
 

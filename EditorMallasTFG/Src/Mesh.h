@@ -6,8 +6,6 @@
 
 #include <glm.hpp>
 
-class Shader;
-
 struct Vertex
 {
     glm::vec3 Position;
@@ -70,7 +68,7 @@ public:
     Mesh(std::string path);
     ~Mesh();
 
-    void draw(Shader& shader);
+    void draw();
 
     // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path", que debe encontrarse en la carpeta Bin/Assets
     void loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
