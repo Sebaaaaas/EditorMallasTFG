@@ -9,6 +9,10 @@ private:
     GLuint vao, vbo;
 
 public:
+
+    DebugRenderer();
+    ~DebugRenderer();
+
     void drawPoint(const glm::vec3& pos);
     void drawLine(const glm::vec3& a, const glm::vec3& b);
 };

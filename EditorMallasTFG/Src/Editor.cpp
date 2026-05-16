@@ -82,11 +82,11 @@ bool Editor::init()
         return false;
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(1.f, 1.f, 1.f, 1.0f); // magicky number !
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f); // magicky number !!
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    defaultMesh = new Mesh("Assets/modelo.obj");
+    defaultMesh = new Mesh("Assets/cubo.obj");
 
     // Creacion de shader
     defaultShader = new Shader("Assets/mainShader.vert", "Assets/mainShader.frag");
@@ -139,23 +139,24 @@ void Editor::run()
         // Seleccion
         if (!meshManipulator->isDragging()) {
 
+            // !! AVISO, SE PUEDE SELECCIONAR VERTICE NO VISIBLE
             selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
 
-            if (selectedVertex != -1) {
+        }
 
-                debugShader->use();
+        // Debug
+        if (selectedVertex != -1) {
 
-                glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+            debugShader->use();
 
-                glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
+            glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
-                debugRenderer->drawLine(
-                    camera->getPosition(),
-                    pos
-                );
-
-                debugRenderer->drawPoint(pos);
-            }
+            glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
+                
+            // Para ver vertices ocultos que estamos moviendo
+            glDisable(GL_DEPTH_TEST);
+            debugRenderer->drawPoint(pos);
+            glEnable(GL_DEPTH_TEST);
         }
 
         // Input
@@ -188,17 +189,7 @@ void Editor::run()
         // Arrastrar puntos
         if (meshManipulator->isDragging()) {
             meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
-        }
-
-        // Dibujado de punto bajo cursor
-        if (selectedVertex != -1) {
-            glm::vec3 v(defaultMesh->vertices[selectedVertex].Position);
-
-            glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
-
-            //debugShader->use();
-            debugRenderer->drawPoint(v);
-        }        
+        }    
 
         if (Input::isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input::isKeyDown(GLFW_KEY_S)) {
             defaultMesh->saveOBJ("Assets/edited.obj");

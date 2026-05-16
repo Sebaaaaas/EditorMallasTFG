@@ -47,7 +47,7 @@ private:
 
 	void manageInput();
 
-	// Mover vertice
+	// Mover vertice !! deberia estar aqui esto?
 	int selectedVertex = -1;
 
 

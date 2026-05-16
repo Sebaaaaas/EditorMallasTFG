@@ -12,7 +12,7 @@ public:
     Selector();
     ~Selector();
 
-    // Dada la malla mesh, devolvemos el vertice del vector Mesh::vertices mas proximo al raton
+    // Dada la malla mesh, devolvemos el vertice del vector Mesh::vertices mas proximo al raton(vertices de renderizado)
     int pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera);
 
 private:
