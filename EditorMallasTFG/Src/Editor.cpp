@@ -151,8 +151,17 @@ void Editor::run()
 
             glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
+            // Mostramos los vertices actualmente seleccionados
             glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
                 
+            for (unsigned int group : meshManipulator->getSelectedGroups()) {
+                for (unsigned int idx : defaultMesh->vertexGroups[group])
+                {
+                    glm::vec3 pos = defaultMesh->vertices[idx].Position;
+                    debugRenderer->drawPoint(pos);
+                }
+            }
+
             // Para ver vertices ocultos que estamos moviendo
             glDisable(GL_DEPTH_TEST);
             debugRenderer->drawPoint(pos);
