@@ -87,3 +87,8 @@ bool MeshManipulator::hasSelection() const {
 
     return !selectedGroups.empty();
 }
+
+std::unordered_set<unsigned int> MeshManipulator::getSelectedGroups()
+{
+    return selectedGroups;
+}

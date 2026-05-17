@@ -25,6 +25,9 @@ public:
     void clearSelection();
     bool hasSelection() const;
 
+    // Devuelve un conjunto con los indices de los vertices que han sido seleccionados
+    std::unordered_set<unsigned int> getSelectedGroups();
+
 private:
     bool dragging = false;
 
