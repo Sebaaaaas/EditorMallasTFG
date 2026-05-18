@@ -82,7 +82,7 @@ bool Editor::init()
         return false;
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f); // magicky number !!
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
     camera = new Camera((float)win_w, (float)win_h);
 
