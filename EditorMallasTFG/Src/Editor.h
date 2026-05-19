@@ -21,7 +21,9 @@ public:
 
 	bool init();
 	void run();
+	void renderFrame();
 
+	bool initializeGlad();
 private:
 
 	const std::string windowTitle = "Mesh editor";
@@ -43,9 +45,9 @@ private:
 	DebugRenderer* debugRenderer;
 
 	bool initializeGLFWAndWindow();
-	bool initializeGlad();
 
 	void manageInput();
+
 
 	// Mover vertice !! deberia estar aqui esto?
 	int selectedVertex = -1;

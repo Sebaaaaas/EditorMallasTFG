@@ -6,6 +6,8 @@
 // GLFW include siempre despues de glad
 #include <GLFW/glfw3.h>
 
+#include <QOpenGLContext>
+
 //#include <glm.hpp> - actualmente en el .h
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
@@ -58,7 +60,7 @@ Editor::~Editor() {
 
 
     //glfwDestroyWindow(window); glfwTerminate cierra y borra todas las ventanas, en este caso es suficiente y no hace falta esto
-    glfwTerminate();
+    //glfwTerminate(); // 777
 }
 
 static void error_callback(int error, const char* description) {
@@ -68,18 +70,18 @@ static void error_callback(int error, const char* description) {
 bool Editor::init()
 {
 	// Deteccion de errores
-    glfwSetErrorCallback(error_callback);
+    //glfwSetErrorCallback(error_callback); 777
 
-    // Inicializacion de la GLWF y ventana que usara
-    if (!initializeGLFWAndWindow())
-        return false;
+    //// Inicializacion de la GLWF y ventana que usara
+    /*if (!initializeGLFWAndWindow())
+        return false;*/
 
     // Deteccion de input
-    Input::init(window);
+    //Input::init(window); 777
 
-    // Inicializamos glad para poder llamar a funciones de OpenGL
-    if (!initializeGlad())
-        return false;
+    //// Inicializamos glad para poder llamar a funciones de OpenGL
+    /*if (!initializeGlad())
+        return false;*/
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -101,108 +103,9 @@ bool Editor::init()
 
 void Editor::run()
 {
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window)) { // 777        
 
-        // "Cazamos" input para posterior uso
-        manageInput();
-
-        // Manejo de redimensionamiento de la pantalla
-        glfwGetWindowSize(window, &win_w, &win_h);
-        glViewport(0, 0, win_w, win_h);
-
-        camera->setAspectRatio((float)win_w, (float)win_h);
-
-
-        // Renderizado
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Creamos matriz MVP
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera->getViewMatrix();
-        glm::mat4 projection = camera->getProjectionMatrix();
-
-        glm::mat4 MVP = projection * view * model;
-
-        // Activamos shader al que le vamos a asignar las variables
-        defaultShader->use();
-
-        // Asignamos valores a las variables del shader
-        glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
-        glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"), -0.5f, -1.0f, -0.3f);
-        glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
-
-        defaultMesh->draw();
-
-
-
-        // Seleccion
-        if (!meshManipulator->isDragging()) {
-
-            // !! AVISO, SE PUEDE SELECCIONAR VERTICE NO VISIBLE
-            selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
-
-        }
-
-        // Debug
-        if (selectedVertex != -1) {
-
-            debugShader->use();
-
-            glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
-
-            // Mostramos los vertices actualmente seleccionados
-            glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
-                
-            for (unsigned int group : meshManipulator->getSelectedGroups()) {
-                for (unsigned int idx : defaultMesh->vertexGroups[group])
-                {
-                    glm::vec3 pos = defaultMesh->vertices[idx].Position;
-                    debugRenderer->drawPoint(pos);
-                }
-            }
-
-            // Para ver vertices ocultos que estamos moviendo
-            glDisable(GL_DEPTH_TEST);
-            debugRenderer->drawPoint(pos);
-            glEnable(GL_DEPTH_TEST);
-        }
-
-        // Input
-        if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {
-
-            // Shift = selección aditiva
-            bool additive = Input::isKeyDown(GLFW_KEY_LEFT_SHIFT);
-
-            // Si hemos hecho click sobre un vértice
-            if (selectedVertex != -1) {
-
-                // Actualiza la selección por grupos
-                meshManipulator->selectVertex(defaultMesh, selectedVertex, additive);
-
-                // Comienza el arrastre usando el vértice clicado (solo se usa para calcular dragStartPoint)
-                meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
-            }
-            else {
-                // Click en el vacío sin shift limpia la selección
-                if (!additive) {
-                    meshManipulator->clearSelection();
-                }
-            }
-        }
-        
-        if (meshManipulator->isDragging() && !Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
-            meshManipulator->endDrag();
-        }
-
-        // Arrastrar puntos
-        if (meshManipulator->isDragging()) {
-            meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
-        }    
-
-        if (Input::isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input::isKeyDown(GLFW_KEY_S)) {
-            defaultMesh->saveOBJ("Assets/edited.obj");
-        }
+        //...
 
         glfwSwapBuffers(window);
     }
@@ -223,7 +126,7 @@ bool Editor::initializeGLFWAndWindow()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 8); // Cómo de "lisas" son las lineas diagonales
 
-    window = glfwCreateWindow(win_w, win_h, windowTitle.c_str(), NULL, NULL);
+    window = glfwCreateWindow(win_w, win_h, windowTitle.c_str(), NULL, NULL); // 777
 
     if (!window) {
         // Window or OpenGL context creation failed
@@ -241,10 +144,34 @@ bool Editor::initializeGLFWAndWindow()
 
 bool Editor::initializeGlad()
 {
-    int version_glad = gladLoadGL(glfwGetProcAddress);
+    /*int version_glad = gladLoadGL(glfwGetProcAddress);
     
     if (version_glad == 0) {
         fprintf(stderr, "ERROR: Fallo en inicializacion de glad\n");
+        return false;
+    }
+
+    return true;*/
+    QOpenGLContext* context = QOpenGLContext::currentContext();
+
+    if (!context) {
+        fprintf(stderr, "ERROR: No hay un contexto OpenGL activo.\n");
+        return false;
+    }
+
+    int version_glad = gladLoadGL(
+        [](const char* name) -> GLADapiproc {
+            QOpenGLContext* ctx = QOpenGLContext::currentContext();
+            if (!ctx)
+                return nullptr;
+            return reinterpret_cast<GLADapiproc>(
+                ctx->getProcAddress(name)
+                );
+        }
+    );
+
+    if (version_glad == 0) {
+        fprintf(stderr, "ERROR: Fallo en inicializacion de GLAD\n");
         return false;
     }
 
@@ -262,6 +189,109 @@ void Editor::manageInput() {
     camera->manageInput();
 
     if (Input::isKeyDown(GLFW_KEY_ESCAPE))
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        glfwSetWindowShouldClose(window, GLFW_TRUE); // 777
+}
+
+void Editor::renderFrame() {
+    // "Cazamos" input para posterior uso
+    manageInput();
+
+    // Manejo de redimensionamiento de la pantalla
+    glfwGetWindowSize(window, &win_w, &win_h); // 777
+    glViewport(0, 0, win_w, win_h);
+
+    camera->setAspectRatio((float)win_w, (float)win_h);
+
+
+    // Renderizado
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Creamos matriz MVP
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = camera->getViewMatrix();
+    glm::mat4 projection = camera->getProjectionMatrix();
+
+    glm::mat4 MVP = projection * view * model;
+
+    // Activamos shader al que le vamos a asignar las variables
+    defaultShader->use();
+
+    // Asignamos valores a las variables del shader
+    glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+    glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"), -0.5f, -1.0f, -0.3f);
+    glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
+
+    defaultMesh->draw();
+
+
+
+    // Seleccion
+    if (!meshManipulator->isDragging()) {
+
+        // !! AVISO, SE PUEDE SELECCIONAR VERTICE NO VISIBLE
+        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+
+    }
+
+    // Debug
+    if (selectedVertex != -1) {
+
+        debugShader->use();
+
+        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+
+        // Mostramos los vertices actualmente seleccionados
+        glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
+
+        for (unsigned int group : meshManipulator->getSelectedGroups()) {
+            for (unsigned int idx : defaultMesh->vertexGroups[group])
+            {
+                glm::vec3 pos = defaultMesh->vertices[idx].Position;
+                debugRenderer->drawPoint(pos);
+            }
+        }
+
+        // Para ver vertices ocultos que estamos moviendo
+        glDisable(GL_DEPTH_TEST);
+        debugRenderer->drawPoint(pos);
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    // Input
+    if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {
+
+        // Shift = selección aditiva
+        bool additive = Input::isKeyDown(GLFW_KEY_LEFT_SHIFT);
+
+        // Si hemos hecho click sobre un vértice
+        if (selectedVertex != -1) {
+
+            // Actualiza la selección por grupos
+            meshManipulator->selectVertex(defaultMesh, selectedVertex, additive);
+
+            // Comienza el arrastre usando el vértice clicado (solo se usa para calcular dragStartPoint)
+            meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
+        }
+        else {
+            // Click en el vacío sin shift limpia la selección
+            if (!additive) {
+                meshManipulator->clearSelection();
+            }
+        }
+    }
+
+    if (meshManipulator->isDragging() && !Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
+        meshManipulator->endDrag();
+    }
+
+    // Arrastrar puntos
+    if (meshManipulator->isDragging()) {
+        meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
+    }
+
+    if (Input::isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input::isKeyDown(GLFW_KEY_S)) {
+        defaultMesh->saveOBJ("Assets/edited.obj");
+    }
 }
 
