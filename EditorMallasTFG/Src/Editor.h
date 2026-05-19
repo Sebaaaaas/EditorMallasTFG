@@ -23,7 +23,6 @@ public:
 	void run();
 	void renderFrame();
 
-	bool initializeGlad();
 private:
 
 	const std::string windowTitle = "Mesh editor";
@@ -44,7 +43,7 @@ private:
 
 	DebugRenderer* debugRenderer;
 
-	bool initializeGLFWAndWindow();
+	bool initializeGlad();
 
 	void manageInput();
 
