@@ -1,22 +1,41 @@
-#include "Editor.h"
+//#include "Editor.h"
+//
+//#include "checkML.h"
+//
+////int main()
+////{
+////    // Deteccion de memory leaks en Debug
+////    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+////
+////    Editor* editor = new Editor();
+////
+////    if (!editor->init()) {
+////        delete editor;
+////        return 1;
+////    }
+////
+////    editor->run();
+////
+////    delete editor;
+////    
+////    return 0;
+////}
 
+#include <QApplication>
+
+#include "MainWindow.h"
 #include "checkML.h"
 
-int main()
+int main(int argc, char* argv[])
 {
     // Deteccion de memory leaks en Debug
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-    Editor* editor = new Editor();
+    QApplication app(argc, argv);
 
-    if (!editor->init()) {
-        delete editor;
-        return 1;
-    }
+    MainWindow window;
+    window.resize(800, 600);
+    window.show();
 
-    editor->run();
-
-    delete editor;
-    
-    return 0;
+    return app.exec();
 }
