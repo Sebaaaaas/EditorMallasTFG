@@ -1,12 +1,6 @@
 #include "Editor.h"
 
-#define GLFW_INCLUDE_NONE
-
 #include <glad/gl.h>
-// GLFW include siempre despues de glad
-#include <GLFW/glfw3.h>
-
-#include <QOpenGLContext>
 
 //#include <glm.hpp> - actualmente en el .h
 #include <gtc/matrix_transform.hpp>
@@ -23,13 +17,15 @@
 #include "MeshManipulator.h"
 #include "DebugRenderer.h"
 
+#include <QOpenGLContext>
+#include <QApplication>
+
 Editor::Editor() {
     defaultMesh = nullptr;
     defaultShader = nullptr;
     debugShader = nullptr;
 
     camera = nullptr;
-    window = nullptr;
     selector = nullptr;
     meshManipulator = nullptr;
     debugRenderer = nullptr;
@@ -57,21 +53,11 @@ Editor::~Editor() {
     delete debugRenderer;
     debugRenderer = nullptr;
 
-
-    //glfwDestroyWindow(window); glfwTerminate cierra y borra todas las ventanas, en este caso es suficiente y no hace falta esto
-    //glfwTerminate(); // 777
 }
 
-static void error_callback(int error, const char* description) {
-    fprintf(stderr, "GLFW ERROR: code %i msg: %s.\n", error, description);
-}
+bool Editor::init() {
 
-bool Editor::init()
-{
-    // Deteccion de input
-    //Input::init(window); 777
-
-    //// Inicializamos glad para poder llamar a funciones de OpenGL
+    // Inicializamos glad para poder llamar a funciones de OpenGL
     if (!initializeGlad())
         return false;
 
@@ -93,27 +79,7 @@ bool Editor::init()
 	return true;
 }
 
-void Editor::run()
-{
-    while (!glfwWindowShouldClose(window)) { // 777        
-
-        //...
-
-        glfwSwapBuffers(window);
-    }
-
-}
-
-bool Editor::initializeGlad()
-{
-    /*int version_glad = gladLoadGL(glfwGetProcAddress);
-    
-    if (version_glad == 0) {
-        fprintf(stderr, "ERROR: Fallo en inicializacion de glad\n");
-        return false;
-    }
-
-    return true;*/
+bool Editor::initializeGlad() {
     QOpenGLContext* context = QOpenGLContext::currentContext();
 
     if (!context) {
@@ -121,7 +87,7 @@ bool Editor::initializeGlad()
         return false;
     }
 
-    int version_glad = gladLoadGL(
+    int version_glad = gladLoadGL( // !! revisar
         [](const char* name) -> GLADapiproc {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             if (!ctx)
@@ -142,23 +108,18 @@ void Editor::manageInput() {
 
     Input::beginFrame();
 
-    glfwPollEvents();
-
     Input::update();
 
     camera->manageInput();
 
-    if (Input::isKeyDown(GLFW_KEY_ESCAPE))
-        glfwSetWindowShouldClose(window, GLFW_TRUE); // 777
+    if (Input::isKeyDown(Qt::Key_Escape))
+        QApplication::quit();
 }
 
 void Editor::renderFrame() {
-    // "Cazamos" input para posterior uso
-    //manageInput();
 
-    // Manejo de redimensionamiento de la pantalla
-    //glfwGetWindowSize(window, &win_w, &win_h); // 777
-    //glViewport(0, 0, win_w, win_h);
+    // Control del input
+    manageInput();
 
     camera->setAspectRatio((float)win_w, (float)win_h);
 
@@ -186,72 +147,77 @@ void Editor::renderFrame() {
 
 
 
-    //// Seleccion
-    //if (!meshManipulator->isDragging()) {
+    // Seleccion
+    if (!meshManipulator->isDragging()) {
 
-    //    // !! AVISO, SE PUEDE SELECCIONAR VERTICE NO VISIBLE
-    //    selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+        // !! AVISO, SE PUEDE SELECCIONAR VERTICE NO VISIBLE
+        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
 
-    //}
+    }
 
-    //// Debug
-    //if (selectedVertex != -1) {
+    // Debug
+    if (selectedVertex != -1) {
 
-    //    debugShader->use();
+        debugShader->use();
 
-    //    glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
-    //    // Mostramos los vertices actualmente seleccionados
-    //    glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
+        // Mostramos los vertices actualmente seleccionados
+        glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
 
-    //    for (unsigned int group : meshManipulator->getSelectedGroups()) {
-    //        for (unsigned int idx : defaultMesh->vertexGroups[group])
-    //        {
-    //            glm::vec3 pos = defaultMesh->vertices[idx].Position;
-    //            debugRenderer->drawPoint(pos);
-    //        }
-    //    }
+        for (unsigned int group : meshManipulator->getSelectedGroups()) {
+            for (unsigned int idx : defaultMesh->vertexGroups[group])
+            {
+                glm::vec3 pos = defaultMesh->vertices[idx].Position;
+                debugRenderer->drawPoint(pos);
+            }
+        }
 
-    //    // Para ver vertices ocultos que estamos moviendo
-    //    glDisable(GL_DEPTH_TEST);
-    //    debugRenderer->drawPoint(pos);
-    //    glEnable(GL_DEPTH_TEST);
-    //}
+        // Para ver vertices ocultos que estamos moviendo
+        glDisable(GL_DEPTH_TEST);
+        debugRenderer->drawPoint(pos);
+        glEnable(GL_DEPTH_TEST);
+    }
 
-    //// Input
-    //if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT) && !meshManipulator->isDragging()) {
+    // Input
+    if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
 
-    //    // Shift = selección aditiva
-    //    bool additive = Input::isKeyDown(GLFW_KEY_LEFT_SHIFT);
+        // Shift = selección aditiva
+        bool additive = Input::isKeyDown(Qt::Key_Shift);
 
-    //    // Si hemos hecho click sobre un vértice
-    //    if (selectedVertex != -1) {
+        // Si hemos hecho click sobre un vértice
+        if (selectedVertex != -1) {
 
-    //        // Actualiza la selección por grupos
-    //        meshManipulator->selectVertex(defaultMesh, selectedVertex, additive);
+            // Actualiza la selección por grupos
+            meshManipulator->selectVertex(defaultMesh, selectedVertex, additive);
 
-    //        // Comienza el arrastre usando el vértice clicado (solo se usa para calcular dragStartPoint)
-    //        meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
-    //    }
-    //    else {
-    //        // Click en el vacío sin shift limpia la selección
-    //        if (!additive) {
-    //            meshManipulator->clearSelection();
-    //        }
-    //    }
-    //}
+            // Comienza el arrastre usando el vértice clicado (solo se usa para calcular dragStartPoint)
+            meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
+        }
+        else {
+            // Click en el vacío sin shift limpia la selección
+            if (!additive) {
+                meshManipulator->clearSelection();
+            }
+        }
+    }
 
-    //if (meshManipulator->isDragging() && !Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
-    //    meshManipulator->endDrag();
-    //}
+    if (meshManipulator->isDragging() && !Input::isMouseButtonDown(0)) {
+        meshManipulator->endDrag();
+    }
 
-    //// Arrastrar puntos
-    //if (meshManipulator->isDragging()) {
-    //    meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
-    //}
+    // Arrastrar puntos
+    if (meshManipulator->isDragging()) {
+        meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
+    }
 
-    //if (Input::isKeyDown(GLFW_KEY_LEFT_CONTROL) && Input::isKeyDown(GLFW_KEY_S)) {
-    //    defaultMesh->saveOBJ("Assets/edited.obj");
-    //}
+    if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyDown(Qt::Key_S)) { // !! probar si sigue funcionando
+        defaultMesh->saveOBJ("Assets/edited.obj");
+    }
+}
+
+void Editor::setWindowSize(int w, int h) {
+    win_w = w;
+    win_h = h;
 }
 
