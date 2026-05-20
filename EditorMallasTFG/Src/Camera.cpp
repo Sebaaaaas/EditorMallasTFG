@@ -1,8 +1,10 @@
 #include "Camera.h"
 
-#include <GLFW/glfw3.h>
-
 #include "Input.h"
+
+#include <GLFW/glfw3.h>
+#include <QOpenGLContext>
+
 
 Camera::Camera(float width, float height)
 {
@@ -42,9 +44,9 @@ glm::mat4 Camera::getProjectionMatrix() const {
 
 void Camera::manageInput() {
 
-    if (Input::isMouseButtonDown(GLFW_MOUSE_BUTTON_MIDDLE))
+    if (Input::isMouseButtonDown(2))
     {
-        if (Input::isKeyDown(GLFW_KEY_LEFT_SHIFT))
+        if (Input::isKeyDown(Qt::Key_Shift))
         {
             pan(Input::getMouseDeltaX(), Input::getMouseDeltaY());
         }
@@ -61,7 +63,7 @@ void Camera::manageInput() {
         zoom(scroll);
     }
 
-    if (Input::isKeyDown(GLFW_KEY_F))
+    if (Input::isKeyDown(Qt::Key_F))
     {
         reset();
     }
@@ -98,6 +100,7 @@ void Camera::reset() {
 }
 
 void Camera::orbit(float xoffset, float yoffset) {
+
     yaw += xoffset * orbitSensitivity;
     pitch += yoffset * orbitSensitivity;
 
@@ -116,6 +119,7 @@ void Camera::orbit(float xoffset, float yoffset) {
 }
 
 void Camera::pan(float xoffset, float yoffset) {
+
     glm::vec3 forward = glm::normalize(target - position);
     glm::vec3 right = glm::normalize(glm::cross(forward, up));
     glm::vec3 camUp = glm::normalize(glm::cross(right, forward));
@@ -127,6 +131,7 @@ void Camera::pan(float xoffset, float yoffset) {
 }
 
 void Camera::zoom(float amount) {
+
     // Zoom que dependa de la distancia al objeto lo hace mas "intuitivo"
     distance -= amount * (distance * zoomSensitivity);
 

@@ -1,7 +1,5 @@
 #include "Ray.h"
 
-#include <iostream>
-
 Ray::Ray()
 {
 }

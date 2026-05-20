@@ -19,22 +19,14 @@ protected:
 
 	void resizeGL(int w, int h) override;
 
+	// Deteccion de input por la ventana, que enviaremos a nuestra clase "Input"
+	void keyPressEvent(QKeyEvent* event) override;
+	void keyReleaseEvent(QKeyEvent* event) override;
+	void mousePressEvent(QMouseEvent* event) override;
+	void mouseReleaseEvent(QMouseEvent* event) override;
+	void mouseMoveEvent(QMouseEvent* event) override;
+	void wheelEvent(QWheelEvent* event) override;
+
 private:
 	Editor* editor;
 };
-
-////int main()
-////{
-////    Editor* editor = new Editor();
-////
-////    if (!editor->init()) {
-////        delete editor;
-////        return 1;
-////    }
-////
-////    editor->run();
-////
-////    delete editor;
-////    
-////    return 0;
-////}

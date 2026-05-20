@@ -1,15 +1,10 @@
 #pragma once
 
-//#include <GLFW/glfw3.h>
-struct GLFWwindow;
-
-// https://www.glfw.org/docs/latest/input_guide.html
+#include <unordered_set>
 
 class Input
 {
 public:
-
-    static void init(GLFWwindow* window);
 
     static bool isKeyDown(int key);
     static bool isMouseButtonDown(int button);
@@ -26,9 +21,15 @@ public:
     static void beginFrame();
     static void update();
 
+    static void setKey(int key, bool pressed);
+    static void setMouseButton(int button, bool pressed);
+    static void setMousePosition(double x, double y);
+    static void addScrollDelta(double delta);
+
 private:
 
-    static bool keys[1024];
+    static std::unordered_set<int> pressedKeys;
+
     static bool mouseButtons[8];
 
     static double mouseX;
@@ -42,9 +43,4 @@ private:
     static float deltaY;
 
     static double scrollDelta;
-
-    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    static void cursorCallback(GLFWwindow* window, double xpos, double ypos);
-    static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 };

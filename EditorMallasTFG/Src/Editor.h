@@ -3,8 +3,6 @@
 #include <string>
 #include <glm.hpp>
 
-struct GLFWwindow;
-
 class MeshManipulator;
 class Selector;
 class Camera;
@@ -20,15 +18,13 @@ public:
 	~Editor();
 
 	bool init();
-	void run();
 	void renderFrame();
+	void setWindowSize(int w, int h);
 
 private:
 
-	const std::string windowTitle = "Mesh editor";
-	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles
-	
-	GLFWwindow* window;
+	const std::string windowTitle = "Mesh editor"; // !! CREO QUE NO AFECTA YA
+	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT
 
 	Camera* camera;
 
