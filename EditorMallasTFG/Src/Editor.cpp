@@ -66,7 +66,8 @@ bool Editor::init() {
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    defaultMesh = new Mesh("Assets/modelo.obj");
+    defaultMesh = nullptr;
+    //defaultMesh = new Mesh("Assets/modelo.obj"); 777
 
     // Creacion de shader
     defaultShader = new Shader("Assets/mainShader.vert", "Assets/mainShader.frag");
@@ -116,6 +117,19 @@ void Editor::setWindowSize(int w, int h) {
     win_h = h;
 }
 
+bool Editor::loadMesh(const std::string& path) // !! nunca devuelve false, se supone que falla limpiamente en la constructora?
+{
+    Mesh* newMesh = new Mesh(path);
+
+    delete defaultMesh;
+    defaultMesh = newMesh;
+
+    selectedVertex = -1;
+    meshManipulator->clearSelection();
+
+    return true;
+}
+
 void Editor::input() {
 
     Input::beginFrame();
@@ -123,6 +137,9 @@ void Editor::input() {
 }
 
 void Editor::logic() {
+
+    if (!defaultMesh)
+        return;
 
     if (Input::isKeyDown(Qt::Key_Escape))
         QApplication::quit();
@@ -174,6 +191,7 @@ void Editor::render() {
 
     defaultShader->use();
 
+    // !! posiblemente se pueda hacer de manera mas eficiente en lugar de cada frame?
     glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
     glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
@@ -182,16 +200,18 @@ void Editor::render() {
 
     glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
 
+    if (!defaultMesh)
+        return;
+
     defaultMesh->draw();
+
+
 
     // Debug
     if (selectedVertex != -1) {
         debugShader->use();
 
-        glUniformMatrix4fv(
-            glGetUniformLocation(debugShader->getID(), "MVP"),
-            1, GL_FALSE, glm::value_ptr(MVP)
-        );
+        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP)); // !! creo que no hara falta nunca?
 
         glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
 

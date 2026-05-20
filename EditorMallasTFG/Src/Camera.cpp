@@ -4,6 +4,7 @@
 
 #include <GLFW/glfw3.h>
 #include <QOpenGLContext>
+#include <iostream>
 
 
 Camera::Camera(float width, float height)
@@ -58,8 +59,7 @@ void Camera::manageInput() {
 
     float scroll = Input::getScrollDelta();
 
-    if (scroll != 0.0f)
-    {
+    if (scroll != 0.0f) {
         zoom(scroll);
     }
 

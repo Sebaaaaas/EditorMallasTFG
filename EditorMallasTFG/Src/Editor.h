@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm.hpp>
+#include <string>
 
 class MeshManipulator;
 class Selector;
@@ -20,7 +21,7 @@ public:
 	void run();
 
 	void setWindowSize(int w, int h);
-
+	bool loadMesh(const std::string& path);
 private:
 
 	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT

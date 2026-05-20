@@ -22,6 +22,20 @@ Canvas::~Canvas() {
 	editor = nullptr;
 }
 
+bool Canvas::loadMesh(const QString& fileName)
+{
+    if (!editor)
+        return false;
+
+    makeCurrent();   // Necesitamos esto para que la malla se renderice
+
+    bool loaded = editor->loadMesh(fileName.toStdString());
+
+    doneCurrent();   // Soltamos el contexto cogido con makeCurrent
+
+    return loaded;
+}
+
 void Canvas::initializeGL() { // !! revisar posibles leaks
 
 	initializeOpenGLFunctions();
@@ -29,6 +43,7 @@ void Canvas::initializeGL() { // !! revisar posibles leaks
     editor = new Editor();
 
     if (!editor->init()) {
+
         delete editor;
 		editor = nullptr;
 
@@ -43,9 +58,6 @@ void Canvas::paintGL() {
 
 	if (!editor)
 		return;
-
-	/*Input::beginFrame();
-	Input::update();*/
 
 	editor->run();
 
@@ -70,8 +82,8 @@ void Canvas::keyReleaseEvent(QKeyEvent* event)
     Input::setKey(event->key(), false);
 }
 
-void Canvas::mousePressEvent(QMouseEvent* event)
-{
+void Canvas::mousePressEvent(QMouseEvent* event) {
+
     int button = -1;
 
     if (event->button() == Qt::LeftButton)  button = 0;
@@ -82,8 +94,8 @@ void Canvas::mousePressEvent(QMouseEvent* event)
         Input::setMouseButton(button, true);
 }
 
-void Canvas::mouseReleaseEvent(QMouseEvent* event)
-{
+void Canvas::mouseReleaseEvent(QMouseEvent* event) {
+
     int button = -1;
 
     if (event->button() == Qt::LeftButton)  button = 0;
@@ -94,13 +106,11 @@ void Canvas::mouseReleaseEvent(QMouseEvent* event)
         Input::setMouseButton(button, false);
 }
 
-void Canvas::mouseMoveEvent(QMouseEvent* event)
-{
-    Input::setMousePosition(event->position().x(),
-        event->position().y());
+void Canvas::mouseMoveEvent(QMouseEvent* event) {
+    Input::setMousePosition(event->position().x(), event->position().y());
 }
 
-void Canvas::wheelEvent(QWheelEvent* event) // !! revisar
+void Canvas::wheelEvent(QWheelEvent* event) // !! revisar 
 {
     Input::addScrollDelta(event->angleDelta().y() / 120.0);
 }
