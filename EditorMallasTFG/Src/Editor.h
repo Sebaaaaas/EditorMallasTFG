@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <glm.hpp>
 
 class MeshManipulator;
@@ -18,12 +17,12 @@ public:
 	~Editor();
 
 	bool init();
-	void renderFrame();
+	void run();
+
 	void setWindowSize(int w, int h);
 
 private:
 
-	const std::string windowTitle = "Mesh editor"; // !! CREO QUE NO AFECTA YA
 	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT
 
 	Camera* camera;
@@ -39,14 +38,13 @@ private:
 
 	DebugRenderer* debugRenderer;
 
-	bool initializeGlad();
-
-	void manageInput();
-
+	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
 	// Mover vertice !! deberia estar aqui esto?
 	int selectedVertex = -1;
 
-
+	void input();
+	void logic();
+	void render();
 };
 

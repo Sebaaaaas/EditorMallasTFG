@@ -47,11 +47,13 @@ void Canvas::paintGL() {
 	/*Input::beginFrame();
 	Input::update();*/
 
-	editor->renderFrame();
+	editor->run();
+
+    // Funcion de Qt
 	update();
 }
 
-void Canvas::resizeGL(int w, int h) { // !! llamar a Editor para que lo haga?
+void Canvas::resizeGL(int w, int h) {
 	glViewport(0, 0, w, h);
 
     if (editor)
