@@ -17,7 +17,6 @@ public:
 
     static double getScrollDelta();
 
-    // Para resetar variables al comienzo del frame, debe llamarse antes que glfwPollEvents();
     static void beginFrame();
     static void update();
 

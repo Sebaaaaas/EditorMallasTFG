@@ -12,6 +12,8 @@ public:
 	Canvas(QWidget* parent = nullptr);
 	~Canvas();
 
+	bool loadMesh(const QString& fileName);
+
 protected:
 	void initializeGL() override;
 
