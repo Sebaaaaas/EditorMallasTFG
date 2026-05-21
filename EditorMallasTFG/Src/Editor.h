@@ -44,7 +44,6 @@ private:
 	// Mover vertice !! deberia estar aqui esto?
 	int selectedVertex = -1;
 
-	void input();
 	void logic();
 	void render();
 };

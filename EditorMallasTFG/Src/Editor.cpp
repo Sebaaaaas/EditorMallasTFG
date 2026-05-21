@@ -66,8 +66,8 @@ bool Editor::init() {
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    defaultMesh = nullptr;
-    //defaultMesh = new Mesh("Assets/modelo.obj"); 777
+    //defaultMesh = nullptr; // !! cuando queramos entregar, poner a nullptr
+    defaultMesh = new Mesh("Assets/cubo.obj");
 
     // Creacion de shader
     defaultShader = new Shader("Assets/mainShader.vert", "Assets/mainShader.frag");
@@ -107,9 +107,13 @@ bool Editor::initializeGlad() {
 
 void Editor::run() {
 
-    input();
+    Input::update();
+
     logic();
     render();
+
+    // Debemos llamarlo al final para resetear valores de delta
+    Input::endFrame();
 }
 
 void Editor::setWindowSize(int w, int h) {
@@ -128,12 +132,6 @@ bool Editor::loadMesh(const std::string& path) // !! nunca devuelve false, se su
     meshManipulator->clearSelection();
 
     return true;
-}
-
-void Editor::input() {
-
-    Input::beginFrame();
-    Input::update();
 }
 
 void Editor::logic() {

@@ -17,7 +17,7 @@ public:
 
     static double getScrollDelta();
 
-    static void beginFrame();
+    static void endFrame();
     static void update();
 
     static void setKey(int key, bool pressed);
