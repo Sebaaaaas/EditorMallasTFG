@@ -31,7 +31,7 @@ void DebugRenderer::drawPoint(const glm::vec3& pos)
         pos.x, pos.y, pos.z
     };
 
-    glPointSize(25.0f);
+    glPointSize(5.0f);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
