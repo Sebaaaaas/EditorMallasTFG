@@ -25,7 +25,7 @@ bool MainWindow::openFile()
 	QString fileName = QFileDialog::getOpenFileName(
 		this,				// padre
 		"Abrir archivo",	// título del cuadro
-		"",					// directorio inicial
+		"./Assets/",					// directorio inicial
 		"Archivos OBJ (*.obj);;Todos los archivos (*)" // filtros
 	);
 
