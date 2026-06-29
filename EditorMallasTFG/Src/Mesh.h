@@ -43,6 +43,11 @@ struct std::hash<Vertex>
     }
 };
 
+struct Edge {
+    unsigned int v0;
+    unsigned int v1;
+};
+
 class Mesh
 {
 private:
@@ -54,6 +59,9 @@ private:
 
     void setupMesh();
 
+    // Despues de cargar la malla, usamos esta funcion para crear todos los pares de vertices que conforman lados
+    void generateEdges(); // !! mejorable
+
 public:
     std::vector<Vertex> vertices; // Vertices de renderizado, no total de vertices(en un cubo deben salir 24, ya que al no repetir, quedamos con 4 por cara, que conservan normales)
     std::vector<unsigned int> indices;
@@ -64,6 +72,9 @@ public:
     std::vector<unsigned int> vertexToGroup;             // Mapeado de vertice a su grupo
 
     unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
+
+    std::vector<Edge> edges;
+
 
     Mesh(std::string path);
     ~Mesh();

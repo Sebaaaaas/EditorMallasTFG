@@ -19,6 +19,7 @@
 
 #include <QOpenGLContext>
 #include <QApplication>
+#include <iostream>
 
 Editor::Editor() {
     defaultMesh = nullptr;
@@ -128,7 +129,7 @@ bool Editor::loadMesh(const std::string& path) // !! nunca devuelve false, se su
     delete defaultMesh;
     defaultMesh = newMesh;
 
-    selectedVertex = -1;
+    selectedElement = -1;
     meshManipulator->clearSelection();
 
     return true;
@@ -144,18 +145,32 @@ void Editor::logic() {
 
     camera->manageInput();
 
-    if (!meshManipulator->isDragging()) {
+    selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
+    
+    if (Input::isKeyDown(Qt::Key_1)) // !! crear un isKeyPressed/Released para no activar cada frame?
+        selector->setSelectionMode(SelectionMode::Vertex);
+
+    if (Input::isKeyDown(Qt::Key_2))
+        selector->setSelectionMode(SelectionMode::Edge);
+
+    if (Input::isKeyDown(Qt::Key_3))
+        selector->setSelectionMode(SelectionMode::Face);
+
+    selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! revisar selectedElement
+    /*if (!meshManipulator->isDragging()) {
         selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
     }
+
+    selectedEdge = selector->pickEdge(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);*/
 
     // Click izquierdo
     if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
         bool additive = Input::isKeyDown(Qt::Key_Shift);
 
-        if (selectedVertex != -1)
+        if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex)
         {
-            meshManipulator->selectVertex(defaultMesh, selectedVertex, additive);
-            meshManipulator->beginDrag(defaultMesh, selectedVertex, *camera);
+            meshManipulator->selectVertex(defaultMesh, selectedElement, additive);
+            meshManipulator->beginDrag(defaultMesh, selectedElement, *camera);
         }
         else if (!additive)
         {
@@ -206,12 +221,12 @@ void Editor::render() {
 
 
     // Debug
-    if (selectedVertex != -1) {
+    if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
         debugShader->use();
 
-        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP)); // !! creo que no hara falta nunca?
+        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
-        glm::vec3 pos = defaultMesh->vertices[selectedVertex].Position;
+        glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
 
         for (unsigned int group : meshManipulator->getSelectedGroups())
         {
@@ -223,6 +238,56 @@ void Editor::render() {
 
         glDisable(GL_DEPTH_TEST);
         debugRenderer->drawPoint(pos);
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
+        debugShader->use();
+        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+
+
+        std::cout << selectedElement << std::endl;
+
+        const Edge& edge = defaultMesh->edges[selectedElement];
+
+        glm::vec3 a = defaultMesh->vertices[edge.v0].Position;
+        glm::vec3 b = defaultMesh->vertices[edge.v1].Position;
+
+        glDisable(GL_DEPTH_TEST);
+        debugRenderer->drawLine(a, b);
+        glEnable(GL_DEPTH_TEST);
+
+    }
+
+    if (selectedElement != -1 &&
+        selector->getSelectionMode() == SelectionMode::Face)
+    {
+        debugShader->use();
+
+        glUniformMatrix4fv(
+            glGetUniformLocation(debugShader->getID(), "MVP"),
+            1,
+            GL_FALSE,
+            glm::value_ptr(MVP));
+
+        int base = selectedElement * 3;
+
+        glm::vec3 a = defaultMesh->vertices[
+            defaultMesh->indices[base]
+        ].Position;
+
+        glm::vec3 b = defaultMesh->vertices[
+            defaultMesh->indices[base + 1]
+        ].Position;
+
+        glm::vec3 c = defaultMesh->vertices[
+            defaultMesh->indices[base + 2]
+        ].Position;
+
+        glDisable(GL_DEPTH_TEST);
+
+        debugRenderer->drawTriangle(a, b, c);
+
         glEnable(GL_DEPTH_TEST);
     }
 }

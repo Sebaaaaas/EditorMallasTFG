@@ -110,7 +110,7 @@ void Canvas::mouseMoveEvent(QMouseEvent* event) {
     Input::setMousePosition(event->position().x(), event->position().y());
 }
 
-void Canvas::wheelEvent(QWheelEvent* event) // !! revisar 
+void Canvas::wheelEvent(QWheelEvent* event)
 {
-    Input::addScrollDelta(event->angleDelta().y() / 120.0);
+    Input::addScrollDelta(event->angleDelta().y() / 120.0); // Dividido entre 120 porque el evento devuelve ese valor cuando haces scroll
 }
