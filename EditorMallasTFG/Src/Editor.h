@@ -3,8 +3,9 @@
 #include <glm.hpp>
 #include <string>
 
+#include "Selector.h"
+
 class MeshManipulator;
-class Selector;
 class Camera;
 class Shader;
 class Mesh;
@@ -22,6 +23,8 @@ public:
 
 	void setWindowSize(int w, int h);
 	bool loadMesh(const std::string& path);
+
+	void setSelectionMode(SelectionMode mode);
 private:
 
 	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT

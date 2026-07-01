@@ -7,7 +7,7 @@ Selector::Selector() {
 
     currentSelectionMode = SelectionMode::Vertex;
 
-    minSelectDistancePixels = 10.0f;
+    minSelectDistancePixels = 10.0f; // !! esto es feo?
     minEdgeDistancePixels = 10.0f;
 }
 
@@ -45,7 +45,7 @@ void Selector::setSelectionMode(SelectionMode newMode) {
     currentSelectionMode = newMode;
 }
 
-SelectionMode Selector::getSelectionMode() const{
+SelectionMode Selector::getSelectionMode() const {
     return currentSelectionMode;
 }
 
@@ -137,7 +137,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
     return selectedEdge;
 }
 
-int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
+int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! revisar porque creo que falla
 
     for (int i = 0; i < mesh.faces.size(); ++i) {
 
