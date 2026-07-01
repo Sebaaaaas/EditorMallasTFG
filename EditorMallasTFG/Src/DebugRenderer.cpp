@@ -85,7 +85,7 @@ void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const g
         sizeof(vertices),
         vertices);
 
-    glDrawArrays(GL_LINE_LOOP, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
