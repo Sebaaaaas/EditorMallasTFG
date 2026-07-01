@@ -9,13 +9,13 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "MeshManipulator.h"
+#include "DebugRenderer.h"
 #include "Selector.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "Input.h"
 #include "Mesh.h"
-#include "MeshManipulator.h"
-#include "DebugRenderer.h"
 
 #include <QOpenGLContext>
 #include <QApplication>
@@ -135,6 +135,10 @@ bool Editor::loadMesh(const std::string& path) // !! nunca devuelve false, se su
     return true;
 }
 
+void Editor::setSelectionMode(SelectionMode mode) {
+    selector->setSelectionMode(mode);
+}
+
 void Editor::logic() {
 
     if (!defaultMesh)
@@ -146,22 +150,8 @@ void Editor::logic() {
     camera->manageInput();
 
     selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
-    
-    if (Input::isKeyDown(Qt::Key_1)) // !! crear un isKeyPressed/Released para no activar cada frame?
-        selector->setSelectionMode(SelectionMode::Vertex);
-
-    if (Input::isKeyDown(Qt::Key_2))
-        selector->setSelectionMode(SelectionMode::Edge);
-
-    if (Input::isKeyDown(Qt::Key_3))
-        selector->setSelectionMode(SelectionMode::Face);
 
     selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! revisar selectedElement
-    /*if (!meshManipulator->isDragging()) {
-        selectedVertex = selector->pickVertex(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
-    }
-
-    selectedEdge = selector->pickEdge(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);*/
 
     // Click izquierdo
     if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {

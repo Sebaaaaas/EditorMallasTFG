@@ -14,12 +14,15 @@ public:
 
 	bool loadMesh(const QString& fileName);
 
+	Editor* getEditor() const;
+
 protected:
 	void initializeGL() override;
 
 	void paintGL() override;
 
 	void resizeGL(int w, int h) override;
+
 
 	// Deteccion de input por la ventana, que enviaremos a nuestra clase "Input"
 	void keyPressEvent(QKeyEvent* event) override;

@@ -36,6 +36,10 @@ bool Canvas::loadMesh(const QString& fileName)
     return loaded;
 }
 
+Editor* Canvas::getEditor() const {
+    return editor;
+}
+
 void Canvas::initializeGL() { // !! revisar posibles leaks
 
 	initializeOpenGLFunctions();
