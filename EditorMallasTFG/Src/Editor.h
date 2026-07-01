@@ -41,10 +41,10 @@ private:
 
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
-	// Mover vertice !! deberia estar aqui esto?
+	// Para mover vertices, segmentos o caras  !! deberia estar aqui esto?
 	/*int selectedVertex = -1;
 	int selectedEdge = -1;*/
-	int selectedElement = -1;
+	unsigned int selectedElement = -1;
 
 	void logic();
 	void render();

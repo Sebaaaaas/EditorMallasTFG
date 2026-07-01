@@ -48,6 +48,12 @@ struct Edge {
     unsigned int v1;
 };
 
+struct Face {
+    unsigned int v0;
+    unsigned int v1;
+    unsigned int v2;
+};
+
 class Mesh
 {
 private:
@@ -62,6 +68,8 @@ private:
     // Despues de cargar la malla, usamos esta funcion para crear todos los pares de vertices que conforman lados
     void generateEdges(); // !! mejorable
 
+    void generateFaces();
+
 public:
     std::vector<Vertex> vertices; // Vertices de renderizado, no total de vertices(en un cubo deben salir 24, ya que al no repetir, quedamos con 4 por cara, que conservan normales)
     std::vector<unsigned int> indices;
@@ -74,6 +82,8 @@ public:
     unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
 
     std::vector<Edge> edges;
+    
+    std::vector<Face> faces;
 
 
     Mesh(std::string path);

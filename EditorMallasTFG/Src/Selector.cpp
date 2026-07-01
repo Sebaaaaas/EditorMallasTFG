@@ -139,19 +139,16 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
 
 int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
 
-    for (size_t i = 0; i < mesh.indices.size(); i += 3)
-    {
-        glm::vec2 a =
-            verticesProjectedToScreen[mesh.indices[i]];
+    for (int i = 0; i < mesh.faces.size(); ++i) {
 
-        glm::vec2 b =
-            verticesProjectedToScreen[mesh.indices[i + 1]];
+        const Face& face = mesh.faces[i];
 
-        glm::vec2 c =
-            verticesProjectedToScreen[mesh.indices[i + 2]];
+        glm::vec2 a = verticesProjectedToScreen[face.v0];
+        glm::vec2 b = verticesProjectedToScreen[face.v1];
+        glm::vec2 c = verticesProjectedToScreen[face.v2];
 
         if (pointInTriangle(glm::vec2(mouseX, mouseY), a, b, c))
-            return i / 3;
+            return i;
     }
 
     return -1;

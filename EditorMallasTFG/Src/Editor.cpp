@@ -167,13 +167,34 @@ void Editor::logic() {
     if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
         bool additive = Input::isKeyDown(Qt::Key_Shift);
 
-        if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex)
-        {
+        if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
             meshManipulator->selectVertex(defaultMesh, selectedElement, additive);
-            meshManipulator->beginDrag(defaultMesh, selectedElement, *camera);
+            std::vector<unsigned int> v = { selectedElement };
+            meshManipulator->beginDrag(defaultMesh, v, *camera);
         }
-        else if (!additive)
-        {
+        else if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
+            const Edge& edge = defaultMesh->edges[selectedElement];
+
+            meshManipulator->selectVertex(defaultMesh, edge.v0, additive);
+            meshManipulator->selectVertex(defaultMesh, edge.v1, true); // Segundo true para que no se quite el primero
+
+            std::vector<unsigned int> v = { edge.v0, edge.v1 };
+            meshManipulator->beginDrag(defaultMesh, v, *camera);
+
+        }
+        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face){
+            
+            const Face& face = defaultMesh->faces[selectedElement];
+
+            meshManipulator->selectVertex(defaultMesh, face.v0, additive);
+            meshManipulator->selectVertex(defaultMesh, face.v1, true);
+            meshManipulator->selectVertex(defaultMesh, face.v2, true);
+
+            std::vector<unsigned int> v = { face.v0, face.v1, face.v2 };
+            meshManipulator->beginDrag(defaultMesh, v, *camera);
+
+        }
+        else if (!additive) {
             meshManipulator->clearSelection();
         }
     }
@@ -245,9 +266,6 @@ void Editor::render() {
         debugShader->use();
         glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
-
-        std::cout << selectedElement << std::endl;
-
         const Edge& edge = defaultMesh->edges[selectedElement];
 
         glm::vec3 a = defaultMesh->vertices[edge.v0].Position;
@@ -259,30 +277,17 @@ void Editor::render() {
 
     }
 
-    if (selectedElement != -1 &&
-        selector->getSelectionMode() == SelectionMode::Face)
-    {
+    if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face) {
+
         debugShader->use();
 
-        glUniformMatrix4fv(
-            glGetUniformLocation(debugShader->getID(), "MVP"),
-            1,
-            GL_FALSE,
-            glm::value_ptr(MVP));
+        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
         int base = selectedElement * 3;
 
-        glm::vec3 a = defaultMesh->vertices[
-            defaultMesh->indices[base]
-        ].Position;
-
-        glm::vec3 b = defaultMesh->vertices[
-            defaultMesh->indices[base + 1]
-        ].Position;
-
-        glm::vec3 c = defaultMesh->vertices[
-            defaultMesh->indices[base + 2]
-        ].Position;
+        glm::vec3 a = defaultMesh->vertices[defaultMesh->faces[selectedElement].v0].Position;
+        glm::vec3 b = defaultMesh->vertices[defaultMesh->faces[selectedElement].v1].Position;
+        glm::vec3 c = defaultMesh->vertices[defaultMesh->faces[selectedElement].v2].Position;
 
         glDisable(GL_DEPTH_TEST);
 

@@ -13,6 +13,7 @@ Mesh::Mesh(std::string path)
     loadOBJ(path, vertices, indices);
 
     generateEdges();
+    generateFaces();
 
     setupMesh();
 }
@@ -272,4 +273,21 @@ void Mesh::generateEdges() {
 
     std::cout << "Edges: " << edges.size() << std::endl;
 
+}
+
+void Mesh::generateFaces()
+{
+    faces.clear();
+
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        Face face;
+
+        face.v0 = indices[i];
+        face.v1 = indices[i + 1];
+        face.v2 = indices[i + 2];
+
+        faces.push_back(face);
+    }
+
+    std::cout << "Faces: " << faces.size() << std::endl;
 }

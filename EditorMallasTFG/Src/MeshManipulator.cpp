@@ -16,18 +16,26 @@ MeshManipulator::~MeshManipulator() {
     ray = nullptr;
 }
 
-void MeshManipulator::beginDrag(const Mesh* mesh, int vertexIndex, const Camera& camera) {
+void MeshManipulator::beginDrag(const Mesh* mesh, const std::vector<unsigned int>& vertexIndex, const Camera& camera) {
 
-    if (vertexIndex == -1)
+    if (vertexIndex.empty())
         return;
 
     dragging = true;
 
-    const auto& v = mesh->vertices[vertexIndex];
+    glm::vec3 averageVertexPosition = mesh->vertices[vertexIndex[0]].Position;
 
-    dragStartPoint = v.Position;
+    for(int i = 1; i < vertexIndex.size(); ++i)
+        averageVertexPosition += mesh->vertices[vertexIndex[i]].Position;
 
-    dragPlaneNormal = camera.getPosition() - v.Position;
+    averageVertexPosition /= vertexIndex.size();
+    //const auto& v = mesh->vertices[vertexIndex];
+
+    //dragStartPoint = v.Position;
+    dragStartPoint = averageVertexPosition;
+
+    //dragPlaneNormal = camera.getPosition() - v.Position;
+    dragPlaneNormal = camera.getPosition() - dragStartPoint;
 }
 
 void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera) {

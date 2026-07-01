@@ -15,7 +15,7 @@ public:
     MeshManipulator();
     ~MeshManipulator();
 
-    void beginDrag(const Mesh* mesh, int vertexIndex, const Camera& camera);
+    void beginDrag(const Mesh* mesh, const std::vector<unsigned int>& vertexIndex, const Camera& camera);
     void updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
     void endDrag();
 
