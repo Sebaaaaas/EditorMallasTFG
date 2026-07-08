@@ -25,6 +25,11 @@ public:
 	bool loadMesh(const std::string& path);
 
 	void setSelectionMode(SelectionMode mode);
+
+	bool hasSelection() const;
+
+	glm::vec3 getSelectionPosition() const;
+
 private:
 
 	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT

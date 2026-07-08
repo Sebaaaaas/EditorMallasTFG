@@ -3,6 +3,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Ray.h"
+#include "Editor.h"
 
 MeshManipulator::MeshManipulator() {
     dragPlaneNormal = glm::vec3(0.f, 0.f, 0.f);
