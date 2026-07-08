@@ -1,9 +1,11 @@
 #include "MainWindow.h"
 
-#include <QFileDialog>
 #include <qmenubar.h>
-#include <QToolBar>
 #include <QActionGroup>
+#include <qdockwidget.h>
+#include <QFileDialog>
+#include <QFormLayout>
+#include <QToolBar>
 
 #include "Canvas.h"
 #include "Editor.h"
@@ -21,7 +23,12 @@ MainWindow::MainWindow() {
 
 	QObject::connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
 
+	// Seleccion vertice/segmento/cara
 	setupSelectionMode();
+
+	// Caja con valores xyz de posicion... de objeto seleccionado
+	setupXYZPanel();
+
 }
 
 bool MainWindow::openFile()
@@ -75,4 +82,41 @@ void MainWindow::setupSelectionMode() {
 	connect(faceAction, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setSelectionMode(SelectionMode::Face);
 		});
+}
+
+void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORMA DE REABRIRLO
+
+	QDockWidget* dock = new QDockWidget("Transform", this);
+
+	QWidget* panel = new QWidget();
+	QFormLayout* layout = new QFormLayout(panel);
+
+	xSpin = new QDoubleSpinBox();
+	ySpin = new QDoubleSpinBox();
+	zSpin = new QDoubleSpinBox();
+
+	xSpin->setRange(-99999.99, 99999.99);
+	ySpin->setRange(-99999.99, 99999.99);
+	zSpin->setRange(-99999.99, 99999.99);
+
+	xSpin->setDecimals(2);
+	ySpin->setDecimals(2);
+	zSpin->setDecimals(2);
+
+	layout->addRow("X", xSpin);
+	layout->addRow("Y", ySpin);
+	layout->addRow("Z", zSpin);
+
+	dock->setWidget(panel);
+
+	addDockWidget(Qt::RightDockWidgetArea, dock);
+}
+
+void MainWindow::updateXYZPanel() {
+
+	glm::vec3 p = canvas->getEditor()->getSelectionPosition();
+
+	xSpin->setValue(p.x);
+	ySpin->setValue(p.y);
+	zSpin->setValue(p.z);
 }

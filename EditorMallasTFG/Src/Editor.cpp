@@ -139,6 +139,41 @@ void Editor::setSelectionMode(SelectionMode mode) {
     selector->setSelectionMode(mode);
 }
 
+bool Editor::hasSelection() const {
+    return false;
+}
+
+glm::vec3 Editor::getSelectionPosition() const {
+
+    switch (selector->getSelectionMode()) {
+
+        case SelectionMode::Vertex:
+            return defaultMesh->vertices[selectedElement].Position;
+
+        case SelectionMode::Edge:
+        {
+            const Edge& e = defaultMesh->edges[selectedElement];
+
+            return
+                (defaultMesh->vertices[e.v0].Position +
+                    defaultMesh->vertices[e.v1].Position) * 0.5f;
+        }
+
+        case SelectionMode::Face:
+        {
+            unsigned int i = selectedElement * 3;
+
+            glm::vec3 a = defaultMesh->vertices[defaultMesh->indices[i]].Position;
+            glm::vec3 b = defaultMesh->vertices[defaultMesh->indices[i + 1]].Position;
+            glm::vec3 c = defaultMesh->vertices[defaultMesh->indices[i + 2]].Position;
+
+            return (a + b + c) / 3.0f;
+        }
+    }
+
+    return glm::vec3(0);
+}
+
 void Editor::logic() {
 
     if (!defaultMesh)
