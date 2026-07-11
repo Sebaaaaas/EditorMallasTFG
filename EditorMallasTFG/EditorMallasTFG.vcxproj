@@ -27,17 +27,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Camera.h" />
-    <ClInclude Include="Src\Canvas.h" />
+    <QtMoc Include="Src\Canvas.h" />
     <ClInclude Include="Src\checkML.h" />
     <ClInclude Include="Src\DebugRenderer.h" />
     <ClInclude Include="Src\Editor.h" />
     <ClInclude Include="Src\Input.h" />
     <ClInclude Include="Src\MainWindow.h" />
     <ClInclude Include="Src\Mesh.h" />
-    <ClInclude Include="Src\MeshManipulator.h" />
+    <QtMoc Include="Src\MeshManipulator.h" />
     <ClInclude Include="Src\Ray.h" />
     <ClInclude Include="Src\Selector.h" />
     <ClInclude Include="Src\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -46,14 +46,16 @@ void Canvas::initializeGL() { // !! revisar posibles leaks
 
     editor = new Editor();
 
-    if (!editor->init()) {
-
+    if (editor->init()) {
+        emit editorReady(editor);
+    }
+    else {
         delete editor;
-		editor = nullptr;
+        editor = nullptr;
 
-		std::cout << "Error inicializando el editor" << std::endl;
+        std::cout << "Error inicializando el editor" << std::endl;
 
-		return;
+        return;
     }
 
 }

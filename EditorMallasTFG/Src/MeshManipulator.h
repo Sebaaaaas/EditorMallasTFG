@@ -3,17 +3,23 @@
 #include <glm.hpp>
 #include <unordered_set>
 
+#include <QObject>
+
 class Mesh;
 class Camera;
 class Ray;
 
 // Dada una malla e input de raton, permite editar la malla
-class MeshManipulator
-{
+class MeshManipulator : public QObject {
+
+    Q_OBJECT // usar public: despues de esto para declarar las variables publicas, necesario para detectar que es un QObject
+
 public:
 
     MeshManipulator();
     ~MeshManipulator();
+
+    void setEditingMesh(Mesh* mesh);
 
     void beginDrag(const Mesh* mesh, const std::vector<unsigned int>& vertexIndex, const Camera& camera);
     void updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
@@ -28,6 +34,12 @@ public:
     // Devuelve un conjunto con los indices de los vertices que han sido seleccionados
     std::unordered_set<unsigned int> getSelectedGroups();
 
+
+public slots: // Permite recibir señales de QWidgets cuando cambian sus valores https://doc.qt.io/qt-6/signalsandslots.html
+    void setSelectedXPosition(double value);
+    void setSelectedYPosition(double value);
+    void setSelectedZPosition(double value);
+
 private:
     bool dragging = false;
 
@@ -38,4 +50,5 @@ private:
 
     Ray* ray;
 
+    Mesh* currentMesh;
 };

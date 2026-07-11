@@ -77,9 +77,6 @@
     <ClInclude Include="Src\Selector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\MeshManipulator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\DebugRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -89,8 +86,16 @@
     <ClInclude Include="Src\MainWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Canvas.h">
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="Src\MeshManipulator.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
+    </QtMoc>
+    <QtMoc Include="Src\Canvas.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>
