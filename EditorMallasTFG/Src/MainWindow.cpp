@@ -9,6 +9,7 @@
 
 #include "Canvas.h"
 #include "Editor.h"
+#include "MeshManipulator.h"
 
 MainWindow::MainWindow() {
 	
@@ -23,12 +24,15 @@ MainWindow::MainWindow() {
 
 	QObject::connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
 
+
 	// Seleccion vertice/segmento/cara
 	setupSelectionMode();
 
 	// Caja con valores xyz de posicion... de objeto seleccionado
 	setupXYZPanel();
 
+	// Una vez el editor este cargado, llamaremos a onEditorReady para conectar elementos de la IU a funciones del editor
+	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
 }
 
 bool MainWindow::openFile()
@@ -110,6 +114,7 @@ void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORM
 	dock->setWidget(panel);
 
 	addDockWidget(Qt::RightDockWidgetArea, dock);
+	
 }
 
 void MainWindow::updateXYZPanel() {
@@ -119,4 +124,23 @@ void MainWindow::updateXYZPanel() {
 	xSpin->setValue(p.x);
 	ySpin->setValue(p.y);
 	zSpin->setValue(p.z);
+}
+
+void MainWindow::onEditorReady(Editor* editor) {
+
+	MeshManipulator* manipulator = editor->getMeshManipulator();
+
+	connect(xSpin, &QDoubleSpinBox::valueChanged,
+		manipulator, &MeshManipulator::setSelectedXPosition);
+	
+	connect(ySpin, &QDoubleSpinBox::valueChanged,
+		manipulator, &MeshManipulator::setSelectedYPosition);
+	
+	connect(zSpin, &QDoubleSpinBox::valueChanged,
+		manipulator, &MeshManipulator::setSelectedZPosition);
+
+	/*connect(manipulator,
+		&MeshManipulator::setSelectedXPosition,
+		this,
+		&MainWindow::updateXYZPanel);*/
 }

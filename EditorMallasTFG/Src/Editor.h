@@ -30,6 +30,9 @@ public:
 
 	glm::vec3 getSelectionPosition() const;
 
+	MeshManipulator* getMeshManipulator() const;
+
+
 private:
 
 	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT

@@ -82,6 +82,7 @@ bool Editor::init() {
 }
 
 bool Editor::initializeGlad() {
+
     QOpenGLContext* context = QOpenGLContext::currentContext();
 
     if (!context) {
@@ -174,10 +175,16 @@ glm::vec3 Editor::getSelectionPosition() const {
     return glm::vec3(0);
 }
 
+MeshManipulator* Editor::getMeshManipulator() const {
+    return meshManipulator;
+}
+
 void Editor::logic() {
 
     if (!defaultMesh)
         return;
+
+    meshManipulator->setEditingMesh(defaultMesh);
 
     if (Input::isKeyDown(Qt::Key_Escape))
         QApplication::quit();

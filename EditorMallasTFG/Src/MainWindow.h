@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QDoubleSpinBox>
 
+class Editor;
 class Canvas;
 
 class MainWindow : public QMainWindow 
@@ -28,4 +29,5 @@ private:
 
 	void updateXYZPanel();
 
+	void onEditorReady(Editor* editor);
 };
