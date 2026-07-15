@@ -55,14 +55,20 @@ void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, 
 
     glm::vec3 delta = hit - dragStartPoint;
 
+    glm::vec3 averagePos = glm::vec3(0);
+    int quantity = 0;
     // Movemos los grupos seleccionados
     for (unsigned int group : selectedGroups)
     {
         for (unsigned int idx : mesh->vertexGroups[group])
         {
             mesh->vertices[idx].Position += delta;
+            averagePos += mesh->vertices[idx].Position;
+            quantity++;
         }
     }
+
+    averagePos /= quantity;
 
     // Recalculamos normales para pintado con shading correcto
     mesh->recalculateNormals();
@@ -70,6 +76,8 @@ void MeshManipulator::updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, 
     mesh->updateAllVertices();
 
     dragStartPoint = hit;
+
+    emit selectedPositionChanged(averagePos.x, averagePos.y, averagePos.z); // !! erroneo, debe ser la media de posiciones
 }
 
 void MeshManipulator::endDrag() {
@@ -105,47 +113,59 @@ std::unordered_set<unsigned int> MeshManipulator::getSelectedGroups()
 }
 
 void MeshManipulator::setSelectedXPosition(double value) {
-    for (unsigned int group : selectedGroups)
-    {
-        for (unsigned int idx : currentMesh->vertexGroups[group])
-        {
-            currentMesh->vertices[idx].Position.x = value;
-        }
-    }
-
-    // Recalculamos normales para pintado con shading correcto !! deberia hacer que esto fuera solo para los vertices relevantes, no hace falta
-    //                                                            recalcular todo, tanto aqui como en los otros setSelectedPosition
-    currentMesh->recalculateNormals();
-
-    currentMesh->updateAllVertices();
+    
+    glm::vec3 center = selectionCenter();
+    translateSelection(glm::vec3(value - center.x, 0.0f, 0.0f));
 }
 
 void MeshManipulator::setSelectedYPosition(double value) {
-    for (unsigned int group : selectedGroups)
-    {
-        for (unsigned int idx : currentMesh->vertexGroups[group])
-        {
-            currentMesh->vertices[idx].Position.y = value;
-        }
-    }
 
-    // Recalculamos normales para pintado con shading correcto
-    currentMesh->recalculateNormals();
-
-    currentMesh->updateAllVertices();
+    glm::vec3 center = selectionCenter();
+    translateSelection(glm::vec3(0.0f, value - center.y, 0.0f));
 }
 
 void MeshManipulator::setSelectedZPosition(double value) {
+
+    glm::vec3 center = selectionCenter();
+    translateSelection(glm::vec3(0.0f, 0.0f, value - center.z));
+}
+
+glm::vec3 MeshManipulator::selectionCenter() const {
+
+    glm::vec3 average(0.0f);
+    int count = 0;
+
     for (unsigned int group : selectedGroups)
     {
         for (unsigned int idx : currentMesh->vertexGroups[group])
         {
-            currentMesh->vertices[idx].Position.z = value;
+            average += currentMesh->vertices[idx].Position;
+            ++count;
         }
     }
 
-    // Recalculamos normales para pintado con shading correcto
-    currentMesh->recalculateNormals();
+    if (count == 0)
+        return glm::vec3(0.0f);
 
+    average /= count;
+
+    return average;
+}
+
+void MeshManipulator::translateSelection(const glm::vec3& delta) {
+    for (unsigned int group : selectedGroups)
+    {
+        for (unsigned int idx : currentMesh->vertexGroups[group])
+        {
+            currentMesh->vertices[idx].Position += delta;
+        }
+    }
+
+    // Recalculamos normales para pintado con shading correcto !!deberia hacer que esto fuera solo para los vertices relevantes, 
+    //                                                         no hace falta recalcular todo
+    currentMesh->recalculateNormals(); 
     currentMesh->updateAllVertices();
+
+    glm::vec3 center = selectionCenter();
+    emit selectedPositionChanged(center.x, center.y, center.z);
 }

@@ -117,13 +117,23 @@ void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORM
 	
 }
 
-void MainWindow::updateXYZPanel() {
+//void MainWindow::updateXYZPanel() {
+//
+//	glm::vec3 p = canvas->getEditor()->getSelectionPosition();
+//
+//	xSpin->setValue(p.x);
+//	ySpin->setValue(p.y);
+//	zSpin->setValue(p.z);
+//}
+void MainWindow::updateXYZPanel(double x, double y, double z) {
 
-	glm::vec3 p = canvas->getEditor()->getSelectionPosition();
-
-	xSpin->setValue(p.x);
-	ySpin->setValue(p.y);
-	zSpin->setValue(p.z);
+	QSignalBlocker blockerX(xSpin);
+	QSignalBlocker blockerY(ySpin);
+	QSignalBlocker blockerZ(zSpin);
+	
+	xSpin->setValue(x);
+	ySpin->setValue(y);
+	zSpin->setValue(z);
 }
 
 void MainWindow::onEditorReady(Editor* editor) {
@@ -143,4 +153,8 @@ void MainWindow::onEditorReady(Editor* editor) {
 		&MeshManipulator::setSelectedXPosition,
 		this,
 		&MainWindow::updateXYZPanel);*/
+	connect(manipulator,
+		&MeshManipulator::selectedPositionChanged,
+		this,
+		&MainWindow::updateXYZPanel);
 }
