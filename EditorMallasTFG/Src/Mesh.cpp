@@ -50,8 +50,9 @@ void Mesh::draw()
     glBindVertexArray(0);
 }
 
-void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices)
-{
+// https://en.wikipedia.org/wiki/Wavefront_.obj_file
+void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) {
+
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -131,29 +132,59 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
 
 }
 
-void Mesh::saveOBJ(const std::string& path)
-{
+void Mesh::saveOBJ(const std::string& path) {
+
     std::ofstream file(path);
 
     if (!file.is_open())
         return;
 
-    // Write vertices
-    for (const auto& v : vertices)
-    {
+    // Guardamos vertices, solo uno por cada vertexGroup
+    std::vector<unsigned int> groupToObjIndex(vertexGroups.size());
+
+    unsigned int objIndex = 1;
+
+    for (size_t group = 0; group < vertexGroups.size(); ++group) {
+
+        unsigned int renderVertex = vertexGroups[group][0];
+
+        const glm::vec3& p = vertices[renderVertex].Position;
+
         file << "v "
-            << v.Position[0] << " "
-            << v.Position[1] << " "
-            << v.Position[2] << "\n";
+            << p.x << " "
+            << p.y << " "
+            << p.z << "\n";
+
+        groupToObjIndex[group] = objIndex++;
     }
 
-    // Write faces (indices)
-    for (size_t i = 0; i < indices.size(); i += 3)
-    {
-        file << "f "
-            << indices[i] + 1 << " "
-            << indices[i + 1] + 1 << " "
-            << indices[i + 2] + 1 << "\n";
+    // Guardamos normales de vertices
+    for (const auto& v : vertices) {
+
+        file << "vn "
+            << v.Normal.x << " "
+            << v.Normal.y << " "
+            << v.Normal.z << "\n";
+    }
+
+    // Guardamos indices
+    for (size_t i = 0; i < indices.size(); i += 3) {
+
+        file << "f ";
+
+        for (int j = 0; j < 3; ++j)
+        {
+            unsigned int render = indices[i + j];
+
+            unsigned int group = vertexToGroup[render];
+
+            file << groupToObjIndex[group]
+                << "//"
+                << render + 1
+                << " ";
+        }
+
+        file << "\n";
     }
 
     file.close();
