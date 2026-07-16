@@ -2,6 +2,8 @@
 
 #include <unordered_set>
 
+// !!IMPORTANTE: Hay dos fuentes de input, aqui y en MainWindow. El input de MainWindow lo "absorbe" Qt, 
+// por lo que si no se recibe, revisar que no sea por eso
 class Input
 {
 public:
@@ -17,7 +19,7 @@ public:
 
     static double getScrollDelta();
 
-    static void beginFrame();
+    static void endFrame();
     static void update();
 
     static void setKey(int key, bool pressed);

@@ -8,8 +8,8 @@ DebugRenderer::DebugRenderer()
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    // Reservamos espacio para una linea (2 puntos, 6 floats -> posicion y normales)
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6, nullptr, GL_DYNAMIC_DRAW);
+    // Reservamos espacio para una linea (2 puntos, 6 floats -> posicion y normales) !! ahora es una cara, ha subido de 6 a 9 floats
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, nullptr, GL_DYNAMIC_DRAW);
 
     // layout(location = 0) -> vec3 position
     glEnableVertexAttribArray(0);
@@ -31,7 +31,7 @@ void DebugRenderer::drawPoint(const glm::vec3& pos)
         pos.x, pos.y, pos.z
     };
 
-    glPointSize(25.0f);
+    glPointSize(5.0f);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -53,6 +53,8 @@ void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
         b.x, b.y, b.z
     };
 
+    glLineWidth(5.0f);
+
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
@@ -62,6 +64,29 @@ void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
     glDrawArrays(GL_LINES, 0, 2);
 
     // Volvemos a estado base
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
+
+void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+    float vertices[9] =
+    {
+        a.x,a.y,a.z,
+        b.x,b.y,b.z,
+        c.x,c.y,c.z
+    };
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(vertices),
+        vertices);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
