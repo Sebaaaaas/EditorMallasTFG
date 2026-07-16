@@ -36,20 +36,26 @@ bool Canvas::loadMesh(const QString& fileName)
     return loaded;
 }
 
+Editor* Canvas::getEditor() const {
+    return editor;
+}
+
 void Canvas::initializeGL() { // !! revisar posibles leaks
 
 	initializeOpenGLFunctions();
 
     editor = new Editor();
 
-    if (!editor->init()) {
-
+    if (editor->init()) {
+        emit editorReady(editor);
+    }
+    else {
         delete editor;
-		editor = nullptr;
+        editor = nullptr;
 
-		std::cout << "Error inicializando el editor" << std::endl;
+        std::cout << "Error inicializando el editor" << std::endl;
 
-		return;
+        return;
     }
 
 }
@@ -110,7 +116,7 @@ void Canvas::mouseMoveEvent(QMouseEvent* event) {
     Input::setMousePosition(event->position().x(), event->position().y());
 }
 
-void Canvas::wheelEvent(QWheelEvent* event) // !! revisar 
+void Canvas::wheelEvent(QWheelEvent* event)
 {
-    Input::addScrollDelta(event->angleDelta().y() / 120.0);
+    Input::addScrollDelta(event->angleDelta().y() / 120.0); // Dividido entre 120 porque el evento devuelve ese valor cuando haces scroll
 }

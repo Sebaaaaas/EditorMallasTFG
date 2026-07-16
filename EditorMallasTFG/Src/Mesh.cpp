@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <glad/gl.h>
+#include <set>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -10,6 +11,10 @@
 Mesh::Mesh(std::string path)
 {
     loadOBJ(path, vertices, indices);
+
+    generateEdges();
+    generateFaces();
+
     setupMesh();
 }
 
@@ -234,4 +239,55 @@ void Mesh::updateAllVertices()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
+}
+
+void Mesh::generateEdges() {
+
+    edges.clear();
+
+    std::set<std::pair<unsigned int, unsigned int>> uniqueEdges;
+
+    for (size_t i = 0; i < indices.size(); i += 3)
+    {
+        unsigned int a = indices[i];
+        unsigned int b = indices[i + 1];
+        unsigned int c = indices[i + 2];
+
+        std::pair<unsigned int, unsigned int> triangleEdges[3] =
+        {
+            { std::min(a, b), std::max(a, b) },
+            { std::min(b, c), std::max(b, c) },
+            { std::min(c, a), std::max(c, a) }
+        };
+
+        for (const auto& edgePair : triangleEdges) {
+            if (uniqueEdges.insert(edgePair).second) { // Insertamos solamente si no existia
+                Edge edge;
+                edge.v0 = edgePair.first;
+                edge.v1 = edgePair.second;
+
+                edges.push_back(edge);
+            }
+        }
+    }
+
+    std::cout << "Edges: " << edges.size() << std::endl;
+
+}
+
+void Mesh::generateFaces()
+{
+    faces.clear();
+
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        Face face;
+
+        face.v0 = indices[i];
+        face.v1 = indices[i + 1];
+        face.v2 = indices[i + 2];
+
+        faces.push_back(face);
+    }
+
+    std::cout << "Faces: " << faces.size() << std::endl;
 }

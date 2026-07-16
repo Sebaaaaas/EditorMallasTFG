@@ -1,12 +1,16 @@
 #pragma once
 
+#include <QObject>
 #include <qopenglwidget.h>
 #include <qopenglfunctions.h>
+
 
 class Editor;
 
 // https://doc.qt.io/qt-6/qopenglwidget.html
-class Canvas : public  QOpenGLWidget, protected QOpenGLFunctions{
+class Canvas : public QOpenGLWidget, protected QOpenGLFunctions{
+
+	Q_OBJECT
 
 public:
 	Canvas(QWidget* parent = nullptr);
@@ -14,12 +18,19 @@ public:
 
 	bool loadMesh(const QString& fileName);
 
+	Editor* getEditor() const;
+
+signals:
+	// Señal emitida tras inicializacion correcta de Editor, para poder conectar los UI widgets a funciones del editor
+	void editorReady(Editor* editor);
+
 protected:
 	void initializeGL() override;
 
 	void paintGL() override;
 
 	void resizeGL(int w, int h) override;
+
 
 	// Deteccion de input por la ventana, que enviaremos a nuestra clase "Input"
 	void keyPressEvent(QKeyEvent* event) override;

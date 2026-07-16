@@ -52,8 +52,14 @@ double Input::getScrollDelta() {
     return scrollDelta;
 }
 
-void Input::beginFrame() {
+void Input::endFrame() {
+
     scrollDelta = 0;
+
+    // Aunque no hace falta resetearlos actualmente, ya que se hace en Input::update, conceptualmente los dejo aqui por si cambiara
+    // la estructura del programa en el futuro
+    deltaX = 0;
+    deltaY = 0;
 }
 
 void Input::setKey(int key, bool pressed) {

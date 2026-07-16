@@ -3,8 +3,9 @@
 #include <glm.hpp>
 #include <string>
 
+#include "Selector.h"
+
 class MeshManipulator;
-class Selector;
 class Camera;
 class Shader;
 class Mesh;
@@ -22,6 +23,16 @@ public:
 
 	void setWindowSize(int w, int h);
 	bool loadMesh(const std::string& path);
+
+	void setSelectionMode(SelectionMode mode);
+
+	bool hasSelection() const;
+
+	glm::vec3 getSelectionPosition() const;
+
+	MeshManipulator* getMeshManipulator() const;
+
+
 private:
 
 	int win_w = 1600, win_h = 1200; // Dimensiones iniciales de la pantalla, en pixeles !! YA NO, SE ENCARGA QT
@@ -41,10 +52,11 @@ private:
 
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
-	// Mover vertice !! deberia estar aqui esto?
-	int selectedVertex = -1;
+	// Para mover vertices, segmentos o caras  !! deberia estar aqui esto?
+	/*int selectedVertex = -1;
+	int selectedEdge = -1;*/
+	unsigned int selectedElement = -1;
 
-	void input();
 	void logic();
 	void render();
 };
