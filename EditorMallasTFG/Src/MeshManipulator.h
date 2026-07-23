@@ -9,10 +9,17 @@ class Mesh;
 class Camera;
 class Ray;
 
+enum class TransformMode
+{
+    Translate,
+    Rotate,
+    Scale
+};
+
 // Dada una malla e input de raton, permite editar la malla
 class MeshManipulator : public QObject {
 
-    Q_OBJECT // usar public: despues de esto para declarar las variables publicas, necesario para detectar que es un QObject
+    Q_OBJECT // usar "public:" despues de esto para declarar las variables publicas, esto es necesario para detectar que es un QObject
 
 public:
 
@@ -21,18 +28,26 @@ public:
 
     void setEditingMesh(Mesh* mesh);
 
-    void beginDrag(const Mesh* mesh, const std::vector<unsigned int>& vertexIndex, const Camera& camera);
-    void updateDrag(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
-    void endDrag();
+    void beginTransform(const Mesh* mesh, const std::vector<unsigned int>& vertexIndex, const Camera& camera, float mouseX, float mouseY);
+    void updateTransform(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
+    void endTransform();
+
+    void updateTranslation(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
+    void updateRotation(float mouseX, float mouseY);
+    void updateScale(float mouseX, float mouseY);
 
     bool isDragging() const { return dragging; }
 
     void selectVertex(const Mesh* mesh, int vertexIndex, bool additive = false);
-    void clearSelection();
-    bool hasSelection() const;
+    void clearSelection(); // !! esto seguramente deberia ir en el selector
+    bool hasSelection() const; // !! esto seguramente deberia ir en el selector
 
     // Devuelve un conjunto con los indices de los vertices que han sido seleccionados
     std::unordered_set<unsigned int> getSelectedGroups();
+
+    void setTransformMode(TransformMode mode);
+
+    TransformMode getTransformMode() const;
 
 signals:
     // Cuando cambia la posicion, actualizamos el los spinbox
@@ -44,9 +59,13 @@ public slots: // Permite recibir señales de QWidgets cuando cambian sus valores 
     void setSelectedZPosition(double value);
 
 private:
+    // Indica si el usuario esta arrastrando con el raton
     bool dragging = false;
 
     std::unordered_set<unsigned int> selectedGroups;
+
+    // Usado para rotacion y escala
+    glm::vec2 transformStartMouse;
 
     glm::vec3 dragStartPoint;
     glm::vec3 dragPlaneNormal;
@@ -55,9 +74,23 @@ private:
 
     Mesh* currentMesh;
 
+    TransformMode transformMode;
+
+    glm::vec3 transformPivot;
+
+    std::vector<unsigned int> selectedVertices;
+    std::vector<glm::vec3> originalPositions;
+
     glm::vec3 selectionCenter() const;
 
-    // Para que los slots setSelectedPosition lo llamen y muevan elementos seleccionados
+    // Aplica una transformacion a la seleccion
+    void transformSelection(const glm::mat4& transform);
+
+    // Para que los slots setSelectedPosition lo llamen y muevan elementos seleccionados a las posiciones marcadas por la IU
     void translateSelection(const glm::vec3& delta);
+
+    void rotateSelection(float angle, glm::vec3 axis); // !!! TANTO ESTE COMO SCALE NECESITAN PODER HACERSE EN OTRO EJE A SOLO EL X
+
+    void scaleSelection(glm::vec3 scale);
 
 };

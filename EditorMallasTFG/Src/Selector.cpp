@@ -51,7 +51,7 @@ SelectionMode Selector::getSelectionMode() const {
 
 glm::vec2 Selector::worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& view, const glm::mat4& projection) {
 
-    // ! No multiplicamos por model porque actualmente nuestra matriz model es la matriz identidad(mat4(1.0f)), si queremos moverlo en el mundo habra
+    // !! No multiplicamos por model porque actualmente nuestra matriz model es la matriz identidad(mat4(1.0f)), si queremos moverlo en el mundo habra
     // que cambiar esto y añadir la matriz model a la operacion
     glm::vec4 clipSpace = projection * view * glm::vec4(p, 1.0f); // Pasamos p a vector4 para poder operar con las matrices
 
@@ -106,20 +106,19 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         glm::vec3 a = mesh.vertices[edge.v0].Position;
         glm::vec3 b = mesh.vertices[edge.v1].Position;
 
-        // Project endpoints to screen
+        // Prroyectamos los vertices a la pantalla
         glm::vec2 a2 = verticesProjectedToScreen[edge.v0];
 
         glm::vec2 b2 = verticesProjectedToScreen[edge.v1];
 
-        // Vector along the segment
         glm::vec2 ab = b2 - a2;
 
-        // Avoid degenerate edges
+        // Evitamos segmentos degenerados
         float len2 = glm::dot(ab, ab);
         if (len2 < 0.00001f)
             continue;
 
-        // Projection of mouse onto segment
+        // Proyeccion del raton sobre el segmento
         float t = glm::dot(mouse - a2, ab) / len2;
         t = glm::clamp(t, 0.0f, 1.0f);
 
@@ -127,8 +126,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
 
         float dist = glm::distance(mouse, closest);
 
-        if (dist < minDist)
-        {
+        if (dist < minDist) {
             minDist = dist;
             selectedEdge = i;
         }
@@ -137,7 +135,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
     return selectedEdge;
 }
 
-int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! revisar porque creo que falla
+int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! revisar porque algo falla
 
     for (int i = 0; i < mesh.faces.size(); ++i) {
 
@@ -154,8 +152,8 @@ int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, 
     return -1;
 }
 
-bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c)
-{
+bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c) {
+
     glm::vec2 v0 = c - a;
     glm::vec2 v1 = b - a;
     glm::vec2 v2 = p - a;
@@ -166,18 +164,14 @@ bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm
     float dot11 = glm::dot(v1, v1);
     float dot12 = glm::dot(v1, v2);
 
-    float invDenom =
-        1.0f / (dot00 * dot11 - dot01 * dot01);
+    float invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
 
-    float u =
-        (dot11 * dot02 - dot01 * dot12) * invDenom;
+    float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
 
-    float v =
-        (dot00 * dot12 - dot01 * dot02) * invDenom;
+    float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
-    return (u >= 0.0f) &&
-        (v >= 0.0f) &&
-        (u + v <= 1.0f);
+    return (u >= 0.0f) && (v >= 0.0f) && (u + v <= 1.0f);
+
 }
 
 

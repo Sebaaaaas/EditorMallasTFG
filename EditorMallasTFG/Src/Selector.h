@@ -22,9 +22,7 @@ public:
     void projectVerticesToScreen(const Mesh& mesh, int width, int height, const glm::mat4& view, const glm::mat4& projection);
 
     int pick(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera);
-
     
-
     void setSelectionMode(SelectionMode newMode);
 
     SelectionMode getSelectionMode() const;
@@ -50,6 +48,7 @@ private:
 
     int pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera);
 
+    // Determina si un punto esta dentro de un triangulo usando coordenadas baricentricas
     bool pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c);
 
 };

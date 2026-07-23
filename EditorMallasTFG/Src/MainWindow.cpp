@@ -28,6 +28,9 @@ MainWindow::MainWindow() {
 	// Seleccion vertice/segmento/cara
 	setupSelectionMode();
 
+	// Modo transformacion mover/rotar/escalar
+	setupTransformMode();
+
 	// Caja con valores xyz de posicion... de objeto seleccionado
 	setupXYZPanel();
 
@@ -85,6 +88,44 @@ void MainWindow::setupSelectionMode() {
 
 	connect(faceAction, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setSelectionMode(SelectionMode::Face);
+		});
+}
+
+void MainWindow::setupTransformMode() {
+
+	QToolBar* toolbar = addToolBar("Modo transform");
+
+	QAction* moveAction = toolbar->addAction(QIcon("Assets/icons/move.png"), "Mover");
+	QAction* rotateAction = toolbar->addAction(QIcon("Assets/icons/rotate.png"), "Rotar");
+	QAction* scaleAction = toolbar->addAction(QIcon("Assets/icons/scale.png"), "Escalar");
+
+	moveAction->setCheckable(true);
+	rotateAction->setCheckable(true);
+	scaleAction->setCheckable(true);
+
+	QActionGroup* selectionGroup = new QActionGroup(this);
+	selectionGroup->setExclusive(true);
+
+	selectionGroup->addAction(moveAction);
+	selectionGroup->addAction(rotateAction);
+	selectionGroup->addAction(scaleAction);
+
+	moveAction->setChecked(true);
+
+	moveAction->setShortcut(Qt::Key_4);
+	rotateAction->setShortcut(Qt::Key_5);
+	scaleAction->setShortcut(Qt::Key_6);
+
+	connect(moveAction, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Translate);
+		});
+
+	connect(rotateAction, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Rotate);
+		});
+
+	connect(scaleAction, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Scale);
 		});
 }
 
