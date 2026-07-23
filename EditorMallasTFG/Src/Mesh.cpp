@@ -8,8 +8,8 @@
 #include "tiny_obj_loader.h"
 
 
-Mesh::Mesh(std::string path)
-{
+Mesh::Mesh(std::string path) {
+
     loadOBJ(path, vertices, indices);
 
     generateEdges();
@@ -139,7 +139,7 @@ void Mesh::saveOBJ(const std::string& path) {
     if (!file.is_open())
         return;
 
-    // Guardamos vertices, solo uno por cada vertexGroup
+    // Guardamos vertices, solo uno por cada vertexGroup, para que no pongamos de más
     std::vector<unsigned int> groupToObjIndex(vertexGroups.size());
 
     unsigned int objIndex = 1;

@@ -15,6 +15,7 @@ class DebugRenderer;
 class Editor
 {
 public:
+
 	Editor();
 	~Editor();
 
@@ -26,8 +27,7 @@ public:
 
 	void setSelectionMode(SelectionMode mode);
 
-	bool hasSelection() const;
-
+	// Funcion que llama la IU para poder actualizar la nueva posicion del elemento seleccionado !! NO SE USA TODAVIA, IMPLEMENTAR
 	glm::vec3 getSelectionPosition() const;
 
 	MeshManipulator* getMeshManipulator() const;
@@ -40,8 +40,8 @@ private:
 	Camera* camera;
 
 	Mesh* defaultMesh;
-	Shader* defaultShader;
 	Shader* debugShader;
+	Shader* defaultShader;
 
 	// Clase que sirve para escoger vertices de la malla
 	Selector* selector;
@@ -52,9 +52,7 @@ private:
 
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
-	// Para mover vertices, segmentos o caras  !! deberia estar aqui esto?
-	/*int selectedVertex = -1;
-	int selectedEdge = -1;*/
+	// Para mover vertices, segmentos o caras
 	unsigned int selectedElement = -1;
 
 	void logic();

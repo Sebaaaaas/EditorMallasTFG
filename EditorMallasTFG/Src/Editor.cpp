@@ -114,7 +114,7 @@ void Editor::run() {
     logic();
     render();
 
-    // Debemos llamarlo al final para resetear valores de delta
+    // Debemos llamarlo al final para resetear valores de delta para movimientos
     Input::endFrame();
 }
 
@@ -123,8 +123,8 @@ void Editor::setWindowSize(int w, int h) {
     win_h = h;
 }
 
-bool Editor::loadMesh(const std::string& path) // !! nunca devuelve false, se supone que falla limpiamente en la constructora?
-{
+bool Editor::loadMesh(const std::string& path) { // !! nunca devuelve false, se supone que falla limpiamente en la constructora?
+
     Mesh* newMesh = new Mesh(path);
 
     delete defaultMesh;
@@ -140,11 +140,7 @@ void Editor::setSelectionMode(SelectionMode mode) {
     selector->setSelectionMode(mode);
 }
 
-bool Editor::hasSelection() const {
-    return false;
-}
-
-glm::vec3 Editor::getSelectionPosition() const {
+glm::vec3 Editor::getSelectionPosition() const { // !! revisar esto
 
     switch (selector->getSelectionMode()) {
 
@@ -184,10 +180,10 @@ void Editor::logic() {
     if (!defaultMesh)
         return;
 
-    meshManipulator->setEditingMesh(defaultMesh);
-
     if (Input::isKeyDown(Qt::Key_Escape))
         QApplication::quit();
+
+    meshManipulator->setEditingMesh(defaultMesh);
 
     camera->manageInput();
 
@@ -196,22 +192,25 @@ void Editor::logic() {
     selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! revisar selectedElement
 
     // Click izquierdo
-    if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
+    if(Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
+
         bool additive = Input::isKeyDown(Qt::Key_Shift);
 
-        if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
+        if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
+
             meshManipulator->selectVertex(defaultMesh, selectedElement, additive);
             std::vector<unsigned int> v = { selectedElement };
-            meshManipulator->beginDrag(defaultMesh, v, *camera);
+            meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
         }
-        else if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
+        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
+
             const Edge& edge = defaultMesh->edges[selectedElement];
 
             meshManipulator->selectVertex(defaultMesh, edge.v0, additive);
             meshManipulator->selectVertex(defaultMesh, edge.v1, true); // Segundo true para que no se quite el primero
 
             std::vector<unsigned int> v = { edge.v0, edge.v1 };
-            meshManipulator->beginDrag(defaultMesh, v, *camera);
+            meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
 
         }
         else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face){
@@ -223,7 +222,7 @@ void Editor::logic() {
             meshManipulator->selectVertex(defaultMesh, face.v2, true);
 
             std::vector<unsigned int> v = { face.v0, face.v1, face.v2 };
-            meshManipulator->beginDrag(defaultMesh, v, *camera);
+            meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
 
         }
         else if (!additive) {
@@ -232,11 +231,11 @@ void Editor::logic() {
     }
 
     if (meshManipulator->isDragging() && !Input::isMouseButtonDown(0)) {
-        meshManipulator->endDrag();
+        meshManipulator->endTransform();
     }
 
     if (meshManipulator->isDragging()) {
-        meshManipulator->updateDrag(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
+        meshManipulator->updateTransform(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
     }
 
     // Guardar modelo !! siempre se guarda como lo mismo
@@ -273,7 +272,7 @@ void Editor::render() {
 
 
 
-    // Debug
+    // Debug !! esto se podria limpiar
     if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
         debugShader->use();
 
