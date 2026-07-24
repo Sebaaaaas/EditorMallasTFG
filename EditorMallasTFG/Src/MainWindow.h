@@ -30,6 +30,8 @@ private:
 
 	void setupXYZPanel();
 
+	void setupAxes();
+
 	void updateXYZPanel(double x, double y, double z);
 
 	void onEditorReady(Editor* editor);
