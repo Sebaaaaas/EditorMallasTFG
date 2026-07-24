@@ -34,6 +34,8 @@ MainWindow::MainWindow() {
 	// Caja con valores xyz de posicion... de objeto seleccionado
 	setupXYZPanel();
 
+	setupAxes();
+
 	// Una vez el editor este cargado, llamaremos a onEditorReady para conectar elementos de la IU a funciones del editor
 	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
 }
@@ -112,9 +114,9 @@ void MainWindow::setupTransformMode() {
 
 	moveAction->setChecked(true);
 
-	moveAction->setShortcut(Qt::Key_4);
-	rotateAction->setShortcut(Qt::Key_5);
-	scaleAction->setShortcut(Qt::Key_6);
+	moveAction->setShortcut(Qt::Key_G);
+	rotateAction->setShortcut(Qt::Key_R);
+	scaleAction->setShortcut(Qt::Key_S);
 
 	connect(moveAction, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Translate);
@@ -158,14 +160,51 @@ void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORM
 	
 }
 
-//void MainWindow::updateXYZPanel() {
-//
-//	glm::vec3 p = canvas->getEditor()->getSelectionPosition();
-//
-//	xSpin->setValue(p.x);
-//	ySpin->setValue(p.y);
-//	zSpin->setValue(p.z);
-//}
+void MainWindow::setupAxes() {
+	QToolBar* toolbar = addToolBar("Modo transform");
+
+	QAction* X = toolbar->addAction(QIcon("Assets/icons/x.png"), "Mover");
+	QAction* Y = toolbar->addAction(QIcon("Assets/icons/y.png"), "Rotar");
+	QAction* Z = toolbar->addAction(QIcon("Assets/icons/z.png"), "Escalar");
+	QAction* All = toolbar->addAction(QIcon("Assets/icons/all.png"), "Todos");
+
+	X->setCheckable(true);
+	Y->setCheckable(true);
+	Z->setCheckable(true);
+	All->setCheckable(true);
+
+	QActionGroup* selectionGroup = new QActionGroup(this);
+	selectionGroup->setExclusive(true);
+
+	selectionGroup->addAction(X);
+	selectionGroup->addAction(Y);
+	selectionGroup->addAction(Z);
+	selectionGroup->addAction(All);
+
+	X->setChecked(true);
+
+	X->setShortcut(Qt::Key_X);
+	Y->setShortcut(Qt::Key_Y);
+	Z->setShortcut(Qt::Key_Z);
+	All->setShortcut(Qt::Key_A);
+
+	connect(X, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::X);
+		});
+
+	connect(Y, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::Y);
+		});
+
+	connect(Z, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::Z);
+		});
+	
+	connect(All, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::All);
+		});
+}
+
 void MainWindow::updateXYZPanel(double x, double y, double z) {
 
 	QSignalBlocker blockerX(xSpin);

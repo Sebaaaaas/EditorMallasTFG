@@ -15,6 +15,7 @@ MeshManipulator::MeshManipulator() {
 
     transformPivot = glm::vec3(0.f, 0.f, 0.f);
     transformMode = TransformMode::Translate;
+    transformAxis = TransformAxis::X;
 
     transformStartMouse = glm::vec2(0.f, 0.f);
 }
@@ -94,7 +95,26 @@ void MeshManipulator::updateTranslation(Mesh* mesh, float mouseX, float mouseY, 
 
     glm::vec3 delta = hit - dragStartPoint;
 
-    translateSelection(delta);
+    glm::vec3 axis;
+
+    switch (transformAxis)
+    {
+    case TransformAxis::X:
+        axis = glm::vec3(1, 0, 0);
+        break;
+
+    case TransformAxis::Y:
+        axis = glm::vec3(0, 1, 0);
+        break;
+
+    case TransformAxis::Z:
+        axis = glm::vec3(0, 0, 1);
+        break;
+    }
+
+    float amount = glm::dot(delta, axis);
+
+    translateSelection(axis * amount);
 }
 
 void MeshManipulator::updateRotation(float mouseX, float mouseY) {
@@ -104,7 +124,21 @@ void MeshManipulator::updateRotation(float mouseX, float mouseY) {
     // Multiplicamos por 0.1 para que no sea demasiado rapido
     float angle = dx * 0.1f;
 
-    rotateSelection(angle, glm::vec3(0, 1, 0));
+    switch (transformAxis)
+    {
+    case TransformAxis::X:
+        rotateSelection(angle, glm::vec3(1, 0, 0));
+        break;
+
+    case TransformAxis::Y:
+        rotateSelection(angle, glm::vec3(0, 1, 0));
+        break;
+
+    case TransformAxis::Z:
+        rotateSelection(angle, glm::vec3(0, 0, 1));        
+        break;
+    }
+
 }
 
 void MeshManipulator::updateScale(float mouseX, float mouseY) {
@@ -114,7 +148,24 @@ void MeshManipulator::updateScale(float mouseX, float mouseY) {
     // Multiplicamos por 0.01 para que no sea demasiado rapido
     float factor = 1.0f + dx * 0.01f;
 
-    scaleSelection(glm::vec3(factor));
+    switch (transformAxis)
+    {
+    case TransformAxis::X:
+        scaleSelection(glm::vec3(factor, 1, 1));
+        break;
+
+    case TransformAxis::Y:
+        scaleSelection(glm::vec3(1, factor, 1));
+        break;
+
+    case TransformAxis::Z:
+        scaleSelection(glm::vec3(1, 1, factor));
+        break;
+
+    case TransformAxis::All:
+        scaleSelection(glm::vec3(factor));
+        break;
+    }
 }
 
 void MeshManipulator::selectVertex(const Mesh* mesh, int vertexIndex, bool additive) {
@@ -146,8 +197,8 @@ void MeshManipulator::setTransformMode(TransformMode mode) {
     transformMode = mode;
 }
 
-TransformMode MeshManipulator::getTransformMode() const {
-    return transformMode;
+void MeshManipulator::setTransformAxis(TransformAxis axis) {
+    transformAxis = axis;
 }
 
 void MeshManipulator::setSelectedXPosition(double value) {    

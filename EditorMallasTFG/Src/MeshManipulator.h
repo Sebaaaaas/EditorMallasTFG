@@ -16,6 +16,14 @@ enum class TransformMode
     Scale
 };
 
+enum class TransformAxis 
+{
+    X, 
+    Y,
+    Z,
+    All
+};
+
 // Dada una malla e input de raton, permite editar la malla
 class MeshManipulator : public QObject {
 
@@ -46,8 +54,8 @@ public:
     std::unordered_set<unsigned int> getSelectedGroups();
 
     void setTransformMode(TransformMode mode);
+    void setTransformAxis(TransformAxis axis);
 
-    TransformMode getTransformMode() const;
 
 signals:
     // Cuando cambia la posicion, actualizamos el los spinbox
@@ -75,6 +83,7 @@ private:
     Mesh* currentMesh;
 
     TransformMode transformMode;
+    TransformAxis transformAxis;
 
     glm::vec3 transformPivot;
 
