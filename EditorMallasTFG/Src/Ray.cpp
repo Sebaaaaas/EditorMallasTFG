@@ -46,3 +46,37 @@ glm::vec3 Ray::intersectRayPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec
 
     return rayOrigin + rayDir * t;
 }
+
+bool Ray::intersectTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t) const {
+
+    const float EPSILON = 1e-6f;
+
+    glm::vec3 edge1 = v1 - v0;
+    glm::vec3 edge2 = v2 - v0;
+
+    glm::vec3 h = glm::cross(rayDir, edge2);
+    float a = glm::dot(edge1, h);
+
+    if (fabs(a) < EPSILON)
+        return false; // Parallel
+
+    float f = 1.0f / a;
+
+    glm::vec3 s = rayOrigin - v0;
+
+    float u = f * glm::dot(s, h);
+
+    if (u < 0.0f || u > 1.0f)
+        return false;
+
+    glm::vec3 q = glm::cross(s, edge1);
+
+    float v = f * glm::dot(rayDir, q);
+
+    if (v < 0.0f || u + v > 1.0f)
+        return false;
+
+    t = f * glm::dot(edge2, q);
+
+    return t > EPSILON;
+}

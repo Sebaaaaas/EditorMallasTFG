@@ -307,8 +307,8 @@ void Mesh::generateEdges() {
 
     std::set<std::pair<unsigned int, unsigned int>> uniqueEdges;
 
-    for (size_t i = 0; i < indices.size(); i += 3)
-    {
+    for (size_t i = 0; i < indices.size(); i += 3) {
+
         unsigned int a = indices[i];
         unsigned int b = indices[i + 1];
         unsigned int c = indices[i + 2];
@@ -321,6 +321,7 @@ void Mesh::generateEdges() {
         };
 
         for (const auto& edgePair : triangleEdges) {
+
             if (uniqueEdges.insert(edgePair).second) { // Insertamos solamente si no existia
                 Edge edge;
                 edge.v0 = edgePair.first;

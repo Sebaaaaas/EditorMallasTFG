@@ -191,6 +191,7 @@ void Editor::logic() {
 
     camera->manageInput();
 
+    // !! no creo que haga falta hacer esto continuamente
     selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
 
     selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! revisar selectedElement

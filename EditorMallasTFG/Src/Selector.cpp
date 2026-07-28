@@ -2,6 +2,7 @@
 
 #include "Mesh.h"
 #include "Camera.h"
+#include "Ray.h"
 
 Selector::Selector() {
 
@@ -16,11 +17,10 @@ Selector::~Selector() {
 
 void Selector::projectVerticesToScreen(const Mesh& mesh, int width, int height, const glm::mat4& view, const glm::mat4& projection) {
 
-    verticesProjectedToScreen.resize(mesh.vertices.size());
+    projectedVertices.resize(mesh.vertices.size());
 
-    for (int i = 0; i < verticesProjectedToScreen.size(); ++i) {
-
-        verticesProjectedToScreen[i] = worldToScreen(mesh.vertices[i].Position, width, height, view, projection);
+    for (size_t i = 0; i < mesh.vertices.size(); ++i) {
+        projectedVertices[i] = worldToScreen(mesh.vertices[i].Position, width, height, view, projection);
     }
 }
 
@@ -49,42 +49,57 @@ SelectionMode Selector::getSelectionMode() const {
     return currentSelectionMode;
 }
 
-glm::vec2 Selector::worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& view, const glm::mat4& projection) {
+ProjectedVertex Selector::worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& view, const glm::mat4& projection) {
+
+    ProjectedVertex result;
 
     // !! No multiplicamos por model porque actualmente nuestra matriz model es la matriz identidad(mat4(1.0f)), si queremos moverlo en el mundo habra
     // que cambiar esto y añadir la matriz model a la operacion
     glm::vec4 clipSpace = projection * view * glm::vec4(p, 1.0f); // Pasamos p a vector4 para poder operar con las matrices
 
     // Si w <= 0, se encuentra detras de la camara, y no sera seleccionable, por lo que devolvemos una posicion muy lejana(!!feo y puede fallar en casos extremos)
-    if (clipSpace.w <= 0.0f)
-        return glm::vec2(-99999.0f);
+    if (clipSpace.w <= 0.0f) {
+        result.visible = false;
+        result.depth = std::numeric_limits<float>::max();
+        result.screenPosition = glm::vec2(0.0f);
+        return result;
+    }
 
     // Proceso de viewport transform (ndc: normalized device coordinates), nos deja las coordenadas en el espacio [-1,1]
     glm::vec3 ndc = glm::vec3(clipSpace) / clipSpace.w;
 
     // Convertimos el espacio normalizado a espacio en la pantalla
-    float screenX = (ndc.x + 1.0f) * 0.5f * width;
-    float screenY = (1.0f - ndc.y) * 0.5f * height; // Aqui restamos para darle la vuelta, los sistemas de coordenadas estan al reves si no
+    result.screenPosition.x = (ndc.x + 1.0f) * 0.5f * width;
+    result.screenPosition.y = (1.0f - ndc.y) * 0.5f * height; // Aqui restamos para darle la vuelta, los sistemas de coordenadas estan al reves si no
 
-    return glm::vec2(screenX, screenY);
+    result.depth = ndc.z;
+    result.visible = true;
+
+    return result;
 }
 
 int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
 
     int selectedVertex = -1;
-    float minDist = minSelectDistancePixels;
+    float minScreenDistance = minSelectDistancePixels;
+    float minDepth = std::numeric_limits<float>::max();
 
     // Recorremos todos los vertices de la malla
     for (int i = 0; i < mesh.vertices.size(); i++) {
 
-        glm::vec3 vertexPos = mesh.vertices[i].Position;
+        const ProjectedVertex& projected = projectedVertices[i];
 
-        // Calculamos la posicion del vertice en pantalla
+        if (!projected.visible)
+            continue;
 
-        float dist = glm::distance(verticesProjectedToScreen[i], glm::vec2(mouseX, mouseY));
+        // Calculamos la distancia entre vertice en pantalla y raton
+        float dist = glm::distance(projected.screenPosition, glm::vec2(mouseX, mouseY));
 
-        if (dist < minDist) {
-            minDist = dist;
+        // Nos saltamos solamente los pixeles lejanos, todavia no descartamos por minScreenDistance
+        if (dist > minSelectDistancePixels)
+            continue;
+
+        if (isBetterCandidate(dist, projected.depth, minScreenDistance, minDepth)) {
             selectedVertex = i;
         }
     }
@@ -92,42 +107,50 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
     return selectedVertex;
 }
 
-int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! REVISAR ESTO
+int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
 
     int selectedEdge = -1;
-    float minDist = minEdgeDistancePixels;
+
+    float minScreenDistance = minEdgeDistancePixels;
+    float minDepth = std::numeric_limits<float>::max();
 
     glm::vec2 mouse(mouseX, mouseY);
 
-    for (int i = 0; i < mesh.edges.size(); i++)
-    {
+    for (int i = 0; i < mesh.edges.size(); ++i) {
+
         const Edge& edge = mesh.edges[i];
 
-        glm::vec3 a = mesh.vertices[edge.v0].Position;
-        glm::vec3 b = mesh.vertices[edge.v1].Position;
+        // Obtenemos las dos proyecciones de los vertices del segmento
+        const ProjectedVertex& pa = projectedVertices[edge.v0];
+        const ProjectedVertex& pb = projectedVertices[edge.v1];
 
-        // Prroyectamos los vertices a la pantalla
-        glm::vec2 a2 = verticesProjectedToScreen[edge.v0];
-
-        glm::vec2 b2 = verticesProjectedToScreen[edge.v1];
-
-        glm::vec2 ab = b2 - a2;
-
-        // Evitamos segmentos degenerados
-        float len2 = glm::dot(ab, ab);
-        if (len2 < 0.00001f)
+        if (!pa.visible || !pb.visible)
             continue;
 
-        // Proyeccion del raton sobre el segmento
-        float t = glm::dot(mouse - a2, ab) / len2;
-        t = glm::clamp(t, 0.0f, 1.0f);
+        glm::vec2 ab = pb.screenPosition - pa.screenPosition;
 
-        glm::vec2 closest = a2 + t * ab;
+        // Calculo de longitud del vector ab(hacerlo asi ahorra raices cuadradas)
+        float len = glm::dot(ab, ab);
+
+        // Ingoramos si es muy pequeño
+        if (len < 0.00001f)
+            continue;
+
+        // Determinamos la posicion del raton t sobre el segmento, que resulta en valores entre 0(sobre a) y 1(sobre b)
+        float t = glm::dot(mouse - pa.screenPosition, ab) / len;
+        t = glm::clamp(t, 0.0f, 1.0f); // Por si da un valor fuera del rango, lo mantenemos dentro de el
+
+        // Punto del segmento mas cercano al raton
+        glm::vec2 closest = pa.screenPosition + t * ab;
 
         float dist = glm::distance(mouse, closest);
 
-        if (dist < minDist) {
-            minDist = dist;
+        if (dist > minEdgeDistancePixels)
+            continue;
+
+        float depth = pa.depth * (1.0f - t) + pb.depth * t;
+
+        if (isBetterCandidate(dist, depth, minScreenDistance, minDepth)) {
             selectedEdge = i;
         }
     }
@@ -135,28 +158,67 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
     return selectedEdge;
 }
 
-int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! revisar porque algo falla, siempre elige caras con prioridad en la lista segun el orden
+int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
 
+    int selectedPolygon = -1;
+    float bestDepth = std::numeric_limits<float>::max();
+
+    glm::vec2 mouse(mouseX, mouseY);
+
+    // Recorremos poligonos
     for (int i = 0; i < mesh.polygons.size(); ++i) {
 
-        const Polygon& poly = mesh.polygons[i];
+        const Polygon& polygon = mesh.polygons[i];
 
-        if (poly.vertices.size() < 3)
+        // Por si acaso hay poligonos erroneos con menos de 3 vertices
+        if (polygon.vertices.size() < 3)
             continue;
 
-        glm::vec2 a = verticesProjectedToScreen[poly.vertices[0]];
+        glm::vec2 a = projectedVertices[polygon.vertices[0]].screenPosition;
 
-        for (size_t j = 1; j + 1 < poly.vertices.size(); ++j) {
+        // Recorremos los vertices del poligono
+        for (int j = 1; j + 1 < polygon.vertices.size(); ++j) {
 
-            glm::vec2 b = verticesProjectedToScreen[poly.vertices[j]];
-            glm::vec2 c = verticesProjectedToScreen[poly.vertices[j + 1]];
+            glm::vec2 b = projectedVertices[polygon.vertices[j]].screenPosition;
 
-            if (pointInTriangle(glm::vec2(mouseX, mouseY), a, b, c))
-                return i;
+            glm::vec2 c = projectedVertices[polygon.vertices[j + 1]].screenPosition;
+
+            if (pointInTriangle(mouse, a, b, c)) {
+
+                float depth =
+                    (
+                        projectedVertices[polygon.vertices[0]].depth +
+                        projectedVertices[polygon.vertices[j]].depth +
+                        projectedVertices[polygon.vertices[j + 1]].depth
+                        ) / 3.0f;
+
+                if (depth < bestDepth) {
+
+                    bestDepth = depth;
+                    selectedPolygon = i;
+                }
+            }
         }
     }
 
-    return -1;
+    return selectedPolygon;
+}
+
+bool Selector::isBetterCandidate(float distance, float depth, float& bestDistance, float& bestDepth) const {
+    
+    if (distance < bestDistance - distanceEpsilon) {
+        bestDistance = distance;
+        bestDepth = depth;
+        return true;
+    }
+
+    if (std::abs(distance - bestDistance) <= distanceEpsilon && depth < bestDepth) {
+        bestDistance = distance;
+        bestDepth = depth;
+        return true;
+    }
+
+    return false;
 }
 
 bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c) {
