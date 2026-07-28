@@ -48,7 +48,7 @@ private:
 
     int pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera);
 
-    // Determina si un punto esta dentro de un triangulo usando coordenadas baricentricas
+    // Determina si un punto esta dentro de un triangulo usando el algoritmo de coordenadas baricentricas
     bool pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c);
 
 };

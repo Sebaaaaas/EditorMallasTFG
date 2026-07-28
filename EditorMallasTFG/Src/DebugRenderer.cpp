@@ -69,6 +69,7 @@ void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
 }
 
 void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+
     float vertices[9] =
     {
         a.x,a.y,a.z,

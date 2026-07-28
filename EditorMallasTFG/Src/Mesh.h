@@ -54,6 +54,11 @@ struct Face {
     unsigned int v2;
 };
 
+// Estructura que almacena caras en lugar de triangulos
+struct Polygon {
+    std::vector<unsigned int> vertices;
+};
+
 class Mesh
 {
 private:
@@ -85,6 +90,7 @@ public:
     
     std::vector<Face> faces;
 
+    std::vector<Polygon> polygons;
 
     Mesh(std::string path);
     ~Mesh();
