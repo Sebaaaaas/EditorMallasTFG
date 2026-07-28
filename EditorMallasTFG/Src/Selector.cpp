@@ -135,18 +135,25 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
     return selectedEdge;
 }
 
-int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! revisar porque algo falla
+int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) { // !! revisar porque algo falla, siempre elige caras con prioridad en la lista segun el orden
 
-    for (int i = 0; i < mesh.faces.size(); ++i) {
+    for (int i = 0; i < mesh.polygons.size(); ++i) {
 
-        const Face& face = mesh.faces[i];
+        const Polygon& poly = mesh.polygons[i];
 
-        glm::vec2 a = verticesProjectedToScreen[face.v0];
-        glm::vec2 b = verticesProjectedToScreen[face.v1];
-        glm::vec2 c = verticesProjectedToScreen[face.v2];
+        if (poly.vertices.size() < 3)
+            continue;
 
-        if (pointInTriangle(glm::vec2(mouseX, mouseY), a, b, c))
-            return i;
+        glm::vec2 a = verticesProjectedToScreen[poly.vertices[0]];
+
+        for (size_t j = 1; j + 1 < poly.vertices.size(); ++j) {
+
+            glm::vec2 b = verticesProjectedToScreen[poly.vertices[j]];
+            glm::vec2 c = verticesProjectedToScreen[poly.vertices[j + 1]];
+
+            if (pointInTriangle(glm::vec2(mouseX, mouseY), a, b, c))
+                return i;
+        }
     }
 
     return -1;

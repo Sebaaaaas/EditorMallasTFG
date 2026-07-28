@@ -229,10 +229,6 @@ void MainWindow::onEditorReady(Editor* editor) {
 	connect(zSpin, &QDoubleSpinBox::valueChanged,
 		manipulator, &MeshManipulator::setSelectedZPosition);
 
-	/*connect(manipulator,
-		&MeshManipulator::setSelectedXPosition,
-		this,
-		&MainWindow::updateXYZPanel);*/
 	connect(manipulator,
 		&MeshManipulator::selectedPositionChanged,
 		this,

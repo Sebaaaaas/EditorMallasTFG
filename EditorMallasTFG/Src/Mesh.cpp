@@ -58,7 +58,7 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
     
-    bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str());
+    bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str(), NULL, false);
     
     if (!warn.empty()) std::cout << warn << std::endl;
     if (!err.empty()) std::cerr << err << std::endl;
@@ -67,64 +67,93 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
     std::unordered_map<Vertex, unsigned int> uniqueVertices;
     std::unordered_map<int, unsigned int> positionIndexToGroup;
 
-    for (const tinyobj::shape_t shape : shapes)
-    {
-        for (const auto& index : shape.mesh.indices)
-        {
-            Vertex vertex{};
+    size_t indexOffset = 0;
 
-            vertex.Position = glm::vec3(
-                attrib.vertices[3 * index.vertex_index + 0],
-                attrib.vertices[3 * index.vertex_index + 1],
-                attrib.vertices[3 * index.vertex_index + 2]
-            );
+    for (const tinyobj::shape_t shape : shapes) {
 
-            if (!attrib.normals.empty() && index.normal_index >= 0) {
-                vertex.Normal = glm::vec3(
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2]
-                );
-            }
+        for (const auto& shape : shapes) {
 
-            // Guardamos el vertice
-            unsigned int vertexIndex;
+            size_t indexOffset = 0;
 
-            if (uniqueVertices.count(vertex) == 0)
-            {
-                vertexIndex = vertices.size();
+            // Iteramos sobre las caras de la malla
+            for (size_t face = 0; face < shape.mesh.num_face_vertices.size(); ++face) {
 
-                uniqueVertices[vertex] = vertexIndex;
+                int faceVertices = shape.mesh.num_face_vertices[face];
 
-                vertices.push_back(vertex);
+                Polygon polygon;
 
-                // Asignamos a un grupo si no ha aparecido antes
-                unsigned int groupIndex;
+                // Iteramos sobre los vertices de la cara
+                for (int v = 0; v < faceVertices; ++v) {
 
-                if (positionIndexToGroup.count(index.vertex_index) == 0) // Formato OBJ separa indices por posicion(vertex_index), normales y UV, asi que lo aprovechamos
-                {
-                    groupIndex = vertexGroups.size();
+                    const tinyobj::index_t& index =
+                        shape.mesh.indices[indexOffset + v];
 
-                    positionIndexToGroup[index.vertex_index] = groupIndex;
+                    Vertex vertex{};
 
-                    vertexGroups.push_back({});
+                    vertex.Position = glm::vec3(
+                        attrib.vertices[3 * index.vertex_index + 0],
+                        attrib.vertices[3 * index.vertex_index + 1],
+                        attrib.vertices[3 * index.vertex_index + 2]);
+
+                    if (!attrib.normals.empty() && index.normal_index >= 0) {
+
+                        vertex.Normal = glm::vec3(
+                            attrib.normals[3 * index.normal_index + 0],
+                            attrib.normals[3 * index.normal_index + 1],
+                            attrib.normals[3 * index.normal_index + 2]);
+                    }
+
+                    // Asignamos indices
+                    unsigned int vertexIndex;
+
+                    if (uniqueVertices.count(vertex) == 0) {
+                        
+                        vertexIndex = vertices.size();
+
+                        uniqueVertices[vertex] = vertexIndex;
+
+                        vertices.push_back(vertex);
+
+                        unsigned int groupIndex;
+
+                        if (positionIndexToGroup.count(index.vertex_index) == 0) {
+
+                            groupIndex = vertexGroups.size();
+
+                            positionIndexToGroup[index.vertex_index] = groupIndex;
+
+                            vertexGroups.push_back({});
+                        }
+                        else {
+                            groupIndex = positionIndexToGroup[index.vertex_index];
+                        }
+
+                        vertexGroups[groupIndex].push_back(vertexIndex);
+
+                        vertexToGroup.push_back(groupIndex);
+                    }
+                    else {
+                        vertexIndex = uniqueVertices[vertex];
+                    }
+
+                    polygon.vertices.push_back(vertexIndex);
                 }
-                else {
-                    groupIndex = positionIndexToGroup[index.vertex_index];
+
+                // Almacenamos el poligono
+                polygons.push_back(polygon);
+
+                // El renderizado sigue usando triangulos, asi que los guardamos como tal
+                for (int i = 1; i < faceVertices - 1; ++i) {
+
+                    indices.push_back(polygon.vertices[0]);
+                    indices.push_back(polygon.vertices[i]);
+                    indices.push_back(polygon.vertices[i + 1]);
                 }
 
-                vertexGroups[groupIndex].push_back(vertexIndex);
-
-                vertexToGroup.push_back(groupIndex);
+                indexOffset += faceVertices;
             }
-            else
-            {
-                vertexIndex = uniqueVertices[vertex];
-            }
-
-            indices.push_back(vertexIndex);
-
         }
+
     }
     std::cout << "Indices: " << indices.size() << std::endl;
     std::cout << "Vertices: " << vertices.size() << std::endl;

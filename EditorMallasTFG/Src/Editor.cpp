@@ -65,6 +65,10 @@ bool Editor::init() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
+    // Para el transparente de debug
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     camera = new Camera((float)win_w, (float)win_h);
 
     //defaultMesh = nullptr; // !! cuando queramos entregar, poner a nullptr
@@ -213,16 +217,23 @@ void Editor::logic() {
             meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
 
         }
-        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face){
+        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face) {
             
-            const Face& face = defaultMesh->faces[selectedElement];
+            const Polygon& polygon = defaultMesh->polygons[selectedElement];
 
-            meshManipulator->selectVertex(defaultMesh, face.v0, additive);
-            meshManipulator->selectVertex(defaultMesh, face.v1, true);
-            meshManipulator->selectVertex(defaultMesh, face.v2, true);
+            bool first = !additive;
 
-            std::vector<unsigned int> v = { face.v0, face.v1, face.v2 };
-            meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
+            std::vector<unsigned int> vertices;
+
+            for (unsigned int idx : polygon.vertices) {
+                
+                meshManipulator->selectVertex(defaultMesh, idx, !first); // Solo el primero debe ser false
+                first = false;
+
+                vertices.push_back(idx);
+            }
+
+            meshManipulator->beginTransform(defaultMesh, vertices, *camera, Input::getMouseX(), Input::getMouseY());
 
         }
         else if (!additive) {
@@ -314,15 +325,18 @@ void Editor::render() {
 
         glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
 
-        int base = selectedElement * 3;
-
-        glm::vec3 a = defaultMesh->vertices[defaultMesh->faces[selectedElement].v0].Position;
-        glm::vec3 b = defaultMesh->vertices[defaultMesh->faces[selectedElement].v1].Position;
-        glm::vec3 c = defaultMesh->vertices[defaultMesh->faces[selectedElement].v2].Position;
-
         glDisable(GL_DEPTH_TEST);
+        
+        const Polygon& poly = defaultMesh->polygons[selectedElement];
 
-        debugRenderer->drawTriangle(a, b, c);
+        for (size_t i = 1; i + 1 < poly.vertices.size(); ++i)
+        {
+            glm::vec3 a = defaultMesh->vertices[poly.vertices[0]].Position;
+            glm::vec3 b = defaultMesh->vertices[poly.vertices[i]].Position;
+            glm::vec3 c = defaultMesh->vertices[poly.vertices[i + 1]].Position;
+
+            debugRenderer->drawTriangle(a, b, c);
+        }
 
         glEnable(GL_DEPTH_TEST);
     }

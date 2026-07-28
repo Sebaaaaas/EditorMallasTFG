@@ -95,10 +95,9 @@ private:
     // Aplica una transformacion a la seleccion
     void transformSelection(const glm::mat4& transform);
 
-    // Para que los slots setSelectedPosition lo llamen y muevan elementos seleccionados a las posiciones marcadas por la IU
     void translateSelection(const glm::vec3& delta);
 
-    void rotateSelection(float angle, glm::vec3 axis); // !!! TANTO ESTE COMO SCALE NECESITAN PODER HACERSE EN OTRO EJE A SOLO EL X
+    void rotateSelection(float angle, glm::vec3 axis);
 
     void scaleSelection(glm::vec3 scale);
 
