@@ -94,7 +94,7 @@ bool Editor::initializeGlad() {
         return false;
     }
 
-    int version_glad = gladLoadGL( // !! revisar
+    int version_glad = gladLoadGL(
         [](const char* name) -> GLADapiproc {
             QOpenGLContext* ctx = QOpenGLContext::currentContext();
             if (!ctx)
@@ -127,7 +127,7 @@ void Editor::setWindowSize(int w, int h) {
     win_h = h;
 }
 
-bool Editor::loadMesh(const std::string& path) { // !! nunca devuelve false, se supone que falla limpiamente en la constructora?
+bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve false, si esta corrupto el archivo o es un path invalido, explota la aplicacion
 
     Mesh* newMesh = new Mesh(path);
 
@@ -142,37 +142,6 @@ bool Editor::loadMesh(const std::string& path) { // !! nunca devuelve false, se 
 
 void Editor::setSelectionMode(SelectionMode mode) {
     selector->setSelectionMode(mode);
-}
-
-glm::vec3 Editor::getSelectionPosition() const { // !! revisar esto
-
-    switch (selector->getSelectionMode()) {
-
-        case SelectionMode::Vertex:
-            return defaultMesh->vertices[selectedElement].Position;
-
-        case SelectionMode::Edge:
-        {
-            const Edge& e = defaultMesh->edges[selectedElement];
-
-            return
-                (defaultMesh->vertices[e.v0].Position +
-                    defaultMesh->vertices[e.v1].Position) * 0.5f;
-        }
-
-        case SelectionMode::Face:
-        {
-            unsigned int i = selectedElement * 3;
-
-            glm::vec3 a = defaultMesh->vertices[defaultMesh->indices[i]].Position;
-            glm::vec3 b = defaultMesh->vertices[defaultMesh->indices[i + 1]].Position;
-            glm::vec3 c = defaultMesh->vertices[defaultMesh->indices[i + 2]].Position;
-
-            return (a + b + c) / 3.0f;
-        }
-    }
-
-    return glm::vec3(0);
 }
 
 MeshManipulator* Editor::getMeshManipulator() const {
@@ -194,7 +163,7 @@ void Editor::logic() {
     // !! no creo que haga falta hacer esto continuamente
     selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
 
-    selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! revisar selectedElement
+    selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
 
     // Click izquierdo
     if(Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
@@ -250,7 +219,7 @@ void Editor::logic() {
         meshManipulator->updateTransform(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
     }
 
-    // Guardar modelo !! siempre se guarda como lo mismo
+    // Guardar modelo !! siempre se guarda con el mismo nombre
     if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyDown(Qt::Key_S)) {
         defaultMesh->saveOBJ("Assets/edited.obj");
     }
@@ -284,11 +253,27 @@ void Editor::render() {
 
 
 
-    // Debug !! esto se podria limpiar
-    if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
-        debugShader->use();
+    // Debug
+    drawDebug(MVP);
+    
+}
 
-        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+void Editor::drawDebug(const glm::mat4& MVP) {
+
+    if (selectedElement == -1)
+        return;
+
+    debugShader->use();
+
+    glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+
+    glDisable(GL_DEPTH_TEST);
+
+    SelectionMode currentSelectionMode = selector->getSelectionMode();
+
+    switch (currentSelectionMode) {
+
+    case SelectionMode::Vertex: {
 
         glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
 
@@ -300,34 +285,21 @@ void Editor::render() {
             }
         }
 
-        glDisable(GL_DEPTH_TEST);
         debugRenderer->drawPoint(pos);
-        glEnable(GL_DEPTH_TEST);
     }
-
-    if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
-        debugShader->use();
-        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+        break;
+    case SelectionMode::Edge: {
 
         const Edge& edge = defaultMesh->edges[selectedElement];
 
         glm::vec3 a = defaultMesh->vertices[edge.v0].Position;
         glm::vec3 b = defaultMesh->vertices[edge.v1].Position;
 
-        glDisable(GL_DEPTH_TEST);
         debugRenderer->drawLine(a, b);
-        glEnable(GL_DEPTH_TEST);
-
     }
+        break;
+    case SelectionMode::Face: {
 
-    if (selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face) {
-
-        debugShader->use();
-
-        glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
-
-        glDisable(GL_DEPTH_TEST);
-        
         const Polygon& poly = defaultMesh->polygons[selectedElement];
 
         for (size_t i = 1; i + 1 < poly.vertices.size(); ++i)
@@ -338,8 +310,13 @@ void Editor::render() {
 
             debugRenderer->drawTriangle(a, b, c);
         }
-
-        glEnable(GL_DEPTH_TEST);
     }
+        break;
+    default:
+        break;
+    }
+
+    glEnable(GL_DEPTH_TEST);
+
 }
 

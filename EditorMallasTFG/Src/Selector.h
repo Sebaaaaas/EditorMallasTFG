@@ -39,7 +39,7 @@ private:
 
     SelectionMode currentSelectionMode;
 
-    // Distancia minima para la seleccion de un vertice en pixeles !! convertir de float a int tanto esto como pos de vertices 2d?
+    // Distancia minima para la seleccion de un vertice en pixeles
     float minSelectDistancePixels;
     float minEdgeDistancePixels;
 

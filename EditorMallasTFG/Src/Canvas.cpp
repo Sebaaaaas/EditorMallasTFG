@@ -40,7 +40,7 @@ Editor* Canvas::getEditor() const {
     return editor;
 }
 
-void Canvas::initializeGL() { // !! revisar posibles leaks
+void Canvas::initializeGL() {
 
 	initializeOpenGLFunctions();
 
