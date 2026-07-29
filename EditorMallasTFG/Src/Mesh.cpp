@@ -9,6 +9,10 @@
 
 
 Mesh::Mesh(std::string path) {
+    
+    EBO = 0;
+    VBO = 0;
+    VAO = 0;
 
     loadOBJ(path, vertices, indices);
 
@@ -18,15 +22,15 @@ Mesh::Mesh(std::string path) {
     setupMesh();
 }
 
-Mesh::~Mesh()
-{
+Mesh::~Mesh() {
+
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 }
 
-void Mesh::draw()
-{
+void Mesh::draw() {
+
     //unsigned int diffuseNr = 1;
     //unsigned int specularNr = 1;
     //for (unsigned int i = 0; i < textures.size(); i++)
@@ -60,9 +64,12 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
     
     bool success = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str(), NULL, false);
     
-    if (!warn.empty()) std::cout << warn << std::endl;
-    if (!err.empty()) std::cerr << err << std::endl;
-    if (!success) throw std::runtime_error("Fallo en la carga de OBJ");
+    if (!warn.empty())
+        std::cout << warn << std::endl;
+    if (!err.empty())
+        std::cerr << err << std::endl;
+    if (!success)
+        throw std::runtime_error("Fallo en la carga de OBJ");
  
     std::unordered_map<Vertex, unsigned int> uniqueVertices;
     std::unordered_map<int, unsigned int> positionIndexToGroup;
@@ -287,15 +294,15 @@ void Mesh::recalculateNormals()
         v.Normal = glm::normalize(v.Normal);
 }
 
-void Mesh::updateVertex(int index)
-{
+void Mesh::updateVertex(int index) {
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(Vertex), sizeof(Vertex), &vertices[index]);
 }
 
-void Mesh::updateAllVertices()
-{
+void Mesh::updateAllVertices() {
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
@@ -341,6 +348,7 @@ void Mesh::generateFaces()
     faces.clear();
 
     for (size_t i = 0; i < indices.size(); i += 3) {
+
         Face face;
 
         face.v0 = indices[i];

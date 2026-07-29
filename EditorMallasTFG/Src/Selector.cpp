@@ -8,7 +8,7 @@ Selector::Selector() {
 
     currentSelectionMode = SelectionMode::Vertex;
 
-    minSelectDistancePixels = 10.0f; // !! esto es feo?
+    minSelectDistancePixels = 10.0f;
     minEdgeDistancePixels = 10.0f;
 }
 
@@ -57,7 +57,7 @@ ProjectedVertex Selector::worldToScreen(const glm::vec3& p, int width, int heigh
     // que cambiar esto y añadir la matriz model a la operacion
     glm::vec4 clipSpace = projection * view * glm::vec4(p, 1.0f); // Pasamos p a vector4 para poder operar con las matrices
 
-    // Si w <= 0, se encuentra detras de la camara, y no sera seleccionable, por lo que devolvemos una posicion muy lejana(!!feo y puede fallar en casos extremos)
+    // Si w <= 0, se encuentra detras de la camara y no sera seleccionable
     if (clipSpace.w <= 0.0f) {
         result.visible = false;
         result.depth = std::numeric_limits<float>::max();
@@ -81,6 +81,8 @@ ProjectedVertex Selector::worldToScreen(const glm::vec3& p, int width, int heigh
 int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
 
     int selectedVertex = -1;
+
+    // Mejores valores encontrados hasta el momento
     float minScreenDistance = minSelectDistancePixels;
     float minDepth = std::numeric_limits<float>::max();
 
@@ -95,10 +97,7 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
         // Calculamos la distancia entre vertice en pantalla y raton
         float dist = glm::distance(projected.screenPosition, glm::vec2(mouseX, mouseY));
 
-        // Nos saltamos solamente los pixeles lejanos, todavia no descartamos por minScreenDistance
-        if (dist > minSelectDistancePixels)
-            continue;
-
+        // Comprobamos si el nuevo candidato es mejor
         if (isBetterCandidate(dist, projected.depth, minScreenDistance, minDepth)) {
             selectedVertex = i;
         }
@@ -144,10 +143,6 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         glm::vec2 closest = pa.screenPosition + t * ab;
 
         float dist = glm::distance(mouse, closest);
-
-        if (dist > minEdgeDistancePixels)
-            continue;
-
         float depth = pa.depth * (1.0f - t) + pb.depth * t;
 
         if (isBetterCandidate(dist, depth, minScreenDistance, minDepth)) {
@@ -203,8 +198,7 @@ int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, 
 
                 float depth = (w * pa.depth +
                         u * pb.depth +
-                        v * pc.depth
-                        ) / 3.0f;
+                        v * pc.depth);
 
                 if (depth < bestDepth) {
 

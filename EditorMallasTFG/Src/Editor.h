@@ -23,12 +23,11 @@ public:
 	void run();
 
 	void setWindowSize(int w, int h);
+
+	// Intenta cargar la malla en formato .obj en el directorio path(dentro de Bin/Assets). Si falla emite mensaje de error
 	bool loadMesh(const std::string& path);
 
 	void setSelectionMode(SelectionMode mode);
-
-	// Funcion que llama la IU para poder actualizar la nueva posicion del elemento seleccionado !! NO SE USA TODAVIA, IMPLEMENTAR
-	glm::vec3 getSelectionPosition() const;
 
 	MeshManipulator* getMeshManipulator() const;
 
@@ -57,5 +56,8 @@ private:
 
 	void logic();
 	void render();
+
+	// Dibuja el elemento actualmente seleccionado para remarcarlo
+	void drawDebug(const glm::mat4& MVP);
 };
 

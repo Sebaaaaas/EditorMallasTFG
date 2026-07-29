@@ -71,7 +71,7 @@ private:
     void setupMesh();
 
     // Despues de cargar la malla, usamos esta funcion para crear todos los pares de vertices que conforman lados
-    void generateEdges(); // !! mejorable
+    void generateEdges();
 
     void generateFaces();
 
@@ -97,7 +97,7 @@ public:
 
     void draw();
 
-    // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path", que debe encontrarse en la carpeta Bin/Assets
+    // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path"
     void loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
 
     void saveOBJ(const std::string& path);

@@ -40,8 +40,8 @@ MainWindow::MainWindow() {
 	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
 }
 
-bool MainWindow::openFile()
-{
+bool MainWindow::openFile() {
+
 	QString fileName = QFileDialog::getOpenFileName(
 		this,				// padre
 		"Abrir archivo",	// título del cuadro
