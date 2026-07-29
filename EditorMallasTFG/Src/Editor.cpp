@@ -172,38 +172,19 @@ void Editor::logic() {
 
         if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
 
-            meshManipulator->selectVertex(defaultMesh, selectedElement, additive);
-            std::vector<unsigned int> v = { selectedElement };
-            meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
+            meshManipulator->selectVertex(selectedElement, additive);
+            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY());
         }
         else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
 
-            const Edge& edge = defaultMesh->edges[selectedElement];
-
-            meshManipulator->selectVertex(defaultMesh, edge.v0, additive);
-            meshManipulator->selectVertex(defaultMesh, edge.v1, true); // Segundo true para que no se quite el primero
-
-            std::vector<unsigned int> v = { edge.v0, edge.v1 };
-            meshManipulator->beginTransform(defaultMesh, v, *camera, Input::getMouseX(), Input::getMouseY());
+            meshManipulator->selectEdge(selectedElement, additive);
+            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY());
 
         }
-        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face) {
-            
-            const Polygon& polygon = defaultMesh->polygons[selectedElement];
+        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face) {            
 
-            bool first = !additive;
-
-            std::vector<unsigned int> vertices;
-
-            for (unsigned int idx : polygon.vertices) {
-                
-                meshManipulator->selectVertex(defaultMesh, idx, !first); // Solo el primero debe ser false
-                first = false;
-
-                vertices.push_back(idx);
-            }
-
-            meshManipulator->beginTransform(defaultMesh, vertices, *camera, Input::getMouseX(), Input::getMouseY());
+            meshManipulator->selectPolygon(selectedElement, additive);
+            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY());
 
         }
         else if (!additive) {
@@ -216,7 +197,7 @@ void Editor::logic() {
     }
 
     if (meshManipulator->isDragging()) {
-        meshManipulator->updateTransform(defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
+        meshManipulator->updateTransform(Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
     }
 
     // Guardar modelo !! siempre se guarda con el mismo nombre
@@ -260,7 +241,7 @@ void Editor::render() {
 
 void Editor::drawDebug(const glm::mat4& MVP) {
 
-    if (selectedElement == -1)
+    if (!meshManipulator->hasSelection())
         return;
 
     debugShader->use();
@@ -275,7 +256,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
 
     case SelectionMode::Vertex: {
 
-        glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
+        //glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
 
         for (unsigned int group : meshManipulator->getSelectedGroups())
         {
@@ -285,30 +266,37 @@ void Editor::drawDebug(const glm::mat4& MVP) {
             }
         }
 
-        debugRenderer->drawPoint(pos);
+        //debugRenderer->drawPoint(pos);
     }
         break;
     case SelectionMode::Edge: {
 
-        const Edge& edge = defaultMesh->edges[selectedElement];
+        for (unsigned int edgeIndex : meshManipulator->getSelectedEdges())
+        {
+            const Edge& edge = defaultMesh->edges[edgeIndex];
 
-        glm::vec3 a = defaultMesh->vertices[edge.v0].Position;
-        glm::vec3 b = defaultMesh->vertices[edge.v1].Position;
+            glm::vec3 a = defaultMesh->vertices[edge.v0].Position;
+            glm::vec3 b = defaultMesh->vertices[edge.v1].Position;
 
-        debugRenderer->drawLine(a, b);
+            debugRenderer->drawLine(a, b);
+            
+        }
     }
         break;
     case SelectionMode::Face: {
 
-        const Polygon& poly = defaultMesh->polygons[selectedElement];
+        for (unsigned int polygonIndex : meshManipulator->getSelectedPolygons()) {
 
-        for (size_t i = 1; i + 1 < poly.vertices.size(); ++i)
-        {
-            glm::vec3 a = defaultMesh->vertices[poly.vertices[0]].Position;
-            glm::vec3 b = defaultMesh->vertices[poly.vertices[i]].Position;
-            glm::vec3 c = defaultMesh->vertices[poly.vertices[i + 1]].Position;
+            const Polygon& poly = defaultMesh->polygons[polygonIndex];
 
-            debugRenderer->drawTriangle(a, b, c);
+            for (size_t i = 1; i + 1 < poly.vertices.size(); ++i) {
+                
+                glm::vec3 a = defaultMesh->vertices[poly.vertices[0]].Position;
+                glm::vec3 b = defaultMesh->vertices[poly.vertices[i]].Position;
+                glm::vec3 c = defaultMesh->vertices[poly.vertices[i + 1]].Position;
+
+                debugRenderer->drawTriangle(a, b, c);
+            }
         }
     }
         break;

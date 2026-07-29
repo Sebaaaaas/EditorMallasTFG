@@ -36,19 +36,26 @@ public:
 
     void setEditingMesh(Mesh* mesh);
 
-    void beginTransform(const Mesh* mesh, const std::vector<unsigned int>& vertexIndex, const Camera& camera, float mouseX, float mouseY);
-    void updateTransform(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
+    void beginTransform(const Camera& camera, float mouseX, float mouseY);
+    void updateTransform(float mouseX, float mouseY, int w, int h, const Camera& camera);
     void endTransform();
 
-    void updateTranslation(Mesh* mesh, float mouseX, float mouseY, int w, int h, const Camera& camera);
+    void updateTranslation(float mouseX, float mouseY, int w, int h, const Camera& camera);
     void updateRotation(float mouseX, float mouseY);
     void updateScale(float mouseX, float mouseY);
 
     bool isDragging() const { return dragging; }
 
-    void selectVertex(const Mesh* mesh, int vertexIndex, bool additive = false);
+    void selectVertex(int vertexIndex, bool additive = false);
+    void selectEdge(unsigned int edgeIndex, bool additive = false);
+    void selectPolygon(unsigned int polygonIndex, bool additive = false);
+
     void clearSelection(); // !! esto seguramente deberia ir en el selector
     bool hasSelection() const; // !! esto seguramente deberia ir en el selector
+
+    const std::unordered_set<unsigned int>& getSelectedGroups() const;
+    const std::unordered_set<unsigned int>& getSelectedEdges() const;
+    const std::unordered_set<unsigned int>& getSelectedPolygons() const;
 
     // Devuelve un conjunto con los indices de los vertices que han sido seleccionados
     std::unordered_set<unsigned int> getSelectedGroups();
@@ -71,6 +78,8 @@ private:
     bool dragging = false;
 
     std::unordered_set<unsigned int> selectedGroups;
+    std::unordered_set<unsigned int> selectedEdges;
+    std::unordered_set<unsigned int> selectedPolygons;
 
     // Usado para rotacion y escala
     glm::vec2 transformStartMouse;
