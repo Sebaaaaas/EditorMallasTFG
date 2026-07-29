@@ -164,13 +164,10 @@ void MeshManipulator::updateScale(float mouseX, float mouseY) {
 
 void MeshManipulator::selectVertex(int vertexIndex, bool additive) {
 
-    if (vertexIndex == -1)
-        return;
+    if (!additive)
+        clearSelection();
 
     unsigned int group = currentMesh->vertexToGroup[vertexIndex];
-
-    if (!additive)
-        selectedGroups.clear();
 
     selectedGroups.insert(group);
 }
@@ -195,9 +192,9 @@ void MeshManipulator::selectPolygon(unsigned int polygonIndex, bool additive) {
 
     selectedPolygons.insert(polygonIndex);
 
-    const Polygon& poly = currentMesh->polygons[polygonIndex];
+    const Polygon& polygon = currentMesh->polygons[polygonIndex];
 
-    for (unsigned int vertex : poly.vertices) {
+    for (unsigned int vertex : polygon.vertices) {
         selectedGroups.insert(currentMesh->vertexToGroup[vertex]);
     }
 }
