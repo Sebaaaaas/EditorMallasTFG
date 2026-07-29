@@ -174,22 +174,36 @@ int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, 
         if (polygon.vertices.size() < 3)
             continue;
 
-        glm::vec2 a = projectedVertices[polygon.vertices[0]].screenPosition;
+        // Si el poligono tiene algun vertice detras de la camara, lo ignoramos directamente
+        bool visible = true;
 
-        // Recorremos los vertices del poligono
+        for (unsigned int idx : polygon.vertices) {
+            if (!projectedVertices[idx].visible) {
+                visible = false;
+                break;
+            }
+        }
+
+        if (!visible)
+            continue;
+
+        // Recorremos los vertices del poligono, creando triangulos a partir del vertice inicial seleccionado
+        const ProjectedVertex& pa = projectedVertices[polygon.vertices[0]];
+
         for (int j = 1; j + 1 < polygon.vertices.size(); ++j) {
 
-            glm::vec2 b = projectedVertices[polygon.vertices[j]].screenPosition;
+            const ProjectedVertex& pb = projectedVertices[polygon.vertices[j]];
+            const ProjectedVertex& pc = projectedVertices[polygon.vertices[j + 1]];
 
-            glm::vec2 c = projectedVertices[polygon.vertices[j + 1]].screenPosition;
+            float u, v;
 
-            if (pointInTriangle(mouse, a, b, c)) {
+            if (pointInTriangle(mouse, pa.screenPosition, pb.screenPosition, pc.screenPosition, u, v)) {
 
-                float depth =
-                    (
-                        projectedVertices[polygon.vertices[0]].depth +
-                        projectedVertices[polygon.vertices[j]].depth +
-                        projectedVertices[polygon.vertices[j + 1]].depth
+                float w = 1.0f - u - v;
+
+                float depth = (w * pa.depth +
+                        u * pb.depth +
+                        v * pc.depth
                         ) / 3.0f;
 
                 if (depth < bestDepth) {
@@ -221,7 +235,7 @@ bool Selector::isBetterCandidate(float distance, float depth, float& bestDistanc
     return false;
 }
 
-bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c) {
+bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, float& u, float& v) {
 
     glm::vec2 v0 = c - a;
     glm::vec2 v1 = b - a;
@@ -235,9 +249,9 @@ bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm
 
     float invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
 
-    float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+    u = (dot11 * dot02 - dot01 * dot12) * invDenom;
 
-    float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+    v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
     return (u >= 0.0f) && (v >= 0.0f) && (u + v <= 1.0f);
 

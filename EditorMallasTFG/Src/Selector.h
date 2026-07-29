@@ -63,7 +63,7 @@ private:
     // frente a otro con distancia y profundidad distintos
     bool isBetterCandidate(float distance, float depth, float& bestDistance, float& bestDepth) const;
 
-    // Determina si un punto esta dentro de un triangulo usando el algoritmo de coordenadas baricentricas
-    bool pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c);
+    // Determina si un punto esta dentro de un triangulo usando el algoritmo de coordenadas baricentricas, que ademas devolvemos en u y v para poder usar
+    bool pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, float& u, float& v);
 
 };
