@@ -52,7 +52,7 @@ private:
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
 	// Para mover vertices, segmentos o caras
-	unsigned int selectedElement = -1;
+	unsigned int hoveredElement = -1;
 
 	void logic();
 	void render();

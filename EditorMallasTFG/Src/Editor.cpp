@@ -134,7 +134,7 @@ bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve fal
     delete defaultMesh;
     defaultMesh = newMesh;
 
-    selectedElement = -1;
+    hoveredElement = -1;
     meshManipulator->clearSelection();
 
     return true;
@@ -163,29 +163,33 @@ void Editor::logic() {
     // !! no creo que haga falta hacer esto continuamente
     selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
 
-    selectedElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+    hoveredElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
 
     // Click izquierdo
     if(Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
 
         bool additive = Input::isKeyDown(Qt::Key_Shift);
 
-        if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Vertex) {
+        if (hoveredElement != -1) {
 
-            meshManipulator->selectVertex(selectedElement, additive);
-            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY());
-        }
-        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Edge) {
+            SelectionMode currentSelectionMode = selector->getSelectionMode();
 
-            meshManipulator->selectEdge(selectedElement, additive);
-            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY());
+            switch (currentSelectionMode)
+            {
+            case SelectionMode::Vertex:
+                meshManipulator->selectVertex(hoveredElement, additive);
+                break;
+            case SelectionMode::Edge:
+                meshManipulator->selectEdge(hoveredElement, additive);
+                break;
+            case SelectionMode::Face:
+                meshManipulator->selectPolygon(hoveredElement, additive);
+                break;
+            default:
+                break;
+            }
 
-        }
-        else if(selectedElement != -1 && selector->getSelectionMode() == SelectionMode::Face) {            
-
-            meshManipulator->selectPolygon(selectedElement, additive);
-            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY());
-
+            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY()); 
         }
         else if (!additive) {
             meshManipulator->clearSelection();
@@ -216,25 +220,20 @@ void Editor::render() {
 
     glm::mat4 MVP = projection * view * model;
 
-    defaultShader->use();
-
-    // !! posiblemente se pueda hacer de manera mas eficiente en lugar de cada frame?
-    glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
-
-    glUniformMatrix4fv(glGetUniformLocation(defaultShader->getID(), "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-    glUniform3f(glGetUniformLocation(defaultShader->getID(), "lightDir"), -0.5f, -1.0f, -0.3f);
-
-    glUniform3f(glGetUniformLocation(defaultShader->getID(), "objectColor"), 0.6f, 0.7f, 1.0f);
-
     if (!defaultMesh)
         return;
+
+    defaultShader->use();
+
+    defaultShader->setMat4("MVP", MVP);
+    defaultShader->setMat4("model", model);
+    defaultShader->setVec3("lightDir", glm::vec3(-0.5f, -1.0f, -0.3f));
+    defaultShader->setVec3("objectColor", glm::vec3(0.6f, 0.7f, 1.0f));
 
     defaultMesh->draw();
 
 
-
-    // Debug
+    // Lineas debug de elementos seleccionados
     drawDebug(MVP);
     
 }
@@ -246,7 +245,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
 
     debugShader->use();
 
-    glUniformMatrix4fv(glGetUniformLocation(debugShader->getID(), "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
+    debugShader->setMat4("MVP", MVP);
 
     glDisable(GL_DEPTH_TEST);
 
@@ -256,30 +255,22 @@ void Editor::drawDebug(const glm::mat4& MVP) {
 
     case SelectionMode::Vertex: {
 
-        //glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
-
-        for (unsigned int group : meshManipulator->getSelectedGroups())
-        {
-            for (unsigned int idx : defaultMesh->vertexGroups[group])
-            {
+        for (unsigned int group : meshManipulator->getSelectedGroups()) {
+            for (unsigned int idx : defaultMesh->vertexGroups[group]) {
                 debugRenderer->drawPoint(defaultMesh->vertices[idx].Position);
             }
         }
 
+        //glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
         //debugRenderer->drawPoint(pos);
     }
         break;
     case SelectionMode::Edge: {
 
-        for (unsigned int edgeIndex : meshManipulator->getSelectedEdges())
-        {
+        for (unsigned int edgeIndex : meshManipulator->getSelectedEdges()) {
+
             const Edge& edge = defaultMesh->edges[edgeIndex];
-
-            glm::vec3 a = defaultMesh->vertices[edge.v0].Position;
-            glm::vec3 b = defaultMesh->vertices[edge.v1].Position;
-
-            debugRenderer->drawLine(a, b);
-            
+            debugRenderer->drawEdge(*defaultMesh, edge);
         }
     }
         break;
@@ -287,16 +278,8 @@ void Editor::drawDebug(const glm::mat4& MVP) {
 
         for (unsigned int polygonIndex : meshManipulator->getSelectedPolygons()) {
 
-            const Polygon& poly = defaultMesh->polygons[polygonIndex];
-
-            for (size_t i = 1; i + 1 < poly.vertices.size(); ++i) {
-                
-                glm::vec3 a = defaultMesh->vertices[poly.vertices[0]].Position;
-                glm::vec3 b = defaultMesh->vertices[poly.vertices[i]].Position;
-                glm::vec3 c = defaultMesh->vertices[poly.vertices[i + 1]].Position;
-
-                debugRenderer->drawTriangle(a, b, c);
-            }
+            const Polygon& polygon = defaultMesh->polygons[polygonIndex];
+            debugRenderer->drawPolygon(*defaultMesh, polygon);
         }
     }
         break;

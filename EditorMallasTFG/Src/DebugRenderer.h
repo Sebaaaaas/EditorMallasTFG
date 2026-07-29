@@ -3,6 +3,10 @@
 #include <glm.hpp>
 #include <glad/gl.h>
 
+class Mesh;
+class Edge;
+class Polygon;
+
 class DebugRenderer
 {
 private:
@@ -16,4 +20,6 @@ public:
     void drawPoint(const glm::vec3& pos);
     void drawLine(const glm::vec3& a, const glm::vec3& b);
     void drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
+    void drawEdge(const Mesh& mesh, const Edge& edge);
+    void drawPolygon(const Mesh& mesh, const Polygon& polygon);
 };

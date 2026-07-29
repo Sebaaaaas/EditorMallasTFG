@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <glad/gl.h>
+#include <gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) // !! CUIDADO, SI FALLA CONSTRUCTORA DEJA LEAK, MEJOR CON INICIALIZACION EN DOS FASES
 {
@@ -30,14 +31,47 @@ Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) /
     glDeleteShader(fragment);
 }
 
-Shader::~Shader()
-{
-    //glDeleteProgram(shaderID); // You might want to do this if you wish to live edit, and recreate your shaders interactively while your program is still running. - https://antongerdelan.net/opengl/
+Shader::~Shader() {
+
+    if (shaderID != 0)
+        glDeleteProgram(shaderID); // You might want to do this if you wish to live edit, and recreate your shaders interactively while your program is still running. - https://antongerdelan.net/opengl/
 }
 
-void Shader::use() const
-{
+void Shader::use() const {
     glUseProgram(shaderID);
+}
+
+unsigned int Shader::getUniformLocation(const std::string& name) {
+
+    auto it = uniformLocations.find(name);
+
+    if (it != uniformLocations.end())
+        return it->second;
+
+    GLint location = glGetUniformLocation(shaderID, name.c_str());
+
+    if (location == -1)
+        std::cout << "Aviso: uniform '" << name << "' no encontrado.\n";
+
+    uniformLocations[name] = location;
+
+    return location;
+}
+
+void Shader::setMat4(const std::string& name, const glm::mat4& matrix) {
+    glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, glm::value_ptr(matrix));
+}
+
+void Shader::setVec3(const std::string& name, const glm::vec3& value) {
+    glUniform3fv(getUniformLocation(name), 1, glm::value_ptr(value));
+}
+
+void Shader::setFloat(const std::string& name, float value) {
+    glUniform1f(getUniformLocation(name), value);
+}
+
+void Shader::setInt(const std::string& name, int value) {
+    glUniform1i(getUniformLocation(name), value);
 }
 
 std::string Shader::readFile(const std::string& path) {
