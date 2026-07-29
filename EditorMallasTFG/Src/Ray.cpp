@@ -58,7 +58,7 @@ bool Ray::intersectTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir,
     float a = glm::dot(edge1, h);
 
     if (fabs(a) < EPSILON)
-        return false; // Parallel
+        return false; // Paralelos
 
     float f = 1.0f / a;
 
