@@ -43,7 +43,7 @@ struct std::hash<Vertex>
     }
 };
 
-struct Edge {
+struct Edge { // !! Nota: para extrusion probablemente necesario incorporar a qué dos poligonos pertenece cada arista
     unsigned int v0;
     unsigned int v1;
 };
