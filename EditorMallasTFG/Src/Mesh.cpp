@@ -6,6 +6,7 @@
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include <algorithm>
 
 
 Mesh::Mesh(const std::string& path) {
@@ -305,33 +306,32 @@ void Mesh::updateAllVertices() {
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
 }
 
-void Mesh::generateEdges() { // !! tiene que haber una forma mejor de hacer esto        
+void Mesh::generateEdges() {
 
+    // Por si acaso quedan aristas, pero habitualmente deberia de haberse borrado la malla antigua y generado una nueva
     edges.clear();
 
     std::set<std::pair<unsigned int, unsigned int>> uniqueEdges;
 
-    for (size_t i = 0; i < indices.size(); i += 3) {
+    for (const Polygon& polygon : polygons) {
 
-        unsigned int a = indices[i];
-        unsigned int b = indices[i + 1];
-        unsigned int c = indices[i + 2];
+        unsigned int vertexCount = polygon.vertices.size();
 
-        std::pair<unsigned int, unsigned int> triangleEdges[3] =
-        {
-            { std::min(a, b), std::max(a, b) },
-            { std::min(b, c), std::max(b, c) },
-            { std::min(c, a), std::max(c, a) }
-        };
+        // Si hubiera un polígono que fuera únicamente un vértice
+        if (vertexCount < 2)
+            continue;
 
-        for (const auto& edgePair : triangleEdges) {
+        // Recorremos los vértices del poligono, creando aristas
+        for (int i = 0; i < vertexCount; ++i) {
 
-            if (uniqueEdges.insert(edgePair).second) { // Insertamos solamente si no existia
-                Edge edge;
-                edge.v0 = edgePair.first;
-                edge.v1 = edgePair.second;
+            unsigned int a = polygon.vertices[i];
+            unsigned int b = polygon.vertices[(i + 1) % vertexCount]; // Modulo permite evitar tener que poner un caso especial de if para unir el vertice vertexCount-1 al 0
 
-                edges.push_back(edge);
+            // Devuelve los dos valores de forma ordenada
+            std::pair edgePair = std::minmax(a, b);
+
+            if (uniqueEdges.insert(edgePair).second) { // Si ya existia en el conjunto, devolvera false
+                edges.push_back({edgePair.first, edgePair.second});
             }
         }
     }
