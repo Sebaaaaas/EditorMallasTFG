@@ -8,13 +8,13 @@
 #include "tiny_obj_loader.h"
 
 
-Mesh::Mesh(std::string path) {
+Mesh::Mesh(const std::string& path) {
     
     EBO = 0;
     VBO = 0;
     VAO = 0;
 
-    loadOBJ(path, vertices, indices);
+    loadOBJ(path);
 
     generateEdges();
     generateFaces();
@@ -55,8 +55,9 @@ void Mesh::draw() {
 }
 
 // https://en.wikipedia.org/wiki/Wavefront_.obj_file
-void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices) {
+void Mesh::loadOBJ(const std::string& path) {
 
+    // Cargamos malla con tinyobjloader
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -71,97 +72,100 @@ void Mesh::loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::
     if (!success)
         throw std::runtime_error("Fallo en la carga de OBJ");
  
+
+    // Almacenamos la informacion relevante en nuestra malla
+    
+    // Utilizamos uniqueVertices para deduplicacion
     std::unordered_map<Vertex, unsigned int> uniqueVertices;
     std::unordered_map<int, unsigned int> positionIndexToGroup;
 
-    size_t indexOffset = 0;
-
+    // Por cada malla separada(por ejemplo, dos cubos que no comparten topologia)
     for (const tinyobj::shape_t shape : shapes) {
+        
+        int indexOffset = 0;
 
-        for (const auto& shape : shapes) {
+        // Iteramos sobre las caras de cada malla
+        for (int face = 0; face < shape.mesh.num_face_vertices.size(); ++face) {
 
-            size_t indexOffset = 0;
+            int faceVertices = shape.mesh.num_face_vertices[face];
 
-            // Iteramos sobre las caras de la malla
-            for (size_t face = 0; face < shape.mesh.num_face_vertices.size(); ++face) {
+            // Construimos y almacenamos nuestros poligonos
+            Polygon polygon;
 
-                int faceVertices = shape.mesh.num_face_vertices[face];
+            for (int v = 0; v < faceVertices; ++v) {
 
-                Polygon polygon;
+                const tinyobj::index_t& index = shape.mesh.indices[indexOffset + v];
 
-                // Iteramos sobre los vertices de la cara
-                for (int v = 0; v < faceVertices; ++v) {
+                Vertex vertex{};
 
-                    const tinyobj::index_t& index =
-                        shape.mesh.indices[indexOffset + v];
+                vertex.Position = glm::vec3(attrib.vertices[3 * index.vertex_index + 0], 
+                                            attrib.vertices[3 * index.vertex_index + 1], 
+                                            attrib.vertices[3 * index.vertex_index + 2]);
 
-                    Vertex vertex{};
+                if (!attrib.normals.empty() && index.normal_index >= 0) {
 
-                    vertex.Position = glm::vec3(
-                        attrib.vertices[3 * index.vertex_index + 0],
-                        attrib.vertices[3 * index.vertex_index + 1],
-                        attrib.vertices[3 * index.vertex_index + 2]);
+                    vertex.Normal = glm::vec3(
+                        attrib.normals[3 * index.normal_index + 0],
+                        attrib.normals[3 * index.normal_index + 1],
+                        attrib.normals[3 * index.normal_index + 2]);
+                }
 
-                    if (!attrib.normals.empty() && index.normal_index >= 0) {
+                // Asignamos indices
+                unsigned int vertexIndex;
 
-                        vertex.Normal = glm::vec3(
-                            attrib.normals[3 * index.normal_index + 0],
-                            attrib.normals[3 * index.normal_index + 1],
-                            attrib.normals[3 * index.normal_index + 2]);
-                    }
 
-                    // Asignamos indices
-                    unsigned int vertexIndex;
+                // Deduplicacion de vertices
+                auto it = uniqueVertices.find(vertex);
 
-                    if (uniqueVertices.count(vertex) == 0) {
+                if (it == uniqueVertices.end()) { // Si no existe otro vértice con la misma posicion y normal(usa el hash para comparar)
                         
-                        vertexIndex = vertices.size();
+                    vertexIndex = vertices.size();
+                    uniqueVertices[vertex] = vertexIndex;
 
-                        uniqueVertices[vertex] = vertexIndex;
+                    vertices.push_back(vertex);
 
-                        vertices.push_back(vertex);
+                    unsigned int groupIndex;
 
-                        unsigned int groupIndex;
+                    // Asignamos un grupo por cada posicion unica para vertices
+                    auto it2 = positionIndexToGroup.find(index.vertex_index);
+                    if (it2 == positionIndexToGroup.end()) { // No encontrado antes, creamos nuevo grupo
 
-                        if (positionIndexToGroup.count(index.vertex_index) == 0) {
+                        groupIndex = vertexGroups.size();
 
-                            groupIndex = vertexGroups.size();
+                        positionIndexToGroup[index.vertex_index] = groupIndex;
 
-                            positionIndexToGroup[index.vertex_index] = groupIndex;
-
-                            vertexGroups.push_back({});
-                        }
-                        else {
-                            groupIndex = positionIndexToGroup[index.vertex_index];
-                        }
-
-                        vertexGroups[groupIndex].push_back(vertexIndex);
-
-                        vertexToGroup.push_back(groupIndex);
+                        // Creamos un grupo nuevo vacío
+                        vertexGroups.push_back({});
                     }
                     else {
-                        vertexIndex = uniqueVertices[vertex];
+                        groupIndex = it2->second;
                     }
 
-                    polygon.vertices.push_back(vertexIndex);
+                    vertexGroups[groupIndex].push_back(vertexIndex);
+                    vertexToGroup.push_back(groupIndex);
+                }
+                else { // Ya existia el vertice previamente, no lo duplicamos sino que usamos el ya existente
+                    vertexIndex = it->second;
                 }
 
-                // Almacenamos el poligono
-                polygons.push_back(polygon);
-
-                // El renderizado sigue usando triangulos, asi que los guardamos como tal
-                for (int i = 1; i < faceVertices - 1; ++i) {
-
-                    indices.push_back(polygon.vertices[0]);
-                    indices.push_back(polygon.vertices[i]);
-                    indices.push_back(polygon.vertices[i + 1]);
-                }
-
-                indexOffset += faceVertices;
+                polygon.vertices.push_back(vertexIndex);
             }
+
+            polygons.push_back(polygon);
+
+            // El renderizado sigue usando triangulos, asi que los guardamos como tal
+            for (int i = 1; i < faceVertices - 1; ++i) {
+
+                indices.push_back(polygon.vertices[0]);
+                indices.push_back(polygon.vertices[i]);
+                indices.push_back(polygon.vertices[i + 1]);
+            }
+
+            indexOffset += faceVertices;
         }
 
     }
+
     std::cout << "Indices: " << indices.size() << std::endl;
     std::cout << "Vertices: " << vertices.size() << std::endl;
     std::cout << "VertexGroups: " << vertexGroups.size() << std::endl;
@@ -266,8 +270,8 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::recalculateNormals()
-{
+void Mesh::recalculateNormals() {
+
     // Reset normals
     for (auto& v : vertices)
         v.Normal = glm::vec3(0.0f);
@@ -294,13 +298,6 @@ void Mesh::recalculateNormals()
         v.Normal = glm::normalize(v.Normal);
 }
 
-void Mesh::updateVertex(int index) {
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferSubData(GL_ARRAY_BUFFER, index * sizeof(Vertex), sizeof(Vertex), &vertices[index]);
-}
-
 void Mesh::updateAllVertices() {
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -308,7 +305,7 @@ void Mesh::updateAllVertices() {
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
 }
 
-void Mesh::generateEdges() {
+void Mesh::generateEdges() { // !! tiene que haber una forma mejor de hacer esto        
 
     edges.clear();
 
@@ -343,8 +340,8 @@ void Mesh::generateEdges() {
 
 }
 
-void Mesh::generateFaces()
-{
+void Mesh::generateFaces() {
+
     faces.clear();
 
     for (size_t i = 0; i < indices.size(); i += 3) {
