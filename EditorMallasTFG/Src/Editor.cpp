@@ -65,6 +65,8 @@ bool Editor::init() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
+    renderMode = RenderMode::Solid;
+
     // Para el transparente de debug
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,6 +150,10 @@ MeshManipulator* Editor::getMeshManipulator() const {
     return meshManipulator;
 }
 
+void Editor::setRenderMode(RenderMode mode) {
+    renderMode = mode;
+}
+
 void Editor::logic() {
 
     if (!defaultMesh)
@@ -214,6 +220,17 @@ void Editor::render() {
     
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    switch (renderMode) {
+
+    case RenderMode::Solid:
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        break;
+
+    case RenderMode::Wireframe:
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        break;
+    }
+
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = camera->getViewMatrix();
     glm::mat4 projection = camera->getProjectionMatrix();
@@ -232,6 +249,8 @@ void Editor::render() {
 
     defaultMesh->draw();
 
+    // Aseguramos que otras cosas no se rendericen con el modo equivocado
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Lineas debug de elementos seleccionados
     drawDebug(MVP);

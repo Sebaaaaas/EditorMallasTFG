@@ -34,5 +34,7 @@ private:
 
 	void updateXYZPanel(double x, double y, double z);
 
+	void setupRenderMode();
+
 	void onEditorReady(Editor* editor);
 };
