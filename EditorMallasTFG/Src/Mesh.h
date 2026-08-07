@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 #include <glm.hpp>
 
@@ -43,7 +42,7 @@ struct std::hash<Vertex>
     }
 };
 
-struct Edge {
+struct Edge { // !! Nota: para extrusion probablemente necesario incorporar a que dos poligonos pertenece cada arista
     unsigned int v0;
     unsigned int v1;
 };
@@ -52,6 +51,11 @@ struct Face {
     unsigned int v0;
     unsigned int v1;
     unsigned int v2;
+};
+
+// Estructura que almacena caras en lugar de triangulos
+struct Polygon {
+    std::vector<unsigned int> vertices;
 };
 
 class Mesh
@@ -66,9 +70,7 @@ private:
     void setupMesh();
 
     // Despues de cargar la malla, usamos esta funcion para crear todos los pares de vertices que conforman lados
-    void generateEdges(); // !! mejorable
-
-    void generateFaces();
+    void generateEdges();
 
 public:
     std::vector<Vertex> vertices; // Vertices de renderizado, no total de vertices(en un cubo deben salir 24, ya que al no repetir, quedamos con 4 por cara, que conservan normales)
@@ -81,27 +83,22 @@ public:
 
     unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
 
-    std::vector<Edge> edges;
-    
-    std::vector<Face> faces;
+    std::vector<Edge> edges; // !! igual no deberian ser publicos estos
+    std::vector<Polygon> polygons;
 
-
-    Mesh(std::string path);
+    Mesh(const std::string& path);
     ~Mesh();
 
     void draw();
 
-    // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path", que debe encontrarse en la carpeta Bin/Assets
-    void loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
+    // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path"
+    void loadOBJ(const std::string& path);
 
+    // !! arreglar, lo guardamos triangulado
     void saveOBJ(const std::string& path);
     
     // Actualiza las normales de TODA la malla >> !! posible mejora es que solo recalcule normales que cambien
     void recalculateNormals();
-
-    // NO USAR: SI SE EDITA UNA MALLA GRANDE, EN VEZ DE MUCHAS LLAMADAS A ESTA FUNCION(MUCHAS LLAMADAS A GPU) LLAMAR UNA SOLA VEZ A "updateAllVertices"
-    // Manda informacion a la GPU para que actualice la posicion de un vertice.
-    void updateVertex(int index);
 
     // Manda a la GPU la informacion de toda la malla para que se vean cambios en pantalla
     void updateAllVertices();

@@ -12,9 +12,15 @@ class Mesh;
 
 class DebugRenderer;
 
+enum class RenderMode {
+	Solid,
+	Wireframe
+};
+
 class Editor
 {
 public:
+
 	Editor();
 	~Editor();
 
@@ -22,16 +28,15 @@ public:
 	void run();
 
 	void setWindowSize(int w, int h);
+
+	// Intenta cargar la malla en formato .obj en el directorio path(dentro de Bin/Assets). Si falla emite mensaje de error
 	bool loadMesh(const std::string& path);
 
 	void setSelectionMode(SelectionMode mode);
 
-	bool hasSelection() const;
-
-	glm::vec3 getSelectionPosition() const;
-
 	MeshManipulator* getMeshManipulator() const;
 
+	void setRenderMode(RenderMode mode);
 
 private:
 
@@ -40,8 +45,8 @@ private:
 	Camera* camera;
 
 	Mesh* defaultMesh;
-	Shader* defaultShader;
 	Shader* debugShader;
+	Shader* defaultShader;
 
 	// Clase que sirve para escoger vertices de la malla
 	Selector* selector;
@@ -50,14 +55,18 @@ private:
 
 	DebugRenderer* debugRenderer;
 
+	RenderMode renderMode;
+
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
-	// Para mover vertices, segmentos o caras  !! deberia estar aqui esto?
-	/*int selectedVertex = -1;
-	int selectedEdge = -1;*/
-	unsigned int selectedElement = -1;
+	// Para mover vertices, segmentos o caras
+	unsigned int hoveredElement = -1;
 
 	void logic();
 	void render();
+
+	// Dibuja el elemento actualmente seleccionado para remarcarlo
+	void drawDebug(const glm::mat4& MVP);
+
 };
 

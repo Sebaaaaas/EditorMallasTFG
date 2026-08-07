@@ -1,8 +1,8 @@
 #include "MainWindow.h"
 
-#include <qmenubar.h>
+#include <QMenuBar.h>
 #include <QActionGroup>
-#include <qdockwidget.h>
+#include <QDockWidget.h>
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QToolBar>
@@ -28,15 +28,22 @@ MainWindow::MainWindow() {
 	// Seleccion vertice/segmento/cara
 	setupSelectionMode();
 
+	// Modo transformacion mover/rotar/escalar
+	setupTransformMode();
+
 	// Caja con valores xyz de posicion... de objeto seleccionado
 	setupXYZPanel();
+
+	setupAxes();
+
+	setupRenderMode();
 
 	// Una vez el editor este cargado, llamaremos a onEditorReady para conectar elementos de la IU a funciones del editor
 	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
 }
 
-bool MainWindow::openFile()
-{
+bool MainWindow::openFile() {
+
 	QString fileName = QFileDialog::getOpenFileName(
 		this,				// padre
 		"Abrir archivo",	// título del cuadro
@@ -88,6 +95,44 @@ void MainWindow::setupSelectionMode() {
 		});
 }
 
+void MainWindow::setupTransformMode() {
+
+	QToolBar* toolbar = addToolBar("Modo transform");
+
+	QAction* moveAction = toolbar->addAction(QIcon("Assets/icons/move.png"), "Mover");
+	QAction* rotateAction = toolbar->addAction(QIcon("Assets/icons/rotate.png"), "Rotar");
+	QAction* scaleAction = toolbar->addAction(QIcon("Assets/icons/scale.png"), "Escalar");
+
+	moveAction->setCheckable(true);
+	rotateAction->setCheckable(true);
+	scaleAction->setCheckable(true);
+
+	QActionGroup* selectionGroup = new QActionGroup(this);
+	selectionGroup->setExclusive(true);
+
+	selectionGroup->addAction(moveAction);
+	selectionGroup->addAction(rotateAction);
+	selectionGroup->addAction(scaleAction);
+
+	moveAction->setChecked(true);
+
+	moveAction->setShortcut(Qt::Key_G);
+	rotateAction->setShortcut(Qt::Key_R);
+	scaleAction->setShortcut(Qt::Key_S);
+
+	connect(moveAction, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Translate);
+		});
+
+	connect(rotateAction, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Rotate);
+		});
+
+	connect(scaleAction, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Scale);
+		});
+}
+
 void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORMA DE REABRIRLO
 
 	QDockWidget* dock = new QDockWidget("Transform", this);
@@ -117,14 +162,51 @@ void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORM
 	
 }
 
-//void MainWindow::updateXYZPanel() {
-//
-//	glm::vec3 p = canvas->getEditor()->getSelectionPosition();
-//
-//	xSpin->setValue(p.x);
-//	ySpin->setValue(p.y);
-//	zSpin->setValue(p.z);
-//}
+void MainWindow::setupAxes() {
+	QToolBar* toolbar = addToolBar("Modo transform");
+
+	QAction* X = toolbar->addAction(QIcon("Assets/icons/x.png"), "Mover");
+	QAction* Y = toolbar->addAction(QIcon("Assets/icons/y.png"), "Rotar");
+	QAction* Z = toolbar->addAction(QIcon("Assets/icons/z.png"), "Escalar");
+	QAction* All = toolbar->addAction(QIcon("Assets/icons/all.png"), "Todos");
+
+	X->setCheckable(true);
+	Y->setCheckable(true);
+	Z->setCheckable(true);
+	All->setCheckable(true);
+
+	QActionGroup* selectionGroup = new QActionGroup(this);
+	selectionGroup->setExclusive(true);
+
+	selectionGroup->addAction(X);
+	selectionGroup->addAction(Y);
+	selectionGroup->addAction(Z);
+	selectionGroup->addAction(All);
+
+	X->setChecked(true);
+
+	X->setShortcut(Qt::Key_X);
+	Y->setShortcut(Qt::Key_Y);
+	Z->setShortcut(Qt::Key_Z);
+	All->setShortcut(Qt::Key_A);
+
+	connect(X, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::X);
+		});
+
+	connect(Y, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::Y);
+		});
+
+	connect(Z, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::Z);
+		});
+	
+	connect(All, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::All);
+		});
+}
+
 void MainWindow::updateXYZPanel(double x, double y, double z) {
 
 	QSignalBlocker blockerX(xSpin);
@@ -134,6 +216,37 @@ void MainWindow::updateXYZPanel(double x, double y, double z) {
 	xSpin->setValue(x);
 	ySpin->setValue(y);
 	zSpin->setValue(z);
+}
+
+void MainWindow::setupRenderMode() {
+
+	QToolBar* toolbar = addToolBar("Render");
+
+	QAction* solid = toolbar->addAction(QIcon("Assets/icons/solid.png"), "Solid");
+
+	QAction* wire = toolbar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe");
+
+	solid->setCheckable(true);
+	wire->setCheckable(true);
+
+	QActionGroup* group = new QActionGroup(this);
+	group->setExclusive(true);
+
+	group->addAction(solid);
+	group->addAction(wire);
+
+	solid->setChecked(true);
+
+	solid->setShortcut(Qt::Key_F);
+	wire->setShortcut(Qt::Key_W);
+
+	connect(solid, &QAction::triggered, this, [this]() {
+			canvas->getEditor()->setRenderMode(RenderMode::Solid);
+		});
+
+	connect(wire, &QAction::triggered, this, [this]() {
+			canvas->getEditor()->setRenderMode(RenderMode::Wireframe);
+		});
 }
 
 void MainWindow::onEditorReady(Editor* editor) {
@@ -149,10 +262,6 @@ void MainWindow::onEditorReady(Editor* editor) {
 	connect(zSpin, &QDoubleSpinBox::valueChanged,
 		manipulator, &MeshManipulator::setSelectedZPosition);
 
-	/*connect(manipulator,
-		&MeshManipulator::setSelectedXPosition,
-		this,
-		&MainWindow::updateXYZPanel);*/
 	connect(manipulator,
 		&MeshManipulator::selectedPositionChanged,
 		this,
