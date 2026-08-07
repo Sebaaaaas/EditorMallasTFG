@@ -36,6 +36,8 @@ MainWindow::MainWindow() {
 
 	setupAxes();
 
+	setupRenderMode();
+
 	// Una vez el editor este cargado, llamaremos a onEditorReady para conectar elementos de la IU a funciones del editor
 	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
 }
@@ -214,6 +216,37 @@ void MainWindow::updateXYZPanel(double x, double y, double z) {
 	xSpin->setValue(x);
 	ySpin->setValue(y);
 	zSpin->setValue(z);
+}
+
+void MainWindow::setupRenderMode() {
+
+	QToolBar* toolbar = addToolBar("Render");
+
+	QAction* solid = toolbar->addAction(QIcon("Assets/icons/solid.png"), "Solid");
+
+	QAction* wire = toolbar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe");
+
+	solid->setCheckable(true);
+	wire->setCheckable(true);
+
+	QActionGroup* group = new QActionGroup(this);
+	group->setExclusive(true);
+
+	group->addAction(solid);
+	group->addAction(wire);
+
+	solid->setChecked(true);
+
+	solid->setShortcut(Qt::Key_F);
+	wire->setShortcut(Qt::Key_W);
+
+	connect(solid, &QAction::triggered, this, [this]() {
+			canvas->getEditor()->setRenderMode(RenderMode::Solid);
+		});
+
+	connect(wire, &QAction::triggered, this, [this]() {
+			canvas->getEditor()->setRenderMode(RenderMode::Wireframe);
+		});
 }
 
 void MainWindow::onEditorReady(Editor* editor) {

@@ -1,8 +1,10 @@
 #include "Mesh.h"
 
+#include <unordered_map>
 #include <iostream>
-#include <glad/gl.h>
 #include <set>
+
+#include <glad/gl.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -18,7 +20,6 @@ Mesh::Mesh(const std::string& path) {
     loadOBJ(path);
 
     generateEdges();
-    generateFaces();
 
     setupMesh();
 }
@@ -74,7 +75,7 @@ void Mesh::loadOBJ(const std::string& path) {
         throw std::runtime_error("Fallo en la carga de OBJ");
  
 
-    // Almacenamos la informacion relevante en nuestra malla
+    // Almacenamos la informacion relevante en nuestra clase Mesh
     
     // Utilizamos uniqueVertices para deduplicacion
     std::unordered_map<Vertex, unsigned int> uniqueVertices;
@@ -114,7 +115,6 @@ void Mesh::loadOBJ(const std::string& path) {
                 // Asignamos indices
                 unsigned int vertexIndex;
 
-
                 // Deduplicacion de vertices
                 auto it = uniqueVertices.find(vertex);
 
@@ -135,7 +135,7 @@ void Mesh::loadOBJ(const std::string& path) {
 
                         positionIndexToGroup[index.vertex_index] = groupIndex;
 
-                        // Creamos un grupo nuevo vacío
+                        // Creamos un grupo nuevo vacio
                         vertexGroups.push_back({});
                     }
                     else {
@@ -232,8 +232,8 @@ void Mesh::saveOBJ(const std::string& path) {
 }
 
 // https://learnopengl.com/Model-Loading/Mesh
-void Mesh::setupMesh()
-{
+void Mesh::setupMesh() {
+
     // Creacion de buffers
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -252,11 +252,11 @@ void Mesh::setupMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_DYNAMIC_DRAW);
 
-    // Indicamos cómo se deben leer los VBO a base de "rellenar" la info del VAO
+    // Indicamos como se deben leer los VBO a base de "rellenar" la info del VAO
     // Posiciones
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, // indice de atributo (igual que en el vertex shader - layout (location = 0) in), numero de componentes (x, y, z), que tipo es, deberia OpenGL normalizar los valores?
-        sizeof(Vertex),                             // stride: tamaño total de un vertice
+        sizeof(Vertex),                             // stride: tamanio total de un vertice
         (void*)0);                                  // offset: donde comienza este atributo
     
     // Normales         
@@ -315,13 +315,13 @@ void Mesh::generateEdges() {
 
     for (const Polygon& polygon : polygons) {
 
-        unsigned int vertexCount = polygon.vertices.size();
+        size_t vertexCount = polygon.vertices.size();
 
-        // Si hubiera un polígono que fuera únicamente un vértice
+        // Si hubiera un poligono que fuera únicamente un vértice
         if (vertexCount < 2)
             continue;
 
-        // Recorremos los vértices del poligono, creando aristas
+        // Recorremos los vertices del poligono, creando aristas
         for (int i = 0; i < vertexCount; ++i) {
 
             unsigned int a = polygon.vertices[i];
@@ -338,22 +338,4 @@ void Mesh::generateEdges() {
 
     std::cout << "Edges: " << edges.size() << std::endl;
 
-}
-
-void Mesh::generateFaces() {
-
-    faces.clear();
-
-    for (size_t i = 0; i < indices.size(); i += 3) {
-
-        Face face;
-
-        face.v0 = indices[i];
-        face.v1 = indices[i + 1];
-        face.v2 = indices[i + 2];
-
-        faces.push_back(face);
-    }
-
-    std::cout << "Faces: " << faces.size() << std::endl;
 }

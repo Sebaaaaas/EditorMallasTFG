@@ -1,8 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 #include <glm.hpp>
 
@@ -43,7 +42,7 @@ struct std::hash<Vertex>
     }
 };
 
-struct Edge { // !! Nota: para extrusion probablemente necesario incorporar a qué dos poligonos pertenece cada arista
+struct Edge { // !! Nota: para extrusion probablemente necesario incorporar a que dos poligonos pertenece cada arista
     unsigned int v0;
     unsigned int v1;
 };
@@ -73,8 +72,6 @@ private:
     // Despues de cargar la malla, usamos esta funcion para crear todos los pares de vertices que conforman lados
     void generateEdges();
 
-    void generateFaces();
-
 public:
     std::vector<Vertex> vertices; // Vertices de renderizado, no total de vertices(en un cubo deben salir 24, ya que al no repetir, quedamos con 4 por cara, que conservan normales)
     std::vector<unsigned int> indices;
@@ -86,8 +83,7 @@ public:
 
     unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
 
-    std::vector<Edge> edges;    
-    std::vector<Face> faces;
+    std::vector<Edge> edges; // !! igual no deberian ser publicos estos
     std::vector<Polygon> polygons;
 
     Mesh(const std::string& path);

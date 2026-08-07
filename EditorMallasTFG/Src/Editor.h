@@ -12,6 +12,11 @@ class Mesh;
 
 class DebugRenderer;
 
+enum class RenderMode {
+	Solid,
+	Wireframe
+};
+
 class Editor
 {
 public:
@@ -31,6 +36,7 @@ public:
 
 	MeshManipulator* getMeshManipulator() const;
 
+	void setRenderMode(RenderMode mode);
 
 private:
 
@@ -49,6 +55,8 @@ private:
 
 	DebugRenderer* debugRenderer;
 
+	RenderMode renderMode;
+
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
 	// Para mover vertices, segmentos o caras
@@ -59,5 +67,6 @@ private:
 
 	// Dibuja el elemento actualmente seleccionado para remarcarlo
 	void drawDebug(const glm::mat4& MVP);
+
 };
 
