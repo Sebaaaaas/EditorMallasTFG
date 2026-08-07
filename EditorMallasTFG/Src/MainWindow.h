@@ -20,18 +20,21 @@ private:
 	QDoubleSpinBox* ySpin;
 	QDoubleSpinBox* zSpin;
 
-	/*QSignalBlocker blockerx(xSpin);
-	QSignalBlocker blockery(ySpin);
-	QSignalBlocker blockerz(zSpin);*/
-
 	bool openFile();
 
 	// Menu de seleccion para cambiar entre seleccion de vertices, segmentos y caras
 	void setupSelectionMode();
 
+	// Menu para elegir entre mover, rotar o escalar
+	void setupTransformMode();
+
 	void setupXYZPanel();
 
+	void setupAxes();
+
 	void updateXYZPanel(double x, double y, double z);
+
+	void setupRenderMode();
 
 	void onEditorReady(Editor* editor);
 };

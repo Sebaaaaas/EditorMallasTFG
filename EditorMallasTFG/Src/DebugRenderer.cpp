@@ -1,5 +1,7 @@
 #include "DebugRenderer.h"
 
+#include "Mesh.h"
+
 DebugRenderer::DebugRenderer()
 {
     glGenVertexArrays(1, &vao);
@@ -69,6 +71,7 @@ void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
 }
 
 void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+
     float vertices[9] =
     {
         a.x,a.y,a.z,
@@ -89,4 +92,23 @@ void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const g
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void DebugRenderer::drawEdge(const Mesh& mesh, const Edge& edge) {
+    glm::vec3 a = mesh.vertices[edge.v0].Position;
+    glm::vec3 b = mesh.vertices[edge.v1].Position;
+
+    drawLine(a, b);
+}
+
+void DebugRenderer::drawPolygon(const Mesh& mesh, const Polygon& polygon) {
+    
+    for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i) {
+
+        glm::vec3 a = mesh.vertices[polygon.vertices[0]].Position;
+        glm::vec3 b = mesh.vertices[polygon.vertices[i]].Position;
+        glm::vec3 c = mesh.vertices[polygon.vertices[i + 1]].Position;
+
+        drawTriangle(a, b, c);
+    }
 }
