@@ -1,8 +1,8 @@
 #include "MainWindow.h"
 
-#include <qmenubar.h>
+#include <QMenuBar.h>
 #include <QActionGroup>
-#include <qdockwidget.h>
+#include <QDockWidget.h>
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QToolBar>

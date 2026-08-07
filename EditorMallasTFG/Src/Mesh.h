@@ -86,28 +86,23 @@ public:
 
     unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
 
-    std::vector<Edge> edges;
-    
+    std::vector<Edge> edges;    
     std::vector<Face> faces;
-
     std::vector<Polygon> polygons;
 
-    Mesh(std::string path);
+    Mesh(const std::string& path);
     ~Mesh();
 
     void draw();
 
     // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path"
-    void loadOBJ(const std::string& path, std::vector<Vertex>& vertices, std::vector<unsigned int>& indices);
+    void loadOBJ(const std::string& path);
 
+    // !! arreglar, lo guardamos triangulado
     void saveOBJ(const std::string& path);
     
     // Actualiza las normales de TODA la malla >> !! posible mejora es que solo recalcule normales que cambien
     void recalculateNormals();
-
-    // NO USAR: SI SE EDITA UNA MALLA GRANDE, EN VEZ DE MUCHAS LLAMADAS A ESTA FUNCION(MUCHAS LLAMADAS A GPU) LLAMAR UNA SOLA VEZ A "updateAllVertices"
-    // Manda informacion a la GPU para que actualice la posicion de un vertice.
-    void updateVertex(int index);
 
     // Manda a la GPU la informacion de toda la malla para que se vean cambios en pantalla
     void updateAllVertices();
