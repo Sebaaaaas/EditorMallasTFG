@@ -31,6 +31,7 @@ Editor::Editor() {
     meshManipulator = nullptr;
     debugRenderer = nullptr;
 
+    hoveredElement = -1;
     renderMode = RenderMode::Solid;
 }
 

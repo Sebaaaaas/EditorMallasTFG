@@ -221,10 +221,6 @@ const std::unordered_set<unsigned int>& MeshManipulator::getSelectedPolygons() c
     return selectedPolygons;
 }
 
-std::unordered_set<unsigned int> MeshManipulator::getSelectedGroups() {
-    return selectedGroups;
-}
-
 void MeshManipulator::setTransformMode(TransformMode mode) {
     transformMode = mode;
 }

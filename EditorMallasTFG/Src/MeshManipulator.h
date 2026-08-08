@@ -55,12 +55,10 @@ public:
     void clearSelection(); // !! esto seguramente deberia ir en el selector
     bool hasSelection() const; // !! esto seguramente deberia ir en el selector
 
+    // Devuelve un conjunto con los indices de los vertices que han sido seleccionados
     const std::unordered_set<unsigned int>& getSelectedGroups() const;
     const std::unordered_set<unsigned int>& getSelectedEdges() const;
-    const std::unordered_set<unsigned int>& getSelectedPolygons() const;
-
-    // Devuelve un conjunto con los indices de los vertices que han sido seleccionados
-    std::unordered_set<unsigned int> getSelectedGroups();
+    const std::unordered_set<unsigned int>& getSelectedPolygons() const;   
 
     void setTransformMode(TransformMode mode);
     void setTransformAxis(TransformAxis axis);
