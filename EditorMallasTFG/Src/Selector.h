@@ -43,7 +43,7 @@ private:
     float minSelectDistancePixels;
     float minEdgeDistancePixels;
 
-    // Variable que influye en qué priorizamos, distancia al raton del vertice seleccionado o profundidad
+    // Variable que influye en que priorizamos, distancia al raton del vertice seleccionado o profundidad
     const float distanceEpsilon = 2.0f;
 
     std::vector<ProjectedVertex> projectedVertices; // Almacenamos vertices de la malla proyectados en la pantalla

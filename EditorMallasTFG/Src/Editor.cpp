@@ -30,6 +30,8 @@ Editor::Editor() {
     selector = nullptr;
     meshManipulator = nullptr;
     debugRenderer = nullptr;
+
+    renderMode = RenderMode::Solid;
 }
 
 Editor::~Editor() {
@@ -64,8 +66,6 @@ bool Editor::init() {
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-
-    renderMode = RenderMode::Solid;
 
     // Para el transparente de debug
     glEnable(GL_BLEND);
@@ -212,8 +212,13 @@ void Editor::logic() {
 
     // Guardar modelo !! siempre se guarda con el mismo nombre
     if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyDown(Qt::Key_S)) {
+        std::cout << "Mesh saved" << std::endl;
         defaultMesh->saveOBJ("Assets/edited.obj");
     }
+
+    if (Input::isKeyPressed(Qt::Key_E))
+        meshManipulator->extrudeSelection(0.5);
+
 }
 
 void Editor::render() {

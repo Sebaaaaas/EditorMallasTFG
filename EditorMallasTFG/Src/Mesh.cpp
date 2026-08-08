@@ -19,6 +19,7 @@ Mesh::Mesh(const std::string& path) {
 
     loadOBJ(path);
 
+    generateIndices();
     generateEdges();
 
     setupMesh();
@@ -118,7 +119,7 @@ void Mesh::loadOBJ(const std::string& path) {
                 // Deduplicacion de vertices
                 auto it = uniqueVertices.find(vertex);
 
-                if (it == uniqueVertices.end()) { // Si no existe otro vértice con la misma posicion y normal(usa el hash para comparar)
+                if (it == uniqueVertices.end()) { // Si no existe otro vertice con la misma posicion y normal(usa el hash para comparar)
                         
                     vertexIndex = vertices.size();
                     uniqueVertices[vertex] = vertexIndex;
@@ -154,13 +155,13 @@ void Mesh::loadOBJ(const std::string& path) {
 
             polygons.push_back(polygon);
 
-            // El renderizado sigue usando triangulos, asi que los guardamos como tal
-            for (int i = 1; i < faceVertices - 1; ++i) {
+            //// El renderizado sigue usando triangulos, asi que los guardamos como tal
+            //for (int i = 1; i < faceVertices - 1; ++i) {
 
-                indices.push_back(polygon.vertices[0]);
-                indices.push_back(polygon.vertices[i]);
-                indices.push_back(polygon.vertices[i + 1]);
-            }
+            //    indices.push_back(polygon.vertices[0]);
+            //    indices.push_back(polygon.vertices[i]);
+            //    indices.push_back(polygon.vertices[i + 1]);
+            //}
 
             indexOffset += faceVertices;
         }
@@ -180,7 +181,7 @@ void Mesh::saveOBJ(const std::string& path) {
     if (!file.is_open())
         return;
 
-    // Guardamos vertices, solo uno por cada vertexGroup, para que no pongamos de más
+    // Guardamos vertices, solo uno por cada vertexGroup, para que no pongamos de mas
     std::vector<unsigned int> groupToObjIndex(vertexGroups.size());
 
     unsigned int objIndex = 1;
@@ -271,13 +272,47 @@ void Mesh::setupMesh() {
     glBindVertexArray(0);
 }
 
+void Mesh::generateEdges() {
+
+    // Por si acaso quedan aristas, pero habitualmente deberia de haberse borrado la malla antigua y generado una nueva
+    edges.clear();
+
+    std::set<std::pair<unsigned int, unsigned int>> uniqueEdges;
+
+    for (const Polygon& polygon : polygons) {
+
+        size_t vertexCount = polygon.vertices.size();
+
+        // Si hubiera un poligono que fuera unicamente un vertice
+        if (vertexCount < 2)
+            continue;
+
+        // Recorremos los vertices del poligono, creando aristas
+        for (int i = 0; i < vertexCount; ++i) {
+
+            unsigned int a = polygon.vertices[i];
+            unsigned int b = polygon.vertices[(i + 1) % vertexCount]; // Modulo permite evitar tener que poner un caso especial de if para unir el vertice vertexCount-1 al 0
+
+            // Devuelve los dos valores de forma ordenada
+            std::pair edgePair = std::minmax(a, b);
+
+            if (uniqueEdges.insert(edgePair).second) { // Si ya existia en el conjunto, devolvera false
+                edges.push_back({ edgePair.first, edgePair.second });
+            }
+        }
+    }
+
+    std::cout << "Edges: " << edges.size() << std::endl;
+
+}
+
 void Mesh::recalculateNormals() {
 
-    // Reset normals
+    // Reseteamos normales
     for (auto& v : vertices)
         v.Normal = glm::vec3(0.0f);
 
-    // Accumulate face normals
+    // Acumulamos normales de cada cara (de renderizado)
     for (size_t i = 0; i < indices.size(); i += 3)
     {
         Vertex& v0 = vertices[indices[i]];
@@ -294,7 +329,7 @@ void Mesh::recalculateNormals() {
         v2.Normal += normal;
     }
 
-    // Normalize
+    // Normalizamos
     for (auto& v : vertices)
         v.Normal = glm::normalize(v.Normal);
 }
@@ -303,39 +338,102 @@ void Mesh::updateAllVertices() {
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data());
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        vertices.size() * sizeof(Vertex),
+        vertices.data(),
+        GL_DYNAMIC_DRAW
+    );
 }
 
-void Mesh::generateEdges() {
+unsigned int Mesh::addVertex(const Vertex& vertex) {
 
-    // Por si acaso quedan aristas, pero habitualmente deberia de haberse borrado la malla antigua y generado una nueva
-    edges.clear();
+    unsigned int idx = vertices.size();
+    vertices.push_back(vertex);
 
-    std::set<std::pair<unsigned int, unsigned int>> uniqueEdges;
+    // Como al crear un nuevo vertice, asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
+    unsigned int groupIndex = vertexGroups.size();
+    vertexGroups.push_back({idx});
+    vertexToGroup.push_back(groupIndex);
+
+    return idx;
+}
+
+unsigned int Mesh::addPolygon(const Polygon& polygon) {
+    
+    unsigned int idx = polygons.size();
+
+    polygons.push_back(polygon);
+
+    return idx;
+}
+
+glm::vec3 Mesh::polygonNormal(unsigned int polygonIndex) {
+
+    const Polygon& polygon = polygons[polygonIndex];
+
+    if (polygon.vertices.size() < 3)
+        return glm::vec3(0.0f);
+
+    // Nos basta con tres vertices del poligono para conocer la normal
+    const glm::vec3& a = vertices[polygon.vertices[0]].Position;
+    const glm::vec3& b = vertices[polygon.vertices[1]].Position;
+    const glm::vec3& c = vertices[polygon.vertices[2]].Position;
+
+    glm::vec3 ab = b - a;
+    glm::vec3 ac = c - a;
+
+    // Obtenemos el vector perpendicular al poligono
+    glm::vec3 normal = glm::cross(ab, ac);
+
+    float length = glm::length(normal);
+
+    if (length < 0.00001f)
+        return glm::vec3(0.0f);
+
+    return glm::normalize(normal);
+}
+
+void Mesh::generateIndices() {
+
+    indices.clear();
 
     for (const Polygon& polygon : polygons) {
 
-        size_t vertexCount = polygon.vertices.size();
-
-        // Si hubiera un poligono que fuera únicamente un vértice
-        if (vertexCount < 2)
+        if (polygon.vertices.size() < 3)
             continue;
 
-        // Recorremos los vertices del poligono, creando aristas
-        for (int i = 0; i < vertexCount; ++i) {
+        unsigned int first = polygon.vertices[0];
 
-            unsigned int a = polygon.vertices[i];
-            unsigned int b = polygon.vertices[(i + 1) % vertexCount]; // Modulo permite evitar tener que poner un caso especial de if para unir el vertice vertexCount-1 al 0
-
-            // Devuelve los dos valores de forma ordenada
-            std::pair edgePair = std::minmax(a, b);
-
-            if (uniqueEdges.insert(edgePair).second) { // Si ya existia en el conjunto, devolvera false
-                edges.push_back({edgePair.first, edgePair.second});
-            }
+        for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i)
+        {
+            indices.push_back(first);
+            indices.push_back(polygon.vertices[i]);
+            indices.push_back(polygon.vertices[i + 1]);
         }
     }
+}
 
-    std::cout << "Edges: " << edges.size() << std::endl;
+void Mesh::updateIndices() {
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        indices.size() * sizeof(unsigned int),
+        indices.data(),
+        GL_DYNAMIC_DRAW
+    );
+}
+
+void Mesh::rebuildTopology() {
+    
+    generateEdges();
+
+    generateIndices();
+    
+    updateAllVertices();
+    updateIndices();
+
+    recalculateNormals();
 }

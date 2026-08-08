@@ -9,6 +9,7 @@ class Input
 public:
 
     static bool isKeyDown(int key);
+    static bool isKeyPressed(int key);
     static bool isMouseButtonDown(int button);
 
     static float getMouseDeltaX();
@@ -30,6 +31,7 @@ public:
 private:
 
     static std::unordered_set<int> pressedKeys;
+    static std::unordered_set<int> previousPressedKeys; // Para frame anterior, permite saber si una tecla se ha pulsado este frame
 
     static bool mouseButtons[8];
 

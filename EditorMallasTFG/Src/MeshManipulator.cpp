@@ -233,6 +233,39 @@ void MeshManipulator::setTransformAxis(TransformAxis axis) {
     transformAxis = axis;
 }
 
+void MeshManipulator::extrudeSelection(float distance) {
+
+    if (!currentMesh || selectedPolygons.empty())
+        return;
+
+    for (unsigned int polygonIndex : selectedPolygons) {
+
+        const Polygon base = currentMesh->polygons[polygonIndex];
+
+        glm::vec3 normal = currentMesh->polygonNormal(polygonIndex);
+
+        std::vector<unsigned int> topVertices;
+
+        for (unsigned int vertexIndex : base.vertices) {
+
+            unsigned int newVertex = currentMesh->addVertex(currentMesh->vertices[vertexIndex]);
+
+            topVertices.push_back(newVertex);
+        }
+
+        // Movemos los vertices una pequenia distancia para diferenciarlos
+        moveVerticesAlongNormal(topVertices, normal, distance);
+
+        // Deja de existir la cara anterior, cambiamos el poligono para que use los nuevos vertices
+        currentMesh->polygons[polygonIndex].vertices = topVertices;
+
+        // Construimos los nuevos poligonos que se forman desde la base hasta el poligono ahora extruido
+        createSidePolygons(base.vertices, topVertices);
+    }
+
+    currentMesh->rebuildTopology();
+}
+
 void MeshManipulator::setSelectedXPosition(double value) {    
     glm::vec3 center = selectionCenter();
     translateSelection(glm::vec3(value - center.x, 0.0f, 0.0f));
@@ -314,4 +347,32 @@ void MeshManipulator::scaleSelection(glm::vec3 scale) {
     transform = glm::scale(transform, scale);
 
     transformSelection(transform);
+}
+
+void MeshManipulator::moveVerticesAlongNormal(std::vector<unsigned int> vertexIndices, glm::vec3 normal, float distance) {
+
+    for (unsigned int vertexIndex : vertexIndices) {
+        currentMesh->vertices[vertexIndex].Position += normal * distance;
+    }
+}
+
+void MeshManipulator::createSidePolygons(const std::vector<unsigned int>& baseVertices, const std::vector<unsigned int>& topVertices) {
+
+    size_t vertexCount = baseVertices.size();
+
+    for (size_t i = 0; i < vertexCount; ++i) {
+
+        size_t next = (i + 1) % vertexCount;
+
+        Polygon side;
+
+        side.vertices = {
+            baseVertices[i],
+            baseVertices[next],
+            topVertices[next],
+            topVertices[i]
+        };
+
+        currentMesh->addPolygon(side);
+    }
 }
