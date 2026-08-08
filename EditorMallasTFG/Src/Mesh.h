@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_set>
 #include <string>
 #include <vector>
 
@@ -67,21 +68,24 @@ private:
                                 // En lugar de mandarlo continuamente desde la CPU, lo cargamos una vez en la memoria de GPU, para que lo pueda usar mas rapido
                                 // Element Buffer Objects (o Index Buffer) - Si quieres reutilizar info en lugar de repetirte, guarda indices que hacen referencia a vertices en el VBO (deduplicacion)
 
+    unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
+
     void setupMesh();
 
     // Despues de cargar la malla, usamos esta funcion para crear todos los pares de vertices que conforman lados
     void generateEdges();
 
 public:
-    std::vector<Vertex> vertices; // Vertices de renderizado, no total de vertices(en un cubo deben salir 24, ya que al no repetir, quedamos con 4 por cara, que conservan normales)
-    std::vector<unsigned int> indices;
+
+    std::vector<Vertex> vertices; // Almacena todos los vertices de la malla. Son vertices de renderizado(en un cubo deben salir 24, a 4 por cara)
+    std::vector<unsigned int> indices; // Aqui se almacenan los vertices triangulados que se enviaran a la GPU, debe ser actualizado al crear y destruir vertices o no se pintara
+                                       // correctamente
     //std::vector<Texture> textures;
 
     // Mapeado para mover vertices en misma posicion
     std::vector<std::vector<unsigned int>> vertexGroups; // Grupos de vertices con la misma posicion
     std::vector<unsigned int> vertexToGroup;             // Mapeado de vertice a su grupo
 
-    unsigned int VAO; // Vertex Array Objects - Ayuda a la GPU a interpretar los valores que tiene el buffer VBO, como si fuera un manual de instrucciones para la GPU
 
     std::vector<Edge> edges; // !! igual no deberian ser publicos estos
     std::vector<Polygon> polygons;
@@ -101,6 +105,19 @@ public:
     void recalculateNormals();
 
     // Manda a la GPU la informacion de toda la malla para que se vean cambios en pantalla
-    void updateAllVertices();
+    void updateAllVertices();        
+
+    unsigned int addVertex(const Vertex& vertex);
+
+    unsigned int addPolygon(const Polygon& polygon);
+
+    glm::vec3 polygonNormal(unsigned int polygonIndex);
+
+    // Genera indices a partir de los poligonos que conforman la malla
+    void generateIndices();
+    void updateIndices();
+
+    // Cuando hay creacion o destruccion de elementos de la malla, debemos actualizar todos los vectores a los que afecte el cambio
+    void rebuildTopology();
 };
 

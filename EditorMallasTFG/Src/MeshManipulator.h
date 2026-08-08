@@ -3,11 +3,13 @@
 #include <glm.hpp>
 #include <unordered_set>
 
+#include "Mesh.h"
+
 #include <QObject>
 
+class Ray;
 class Mesh;
 class Camera;
-class Ray;
 
 enum class TransformMode
 {
@@ -63,12 +65,14 @@ public:
     void setTransformMode(TransformMode mode);
     void setTransformAxis(TransformAxis axis);
 
+    void extrudeSelection(float distance);
+
 
 signals:
     // Cuando cambia la posicion, actualizamos el los spinbox
     void selectedPositionChanged(double x, double y, double z);
 
-public slots: // Permite recibir señales de QWidgets cuando cambian sus valores https://doc.qt.io/qt-6/signalsandslots.html
+public slots: // Permite recibir seniales de QWidgets cuando cambian sus valores https://doc.qt.io/qt-6/signalsandslots.html
     void setSelectedXPosition(double value);
     void setSelectedYPosition(double value);
     void setSelectedZPosition(double value);
@@ -109,5 +113,9 @@ private:
     void rotateSelection(float angle, glm::vec3 axis);
 
     void scaleSelection(glm::vec3 scale);
+
+    void moveVerticesAlongNormal(std::vector<unsigned int> vertexIndices, glm::vec3 normal, float distance);
+
+    void createSidePolygons(const std::vector<unsigned int>& baseVertices, const std::vector<unsigned int>& topVertices);
 
 };

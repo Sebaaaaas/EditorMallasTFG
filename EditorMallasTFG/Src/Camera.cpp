@@ -63,8 +63,7 @@ void Camera::manageInput() {
         zoom(scroll);
     }
 
-    if (Input::isKeyDown(Qt::Key_F))
-    {
+    if (Input::isKeyDown(Qt::Key_F)) {
         reset();
     }
 }

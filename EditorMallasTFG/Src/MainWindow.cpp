@@ -16,7 +16,7 @@ MainWindow::MainWindow() {
 	canvas = new Canvas();
 	setCentralWidget(canvas);
 
-	// Crea un menú para abrir archivos
+	// Crea un menu para abrir archivos
 	QMenuBar* menuBar = this->menuBar();
 	QMenu* fileMenu = menuBar->addMenu("Archivo");
 	QAction* openAction = new QAction("Abrir", this);
@@ -46,7 +46,7 @@ bool MainWindow::openFile() {
 
 	QString fileName = QFileDialog::getOpenFileName(
 		this,				// padre
-		"Abrir archivo",	// título del cuadro
+		"Abrir archivo",	// titulo del cuadro
 		"./Assets/",					// directorio inicial
 		"Archivos OBJ (*.obj);;Todos los archivos (*)" // filtros
 	);
@@ -237,7 +237,7 @@ void MainWindow::setupRenderMode() {
 
 	solid->setChecked(true);
 
-	solid->setShortcut(Qt::Key_F);
+	solid->setShortcut(Qt::Key_Q);
 	wire->setShortcut(Qt::Key_W);
 
 	connect(solid, &QAction::triggered, this, [this]() {

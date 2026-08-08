@@ -1,6 +1,7 @@
 #include "Input.h"
 
 std::unordered_set<int> Input::pressedKeys;
+std::unordered_set<int> Input::previousPressedKeys;
 
 bool Input::mouseButtons[8] = { false };
 
@@ -26,6 +27,10 @@ void Input::update() {
 
 bool Input::isKeyDown(int key) {
     return pressedKeys.count(key) > 0;
+}
+
+bool Input::isKeyPressed(int key) {
+    return pressedKeys.count(key) > 0 && previousPressedKeys.count(key) == 0;
 }
 
 bool Input::isMouseButtonDown(int button) {
@@ -58,8 +63,11 @@ void Input::endFrame() {
 
     // Aunque no hace falta resetearlos actualmente, ya que se hace en Input::update, conceptualmente los dejo aqui por si cambiara
     // la estructura del programa en el futuro
-    deltaX = 0;
-    deltaY = 0;
+    /*deltaX = 0;
+    deltaY = 0;*/
+
+    previousPressedKeys = pressedKeys;
+
 }
 
 void Input::setKey(int key, bool pressed) {
