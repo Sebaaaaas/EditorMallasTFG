@@ -155,20 +155,11 @@ void Mesh::loadOBJ(const std::string& path) {
 
             polygons.push_back(polygon);
 
-            //// El renderizado sigue usando triangulos, asi que los guardamos como tal
-            //for (int i = 1; i < faceVertices - 1; ++i) {
-
-            //    indices.push_back(polygon.vertices[0]);
-            //    indices.push_back(polygon.vertices[i]);
-            //    indices.push_back(polygon.vertices[i + 1]);
-            //}
-
             indexOffset += faceVertices;
         }
 
     }
 
-    std::cout << "Indices: " << indices.size() << std::endl;
     std::cout << "Vertices: " << vertices.size() << std::endl;
     std::cout << "VertexGroups: " << vertexGroups.size() << std::endl;
 
@@ -412,6 +403,8 @@ void Mesh::generateIndices() {
             indices.push_back(polygon.vertices[i + 1]);
         }
     }
+
+    std::cout << "Indices: " << indices.size() << std::endl;
 }
 
 void Mesh::updateIndices() {
@@ -432,8 +425,8 @@ void Mesh::rebuildTopology() {
 
     generateIndices();
     
+    recalculateNormals();
+
     updateAllVertices();
     updateIndices();
-
-    recalculateNormals();
 }

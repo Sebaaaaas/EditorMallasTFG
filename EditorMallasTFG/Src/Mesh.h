@@ -48,12 +48,6 @@ struct Edge { // !! Nota: para extrusion probablemente necesario incorporar a qu
     unsigned int v1;
 };
 
-struct Face {
-    unsigned int v0;
-    unsigned int v1;
-    unsigned int v2;
-};
-
 // Estructura que almacena caras en lugar de triangulos
 struct Polygon {
     std::vector<unsigned int> vertices;
