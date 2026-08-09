@@ -22,6 +22,7 @@ Mesh::Mesh(const std::string& path) {
     generateIndices();
     generateEdges();
 
+    // Se llama despues de generateIndices ya que envia el contenido de indices a la GPU
     setupMesh();
 }
 
@@ -116,7 +117,7 @@ void Mesh::loadOBJ(const std::string& path) {
                 // Asignamos indices
                 unsigned int vertexIndex;
 
-                // Deduplicacion de vertices
+                // Asignacion de vertices a un mismo grupo si comparten posicion
                 auto it = uniqueVertices.find(vertex);
 
                 if (it == uniqueVertices.end()) { // Si no existe otro vertice con la misma posicion y normal(usa el hash para comparar)
@@ -130,7 +131,8 @@ void Mesh::loadOBJ(const std::string& path) {
 
                     // Asignamos un grupo por cada posicion unica para vertices
                     auto it2 = positionIndexToGroup.find(index.vertex_index);
-                    if (it2 == positionIndexToGroup.end()) { // No encontrado antes, creamos nuevo grupo
+
+                    if (it2 == positionIndexToGroup.end()) { // No encontrado antes, creamos nuevo grupo posicional
 
                         groupIndex = vertexGroups.size();
 
@@ -278,23 +280,28 @@ void Mesh::generateEdges() {
         if (vertexCount < 2)
             continue;
 
-        // Recorremos los vertices del poligono, creando aristas
+        // Recorremos los vertices del poligono, creando arista
         for (int i = 0; i < vertexCount; ++i) {
 
             unsigned int a = polygon.vertices[i];
             unsigned int b = polygon.vertices[(i + 1) % vertexCount]; // Modulo permite evitar tener que poner un caso especial de if para unir el vertice vertexCount-1 al 0
 
-            // Devuelve los dos valores de forma ordenada
-            std::pair edgePair = std::minmax(a, b);
+            // Deduplicamos por grupo (posicion), no por indice de renderizado, ya que dos caras distintas pueden compartir arista con vertices
+            // de renderizado distintos (normales distintas)
+            unsigned int groupA = vertexToGroup[a];
+            unsigned int groupB = vertexToGroup[b];
 
-            if (uniqueEdges.insert(edgePair).second) { // Si ya existia en el conjunto, devolvera false
-                edges.push_back({ edgePair.first, edgePair.second });
+            // Devuelve los dos valores de forma ordenada
+            std::pair groupPair = std::minmax(groupA, groupB);
+
+            if (uniqueEdges.insert(groupPair).second) { // Si ya existia en el conjunto, devolvera false y no lo introducira
+                // Seguimos guardando los indices de renderizado reales para poder dibujar la arista
+                edges.push_back({ a, b });
             }
         }
     }
 
     std::cout << "Edges: " << edges.size() << std::endl;
-
 }
 
 void Mesh::recalculateNormals() {
@@ -304,8 +311,8 @@ void Mesh::recalculateNormals() {
         v.Normal = glm::vec3(0.0f);
 
     // Acumulamos normales de cada cara (de renderizado)
-    for (size_t i = 0; i < indices.size(); i += 3)
-    {
+    for (size_t i = 0; i < indices.size(); i += 3) {
+
         Vertex& v0 = vertices[indices[i]];
         Vertex& v1 = vertices[indices[i + 1]];
         Vertex& v2 = vertices[indices[i + 2]];
@@ -396,8 +403,8 @@ void Mesh::generateIndices() {
 
         unsigned int first = polygon.vertices[0];
 
-        for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i)
-        {
+        for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i) {
+
             indices.push_back(first);
             indices.push_back(polygon.vertices[i]);
             indices.push_back(polygon.vertices[i + 1]);
