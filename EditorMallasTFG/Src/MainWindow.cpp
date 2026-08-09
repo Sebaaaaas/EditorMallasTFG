@@ -133,9 +133,12 @@ void MainWindow::setupTransformMode() {
 		});
 }
 
-void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORMA DE REABRIRLO
+void MainWindow::setupXYZPanel() {
 
 	QDockWidget* dock = new QDockWidget("Transform", this);
+
+	// Impide que se cierre el panel haciendo click en la x
+	dock->setFeatures(dock->features() & ~QDockWidget::DockWidgetClosable);
 
 	QWidget* panel = new QWidget();
 	QFormLayout* layout = new QFormLayout(panel);
