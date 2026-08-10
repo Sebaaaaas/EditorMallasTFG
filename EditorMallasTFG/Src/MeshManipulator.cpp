@@ -98,8 +98,12 @@ void MeshManipulator::updateTranslation(float mouseX, float mouseY, int w, int h
     case TransformAxis::Z:
         axis = glm::vec3(0, 0, 1);
         break;
-    }
 
+    case TransformAxis::All: // En este caso no hay eje
+        translateSelection(delta);
+        return;
+
+    }
     float amount = glm::dot(delta, axis);
 
     translateSelection(axis * amount);
@@ -124,6 +128,9 @@ void MeshManipulator::updateRotation(float mouseX, float mouseY) {
 
     case TransformAxis::Z:
         rotateSelection(angle, glm::vec3(0, 0, 1));        
+        break;
+    case TransformAxis::All:
+        rotateSelection(angle, dragPlaneNormal);
         break;
     }
 
