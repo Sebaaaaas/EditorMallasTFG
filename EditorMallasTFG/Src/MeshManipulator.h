@@ -103,6 +103,9 @@ private:
 
     glm::vec3 selectionCenter() const;
 
+    // Calcula transformPivot nuevo y escoge nuevos vértices, además de guardar posiciones originales. Llamar antes de realizar una operacion de transform
+    void refreshSelectionSnapshot();
+
     // Aplica una transformacion a la seleccion
     void transformSelection(const glm::mat4& transform);
 
