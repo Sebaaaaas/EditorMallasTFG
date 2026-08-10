@@ -256,14 +256,20 @@ void MainWindow::onEditorReady(Editor* editor) {
 
 	MeshManipulator* manipulator = editor->getMeshManipulator();
 
-	connect(xSpin, &QDoubleSpinBox::valueChanged,
-		manipulator, &MeshManipulator::setSelectedXPosition);
-	
-	connect(ySpin, &QDoubleSpinBox::valueChanged,
-		manipulator, &MeshManipulator::setSelectedYPosition);
-	
-	connect(zSpin, &QDoubleSpinBox::valueChanged,
-		manipulator, &MeshManipulator::setSelectedZPosition);
+	connect(xSpin, &QDoubleSpinBox::editingFinished,
+		this, [this]() {
+			canvas->getEditor()->getMeshManipulator()->setSelectedXPosition(xSpin->value());
+		});
+
+	connect(ySpin, &QDoubleSpinBox::editingFinished,
+		this, [this]() {
+			canvas->getEditor()->getMeshManipulator()->setSelectedYPosition(ySpin->value());
+		});
+
+	connect(zSpin, &QDoubleSpinBox::editingFinished,
+		this, [this]() {
+			canvas->getEditor()->getMeshManipulator()->setSelectedZPosition(zSpin->value());
+		});
 
 	connect(manipulator,
 		&MeshManipulator::selectedPositionChanged,
