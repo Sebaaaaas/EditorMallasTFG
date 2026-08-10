@@ -4,6 +4,7 @@ std::unordered_set<int> Input::pressedKeys;
 std::unordered_set<int> Input::previousPressedKeys;
 
 bool Input::mouseButtons[8] = { false };
+bool Input::previousMouseButtons[8] = { false };
 
 double Input::mouseX = 0;
 double Input::mouseY = 0;
@@ -37,6 +38,10 @@ bool Input::isMouseButtonDown(int button) {
     return mouseButtons[button];
 }
 
+bool Input::isMouseButtonUp(int button) {
+    return !mouseButtons[button] && previousMouseButtons[button];
+}
+
 float Input::getMouseDeltaX() {
     return deltaX;
 }
@@ -67,6 +72,9 @@ void Input::endFrame() {
     deltaY = 0;*/
 
     previousPressedKeys = pressedKeys;
+
+    for(int i = 0; i < 8; ++i) // !! magic number
+        previousMouseButtons[i] = mouseButtons[i];
 
 }
 
