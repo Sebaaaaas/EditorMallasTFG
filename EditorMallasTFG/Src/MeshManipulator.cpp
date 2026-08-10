@@ -29,7 +29,7 @@ void MeshManipulator::setEditingMesh(Mesh* mesh) {
     currentMesh = mesh;
 }
 
-void MeshManipulator::beginTransform(const Camera& camera, float mouseX, float mouseY) {
+void MeshManipulator::beginTransform(const Camera& camera, float mouseX, float mouseY, int w, int h) {
 
     if (selectedGroups.empty())
         return;
@@ -40,14 +40,19 @@ void MeshManipulator::beginTransform(const Camera& camera, float mouseX, float m
 
     transformPivot = selectionCenter();
 
-    dragStartPoint = transformPivot;
     dragPlaneNormal = camera.getPosition() - transformPivot;
+
+    // Encontramos el punto real donde el rayo del click inicial corta el plano de arrastre, para que el delta de traslacion empiece en cero sin importar donde dentro de la
+    // seleccion se haya hecho click
+    glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, w, h, camera.getViewMatrix(), camera.getProjectionMatrix());
+    glm::vec3 rayOrigin = camera.getPosition();
+
+    dragStartPoint = ray->intersectRayPlane(rayOrigin, rayDir, transformPivot, dragPlaneNormal);
+
 
     // Guardamos valores antes de empezar la transformacion pertinente
     selectedVertices.clear();
     originalPositions.clear();
-
-    transformPivot = selectionCenter();
 
     for (unsigned int group : selectedGroups) {
         for (unsigned int idx : currentMesh->vertexGroups[group]) {
@@ -231,32 +236,110 @@ void MeshManipulator::setTransformAxis(TransformAxis axis) {
 
 void MeshManipulator::extrudeSelection(float distance) {
 
+    //if (!currentMesh || selectedPolygons.empty())
+    //    return;
+
+    //for (unsigned int polygonIndex : selectedPolygons) {
+
+    //    const Polygon base = currentMesh->polygons[polygonIndex];
+
+    //    glm::vec3 normal = currentMesh->polygonNormal(polygonIndex);
+
+    //    std::vector<unsigned int> topVertices;
+
+    //    for (unsigned int vertexIndex : base.vertices) {
+
+    //        unsigned int newVertex = currentMesh->addVertex(currentMesh->vertices[vertexIndex]);
+
+    //        topVertices.push_back(newVertex);
+    //    }
+
+    //    // Movemos los vertices una pequenia distancia para diferenciarlos
+    //    moveVerticesAlongNormal(topVertices, normal, distance);
+
+    //    // Deja de existir la cara anterior, cambiamos el poligono para que use los nuevos vertices
+    //    currentMesh->polygons[polygonIndex].vertices = topVertices;
+
+    //    // Construimos los nuevos poligonos que se forman desde la base hasta el poligono ahora extruido
+    //    createSidePolygons(base.vertices, topVertices);
+    //}
+
+    //currentMesh->rebuildTopology();
     if (!currentMesh || selectedPolygons.empty())
         return;
 
+    // 1. Accumulate normal contributions per GROUP (shared position)
+    std::unordered_map<unsigned int, glm::vec3> normalSum;
+    for (unsigned int polygonIndex : selectedPolygons) {
+        glm::vec3 normal = currentMesh->polygonNormal(polygonIndex);
+        for (unsigned int v : currentMesh->polygons[polygonIndex].vertices) {
+            unsigned int group = currentMesh->vertexToGroup[v];
+            normalSum[group] += normal;
+        }
+    }
+
+    // 2. Create exactly one new vertex per GROUP
+    std::unordered_map<unsigned int, unsigned int> groupToNew;
+    for (auto& [group, sum] : normalSum) {
+        unsigned int templateVertex = currentMesh->vertexGroups[group][0];
+        Vertex newVertex = currentMesh->vertices[templateVertex];
+        newVertex.Position += glm::normalize(sum) * distance;
+        groupToNew[group] = currentMesh->addVertex(newVertex);
+    }
+
+    // 3. Count how many selected faces use each edge (by group pair), so we
+    //    only wall boundary edges of the selection, not interior shared edges
+    std::map<std::pair<unsigned int, unsigned int>, int> edgeUseCount;
+
+    for (unsigned int polygonIndex : selectedPolygons) {
+
+        const std::vector<unsigned int>& baseVerts = currentMesh->polygons[polygonIndex].vertices;
+        size_t count = baseVerts.size();
+
+        for (size_t i = 0; i < count; ++i) {
+
+            unsigned int groupA = currentMesh->vertexToGroup[baseVerts[i]];
+            unsigned int groupB = currentMesh->vertexToGroup[baseVerts[(i + 1) % count]];
+
+            edgeUseCount[std::minmax(groupA, groupB)]++;
+        }
+    }
+
+    // 4. Rebuild each selected face; only wall edges used by exactly one selected face
     for (unsigned int polygonIndex : selectedPolygons) {
 
         const Polygon base = currentMesh->polygons[polygonIndex];
-
-        glm::vec3 normal = currentMesh->polygonNormal(polygonIndex);
+        size_t count = base.vertices.size();
 
         std::vector<unsigned int> topVertices;
-
-        for (unsigned int vertexIndex : base.vertices) {
-
-            unsigned int newVertex = currentMesh->addVertex(currentMesh->vertices[vertexIndex]);
-
-            topVertices.push_back(newVertex);
+        for (unsigned int v : base.vertices) {
+            unsigned int group = currentMesh->vertexToGroup[v];
+            topVertices.push_back(groupToNew[group]);
         }
 
-        // Movemos los vertices una pequenia distancia para diferenciarlos
-        moveVerticesAlongNormal(topVertices, normal, distance);
+        for (size_t i = 0; i < count; ++i) {
 
-        // Deja de existir la cara anterior, cambiamos el poligono para que use los nuevos vertices
+            size_t next = (i + 1) % count;
+
+            unsigned int groupA = currentMesh->vertexToGroup[base.vertices[i]];
+            unsigned int groupB = currentMesh->vertexToGroup[base.vertices[next]];
+
+            // Interior edge shared with another selected face - skip, no wall needed
+            if (edgeUseCount[std::minmax(groupA, groupB)] > 1)
+                continue;
+
+            Polygon side;
+            side.vertices = {
+                base.vertices[i],
+                base.vertices[next],
+                topVertices[next],
+                topVertices[i]
+            };
+
+            currentMesh->addPolygon(side);
+        }
+
         currentMesh->polygons[polygonIndex].vertices = topVertices;
-
-        // Construimos los nuevos poligonos que se forman desde la base hasta el poligono ahora extruido
-        createSidePolygons(base.vertices, topVertices);
     }
 
     currentMesh->rebuildTopology();

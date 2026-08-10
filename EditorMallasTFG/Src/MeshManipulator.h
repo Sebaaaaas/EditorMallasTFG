@@ -38,7 +38,7 @@ public:
 
     void setEditingMesh(Mesh* mesh);
 
-    void beginTransform(const Camera& camera, float mouseX, float mouseY);
+    void beginTransform(const Camera& camera, float mouseX, float mouseY, int w, int h);
     void updateTransform(float mouseX, float mouseY, int w, int h, const Camera& camera);
     void endTransform();
 
