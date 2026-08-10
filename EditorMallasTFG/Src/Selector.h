@@ -48,7 +48,7 @@ private:
 
     std::vector<ProjectedVertex> projectedVertices; // Almacenamos vertices de la malla proyectados en la pantalla
 
-    ProjectedVertex worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& view, const glm::mat4& projection);
+    ProjectedVertex worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& viewProjection);
 
     // Dada la malla mesh, devolvemos el vertice del vector Mesh::vertices mas proximo al raton(vertices de renderizado), 
     // convirtiendolos a coordenadas en pantalla para medir la distancia al raton, pero tambien teniendo en cuenta la distancia a la pantalla
