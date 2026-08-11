@@ -1,14 +1,17 @@
 #include "Mesh.h"
 
 #include <unordered_map>
+#include <algorithm>
 #include <iostream>
 #include <set>
 
 #include <glad/gl.h>
 
+#pragma warning(push)
+#pragma warning(disable: 26495) // Deshabilitamos warnings de este archivo especificamente, ya que no es nuestro
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
-#include <algorithm>
+#pragma warning(pop)
 
 
 Mesh::Mesh(const std::string& path) {
@@ -54,7 +57,7 @@ void Mesh::draw() {
     //glActiveTexture(GL_TEXTURE0);
 
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -122,7 +125,7 @@ void Mesh::loadOBJ(const std::string& path) {
 
                 if (it == uniqueVertices.end()) { // Si no existe otro vertice con la misma posicion y normal(usa el hash para comparar)
                         
-                    vertexIndex = vertices.size();
+                    vertexIndex = (unsigned int)vertices.size();
                     uniqueVertices[vertex] = vertexIndex;
 
                     vertices.push_back(vertex);
@@ -134,7 +137,7 @@ void Mesh::loadOBJ(const std::string& path) {
 
                     if (it2 == positionIndexToGroup.end()) { // No encontrado antes, creamos nuevo grupo posicional
 
-                        groupIndex = vertexGroups.size();
+                        groupIndex = (unsigned int)vertexGroups.size();
 
                         positionIndexToGroup[index.vertex_index] = groupIndex;
 
@@ -349,11 +352,11 @@ void Mesh::updateAllVertices() {
 
 unsigned int Mesh::addVertex(const Vertex& vertex) {
 
-    unsigned int idx = vertices.size();
+    unsigned int idx = (unsigned int)vertices.size();
     vertices.push_back(vertex);
 
     // Como al crear un nuevo vertice, asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
-    unsigned int groupIndex = vertexGroups.size();
+    unsigned int groupIndex = (unsigned int)vertexGroups.size();
     vertexGroups.push_back({idx});
     vertexToGroup.push_back(groupIndex);
 
@@ -362,7 +365,7 @@ unsigned int Mesh::addVertex(const Vertex& vertex) {
 
 unsigned int Mesh::addPolygon(const Polygon& polygon) {
     
-    unsigned int idx = polygons.size();
+    unsigned int idx = (unsigned int)polygons.size();
 
     polygons.push_back(polygon);
 
@@ -446,7 +449,7 @@ void Mesh::removeLooseVertices() {
     // Asumimos inicialmente que todos los vertices estan sueltos
     std::vector<bool> referencedVertices(vertices.size(), false);
 
-    int numUnreferencedVertices = vertices.size();
+    int numUnreferencedVertices = (int)vertices.size();
 
     // Recorremos cada poligono. Todos los vertices dentro de un poligono no estan sueltos, asi que los marcamos como referenciados
     for (const Polygon& polygon : polygons)
@@ -461,7 +464,7 @@ void Mesh::removeLooseVertices() {
     
     // Determinamos como resulta el nuevo vector Vertices tras la eliminacion de los sueltos. Remap almacena donde quedan los vertices tras la eliminacion
     // de los anteriores (donde antes iba el 3, ahora va el 4...)
-    std::vector<unsigned int> remap(vertices.size(), -1);
+    std::vector<int> remap(vertices.size(), -1);
     std::vector<Vertex> postDeletionVerticesVector;
     postDeletionVerticesVector.reserve(vertices.size());
 
