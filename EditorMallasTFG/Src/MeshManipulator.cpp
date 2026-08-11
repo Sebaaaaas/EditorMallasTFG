@@ -235,7 +235,7 @@ void MeshManipulator::extrudeSelection(float distance) {
     if (!currentMesh || selectedPolygons.empty())
         return;
 
-    // Acumulamos las normales por grupo, para mover las caras el la dirección media de las normales
+    // Acumulamos las normales por grupo, para mover las caras el la direccion media de las normales
     std::unordered_map<unsigned int, glm::vec3> normalSum;
 
     for (unsigned int polygonIndex : selectedPolygons) {
@@ -249,7 +249,7 @@ void MeshManipulator::extrudeSelection(float distance) {
         }
     }
 
-    // Se crea un vértice nuevo por cada grupo
+    // Se crea un vertice nuevo por cada grupo
     std::unordered_map<unsigned int, unsigned int> groupToNew;
 
     for (auto& [group, sum] : normalSum) {
@@ -260,7 +260,7 @@ void MeshManipulator::extrudeSelection(float distance) {
         groupToNew[group] = currentMesh->addVertex(newVertex);
     }
 
-    // Calculamos cuantas caras hacen uso de cada arista, para solamente crear poligonos nuevos en los bordes cuando hay selección múltiple
+    // Calculamos cuantas caras hacen uso de cada arista, para solamente crear poligonos nuevos en los bordes cuando hay seleccion multiple
     std::map<std::pair<unsigned int, unsigned int>, int> edgeUseCount;
 
     for (unsigned int polygonIndex : selectedPolygons) {
