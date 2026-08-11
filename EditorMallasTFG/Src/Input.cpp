@@ -1,8 +1,10 @@
 #include "Input.h"
 
 std::unordered_set<int> Input::pressedKeys;
+std::unordered_set<int> Input::previousPressedKeys;
 
 bool Input::mouseButtons[8] = { false };
+bool Input::previousMouseButtons[8] = { false };
 
 double Input::mouseX = 0;
 double Input::mouseY = 0;
@@ -28,8 +30,16 @@ bool Input::isKeyDown(int key) {
     return pressedKeys.count(key) > 0;
 }
 
+bool Input::isKeyPressed(int key) {
+    return pressedKeys.count(key) > 0 && previousPressedKeys.count(key) == 0;
+}
+
 bool Input::isMouseButtonDown(int button) {
     return mouseButtons[button];
+}
+
+bool Input::isMouseButtonUp(int button) {
+    return !mouseButtons[button] && previousMouseButtons[button];
 }
 
 float Input::getMouseDeltaX() {
@@ -58,8 +68,14 @@ void Input::endFrame() {
 
     // Aunque no hace falta resetearlos actualmente, ya que se hace en Input::update, conceptualmente los dejo aqui por si cambiara
     // la estructura del programa en el futuro
-    deltaX = 0;
-    deltaY = 0;
+    /*deltaX = 0;
+    deltaY = 0;*/
+
+    previousPressedKeys = pressedKeys;
+
+    for(int i = 0; i < 8; ++i) // !! magic number
+        previousMouseButtons[i] = mouseButtons[i];
+
 }
 
 void Input::setKey(int key, bool pressed) {

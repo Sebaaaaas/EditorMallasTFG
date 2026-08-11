@@ -19,13 +19,14 @@ void Selector::projectVerticesToScreen(const Mesh& mesh, int width, int height, 
 
     projectedVertices.resize(mesh.vertices.size());
 
+    glm::mat4 viewProjection = projection * view;
+
     for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-        projectedVertices[i] = worldToScreen(mesh.vertices[i].Position, width, height, view, projection);
+        projectedVertices[i] = worldToScreen(mesh.vertices[i].Position, width, height, viewProjection);
     }
 }
 
-int Selector::pick(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera)
-{
+int Selector::pick(const Mesh& mesh, float mouseX, float mouseY, int width, int height, Camera* camera) {
     switch (currentSelectionMode)
     {
     case SelectionMode::Vertex:
@@ -49,13 +50,13 @@ SelectionMode Selector::getSelectionMode() const {
     return currentSelectionMode;
 }
 
-ProjectedVertex Selector::worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& view, const glm::mat4& projection) {
+ProjectedVertex Selector::worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& viewProjection) { // !! se puede seguir haciendo mas eficiente sacando cosas
 
     ProjectedVertex result;
 
     // !! No multiplicamos por model porque actualmente nuestra matriz model es la matriz identidad(mat4(1.0f)), si queremos moverlo en el mundo habra
-    // que cambiar esto y añadir la matriz model a la operacion
-    glm::vec4 clipSpace = projection * view * glm::vec4(p, 1.0f); // Pasamos p a vector4 para poder operar con las matrices
+    // que cambiar esto y aniadir la matriz model a la operacion
+    glm::vec4 clipSpace = viewProjection * glm::vec4(p, 1.0f); // Pasamos p a vector4 para poder operar con las matrices
 
     // Si w <= 0, se encuentra detras de la camara y no sera seleccionable
     if (clipSpace.w <= 0.0f) {
@@ -131,7 +132,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         // Calculo de longitud del vector ab(hacerlo asi ahorra raices cuadradas)
         float len = glm::dot(ab, ab);
 
-        // Ingoramos si es muy pequeño
+        // Ingoramos si es muy pequenio
         if (len < 0.00001f)
             continue;
 
@@ -250,5 +251,3 @@ bool Selector::pointInTriangle(const glm::vec2& p, const glm::vec2& a, const glm
     return (u >= 0.0f) && (v >= 0.0f) && (u + v <= 1.0f);
 
 }
-
-

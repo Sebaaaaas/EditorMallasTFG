@@ -30,6 +30,9 @@ Editor::Editor() {
     selector = nullptr;
     meshManipulator = nullptr;
     debugRenderer = nullptr;
+
+    hoveredElement = -1;
+    renderMode = RenderMode::Solid;
 }
 
 Editor::~Editor() {
@@ -64,8 +67,6 @@ bool Editor::init() {
 
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-
-    renderMode = RenderMode::Solid;
 
     // Para el transparente de debug
     glEnable(GL_BLEND);
@@ -172,7 +173,7 @@ void Editor::logic() {
     hoveredElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
 
     // Click izquierdo
-    if(Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
+    if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
 
         bool additive = Input::isKeyDown(Qt::Key_Shift);
 
@@ -195,14 +196,14 @@ void Editor::logic() {
                 break;
             }
 
-            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY()); 
+            meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY(), win_w, win_h);
         }
         else if (!additive) {
             meshManipulator->clearSelection();
         }
     }
 
-    if (meshManipulator->isDragging() && !Input::isMouseButtonDown(0)) {
+    if (meshManipulator->isDragging() && Input::isMouseButtonUp(0)) {
         meshManipulator->endTransform();
     }
 
@@ -211,8 +212,17 @@ void Editor::logic() {
     }
 
     // Guardar modelo !! siempre se guarda con el mismo nombre
-    if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyDown(Qt::Key_S)) {
+    if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyPressed(Qt::Key_S)) {
+        std::cout << "Mesh saved" << std::endl;
         defaultMesh->saveOBJ("Assets/edited.obj");
+    }
+
+    if (Input::isKeyPressed(Qt::Key_E))
+        meshManipulator->extrudeSelection(0.5);
+
+    if (Input::isKeyPressed(Qt::Key_Delete)) {
+        meshManipulator->deleteSelection();
+        hoveredElement = -1;
     }
 }
 
