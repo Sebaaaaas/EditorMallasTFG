@@ -205,20 +205,21 @@ void Mesh::saveOBJ(const std::string& path) {
             << v.Normal.z << "\n";
     }
 
-    // Guardamos indices
-    for (size_t i = 0; i < indices.size(); i += 3) {
+    // Guardamos los poligonos
+    for (const Polygon& polygon : polygons) {
+
+        if (polygon.vertices.size() < 3)
+            continue;
 
         file << "f ";
 
-        for (int j = 0; j < 3; ++j)
-        {
-            unsigned int render = indices[i + j];
+        for (unsigned int vertex : polygon.vertices) {
 
-            unsigned int group = vertexToGroup[render];
+            unsigned int group = vertexToGroup[vertex];
 
             file << groupToObjIndex[group]
                 << "//"
-                << render + 1
+                << vertex + 1
                 << " ";
         }
 
