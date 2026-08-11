@@ -20,6 +20,8 @@ private:
 	QDoubleSpinBox* ySpin;
 	QDoubleSpinBox* zSpin;
 
+	QToolBar* mainToolBar;
+
 	bool openFile();
 
 	bool saveFile();
