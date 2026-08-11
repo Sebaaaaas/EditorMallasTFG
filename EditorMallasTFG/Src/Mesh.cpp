@@ -228,6 +228,9 @@ void Mesh::saveOBJ(const std::string& path) {
 // https://learnopengl.com/Model-Loading/Mesh
 void Mesh::setupMesh() {
 
+    if (vertices.empty())
+        return;
+
     // Creacion de buffers
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -436,4 +439,120 @@ void Mesh::rebuildTopology() {
 
     updateAllVertices();
     updateIndices();
+}
+
+void Mesh::removeLooseVertices() {
+
+    // Asumimos inicialmente que todos los vertices estan sueltos
+    std::vector<bool> referencedVertices(vertices.size(), false);
+
+    int numUnreferencedVertices = vertices.size();
+
+    // Recorremos cada poligono. Todos los vertices dentro de un poligono no estan sueltos, asi que los marcamos como referenciados
+    for (const Polygon& polygon : polygons)
+        for (unsigned int vertex : polygon.vertices) {
+            referencedVertices[vertex] = true;
+            numUnreferencedVertices--;
+        }
+
+    // Si no habia vertices sueltos, podemos volver
+    if (numUnreferencedVertices == 0)
+        return;
+    
+    // Determinamos como resulta el nuevo vector Vertices tras la eliminacion de los sueltos. Remap almacena donde quedan los vertices tras la eliminacion
+    // de los anteriores (donde antes iba el 3, ahora va el 4...)
+    std::vector<unsigned int> remap(vertices.size(), -1);
+    std::vector<Vertex> postDeletionVerticesVector;
+    postDeletionVerticesVector.reserve(vertices.size());
+
+    for (size_t i = 0; i < vertices.size(); ++i) {
+        if (referencedVertices[i]) {
+            remap[i] = (unsigned int)postDeletionVerticesVector.size();
+            postDeletionVerticesVector.push_back(vertices[i]);
+        }
+    }
+
+    // Copiamos los nuevos vertices post-eliminacion
+    vertices = std::move(postDeletionVerticesVector);
+
+    // Usamos el remapeado para ajustar los nuevos vertices de cada poligono
+    for (Polygon& polygon : polygons)
+        for (unsigned int& vertex : polygon.vertices)
+            vertex = (unsigned int)remap[vertex];
+
+    // Reconstruimos vertexGroups y vertexToGroups, ya que han cambiado, e incluso podria quedar eliminado un grupo completo de vertices
+    std::vector<std::vector<unsigned int>> postDeletionVertexGroups;
+    std::vector<unsigned int> newVertexToGroup(vertices.size());
+
+    // Recorremos cada vertezGroup (grupo geometrico de vertices)
+    for (const auto& oldGroup : vertexGroups) {
+
+        // Buscamos aquellos casos donde queden vertices de renderizado restantes dentro de cada grupo
+        std::vector<unsigned int> survivors;
+
+        for (unsigned int oldIdx : oldGroup)
+            if (remap[oldIdx] != -1)
+                survivors.push_back((unsigned int)remap[oldIdx]);
+
+        // Si no ha habido ninguno restante, no tenemos que reasignar ningun indice, simplemente no queda ninguno del grupo
+        if (survivors.empty())
+            continue;
+
+        // Asignamos nuevo indice de grupo a los supertvivientes
+        unsigned int newGroupIndex = (unsigned int)postDeletionVertexGroups.size();
+        for (unsigned int newIdx : survivors)
+            newVertexToGroup[newIdx] = newGroupIndex;
+
+        postDeletionVertexGroups.push_back(std::move(survivors));
+    }
+
+    vertexGroups = std::move(postDeletionVertexGroups);
+    vertexToGroup = std::move(newVertexToGroup);
+}
+
+void Mesh::deletePolygons(const std::unordered_set<unsigned int>& polygonIndices) {
+
+    if (polygonIndices.empty())
+        return;
+
+    // Tenemos que eliminar de polygons aquellos encontrados, sin dejar huecos. Para ello creamos una copia donde almacenaremos los poligonos que
+    // si permaneceran tras la destruccion, que copiaremos al final
+
+    std::vector<Polygon> postDeletionPolygonVector;
+    postDeletionPolygonVector.reserve(polygons.size());
+
+    for (size_t i = 0; i < polygons.size(); ++i) {
+        
+        if (polygonIndices.count(i) == 0) // Si no esta en la lista de indices a borrar, lo volveremos a introducir
+            postDeletionPolygonVector.push_back(polygons[i]);
+    }
+
+    polygons = std::move(postDeletionPolygonVector);
+
+    // Debemos asegurar que no queden vertices sueltos
+    removeLooseVertices();
+
+    rebuildTopology();
+}
+
+void Mesh::deleteVertexGroups(const std::unordered_set<unsigned int>& groups) {
+
+    if (groups.empty())
+        return;
+
+    // Borramos los poligonos que hagan uso del vertice geometrico seleccionado
+    std::unordered_set<unsigned int> polygonsToDelete;
+
+    for (size_t i = 0; i < polygons.size(); ++i) {
+
+        for (unsigned int vertex : polygons[i].vertices) {
+
+            if (groups.count(vertexToGroup[vertex]) > 0) {
+                polygonsToDelete.insert((unsigned int)i);
+                break;
+            }
+        }
+    }
+
+    deletePolygons(polygonsToDelete);
 }

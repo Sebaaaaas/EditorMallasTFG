@@ -113,5 +113,12 @@ public:
 
     // Cuando hay creacion o destruccion de elementos de la malla, debemos actualizar todos los vectores a los que afecte el cambio
     void rebuildTopology();
+
+    // Encuentra y elimina vertices que se quedan sueltos tras borrar geometria
+    void removeLooseVertices();
+    
+    void deletePolygons(const std::unordered_set<unsigned int>& polygonIndices);
+    // Para borrar grupos geometricos de vertices
+    void deleteVertexGroups(const std::unordered_set<unsigned int>& groups);
 };
 
