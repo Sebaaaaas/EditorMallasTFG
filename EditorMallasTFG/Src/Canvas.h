@@ -21,7 +21,7 @@ public:
 	Editor* getEditor() const;
 
 signals:
-	// Señal emitida tras inicializacion correcta de Editor, para poder conectar los UI widgets a funciones del editor
+	// Senial emitida tras inicializacion correcta de Editor, para poder conectar los UI widgets a funciones del editor
 	void editorReady(Editor* editor);
 
 protected:

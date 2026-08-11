@@ -4,8 +4,8 @@
 #include <glad/gl.h>
 
 class Mesh;
-class Edge;
-class Polygon;
+struct Edge;
+struct Polygon;
 
 class DebugRenderer
 {

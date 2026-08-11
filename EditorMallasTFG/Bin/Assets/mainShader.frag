@@ -15,7 +15,9 @@ void main()
 
     float diff = max(dot(norm, light), 0.0);
 
-    vec3 color = diff * objectColor;
+    float ambient = 0.1;
+
+    vec3 color = (ambient + diff) * objectColor;
 
     FragColor = vec4(color, 1.0);
 }

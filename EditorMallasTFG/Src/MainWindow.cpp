@@ -16,7 +16,7 @@ MainWindow::MainWindow() {
 	canvas = new Canvas();
 	setCentralWidget(canvas);
 
-	// Crea un menú para abrir archivos
+	// Crea un menu para abrir archivos
 	QMenuBar* menuBar = this->menuBar();
 	QMenu* fileMenu = menuBar->addMenu("Archivo");
 	QAction* openAction = new QAction("Abrir", this);
@@ -46,7 +46,7 @@ bool MainWindow::openFile() {
 
 	QString fileName = QFileDialog::getOpenFileName(
 		this,				// padre
-		"Abrir archivo",	// título del cuadro
+		"Abrir archivo",	// titulo del cuadro
 		"./Assets/",					// directorio inicial
 		"Archivos OBJ (*.obj);;Todos los archivos (*)" // filtros
 	);
@@ -133,9 +133,12 @@ void MainWindow::setupTransformMode() {
 		});
 }
 
-void MainWindow::setupXYZPanel() { // !! CUIDADO, SI SE CIERRA PANEL NO HAY FORMA DE REABRIRLO
+void MainWindow::setupXYZPanel() {
 
 	QDockWidget* dock = new QDockWidget("Transform", this);
+
+	// Impide que se cierre el panel haciendo click en la x
+	dock->setFeatures(dock->features() & ~QDockWidget::DockWidgetClosable);
 
 	QWidget* panel = new QWidget();
 	QFormLayout* layout = new QFormLayout(panel);
@@ -237,7 +240,7 @@ void MainWindow::setupRenderMode() {
 
 	solid->setChecked(true);
 
-	solid->setShortcut(Qt::Key_F);
+	solid->setShortcut(Qt::Key_Q);
 	wire->setShortcut(Qt::Key_W);
 
 	connect(solid, &QAction::triggered, this, [this]() {
@@ -253,14 +256,20 @@ void MainWindow::onEditorReady(Editor* editor) {
 
 	MeshManipulator* manipulator = editor->getMeshManipulator();
 
-	connect(xSpin, &QDoubleSpinBox::valueChanged,
-		manipulator, &MeshManipulator::setSelectedXPosition);
-	
-	connect(ySpin, &QDoubleSpinBox::valueChanged,
-		manipulator, &MeshManipulator::setSelectedYPosition);
-	
-	connect(zSpin, &QDoubleSpinBox::valueChanged,
-		manipulator, &MeshManipulator::setSelectedZPosition);
+	connect(xSpin, &QDoubleSpinBox::editingFinished,
+		this, [this]() {
+			canvas->getEditor()->getMeshManipulator()->setSelectedXPosition(xSpin->value());
+		});
+
+	connect(ySpin, &QDoubleSpinBox::editingFinished,
+		this, [this]() {
+			canvas->getEditor()->getMeshManipulator()->setSelectedYPosition(ySpin->value());
+		});
+
+	connect(zSpin, &QDoubleSpinBox::editingFinished,
+		this, [this]() {
+			canvas->getEditor()->getMeshManipulator()->setSelectedZPosition(zSpin->value());
+		});
 
 	connect(manipulator,
 		&MeshManipulator::selectedPositionChanged,

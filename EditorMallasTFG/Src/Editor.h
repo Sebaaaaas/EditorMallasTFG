@@ -60,7 +60,7 @@ private:
 	bool initializeGlad(); // !! revisar si nombre corresponde con lo que hace
 
 	// Para mover vertices, segmentos o caras
-	unsigned int hoveredElement = -1;
+	int hoveredElement;
 
 	void logic();
 	void render();
