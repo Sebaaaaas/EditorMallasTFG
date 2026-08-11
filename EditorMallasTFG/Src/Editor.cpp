@@ -143,6 +143,10 @@ bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve fal
     return true;
 }
 
+void Editor::saveMesh(const std::string& path) {
+    defaultMesh->saveOBJ(path);
+}
+
 void Editor::setSelectionMode(SelectionMode mode) {
     selector->setSelectionMode(mode);
 }
@@ -209,12 +213,6 @@ void Editor::logic() {
 
     if (meshManipulator->isDragging()) {
         meshManipulator->updateTransform(Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
-    }
-
-    // Guardar modelo !! siempre se guarda con el mismo nombre
-    if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyPressed(Qt::Key_S)) {
-        std::cout << "Mesh saved" << std::endl;
-        defaultMesh->saveOBJ("Assets/edited.obj");
     }
 
     if (Input::isKeyPressed(Qt::Key_E))

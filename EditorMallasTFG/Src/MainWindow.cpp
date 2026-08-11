@@ -24,6 +24,12 @@ MainWindow::MainWindow() {
 
 	QObject::connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
 
+	// Crea un menu para guardar archivos
+	QAction* saveAction = new QAction("Guardar", this);
+	fileMenu->addAction(saveAction);
+
+	QObject::connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+
 
 	// Seleccion vertice/segmento/cara
 	setupSelectionMode();
@@ -55,6 +61,21 @@ bool MainWindow::openFile() {
 		return false;
 
 	return canvas->loadMesh(fileName);
+}
+
+bool MainWindow::saveFile() {
+
+	QString path = QFileDialog::getSaveFileName(
+		nullptr,
+		"Guardar malla",
+		"Assets/ourNewLilSave.obj",
+		"Wavefront OBJ (*.obj)"
+	);
+
+	if (path.isEmpty())
+		return false;
+
+	return canvas->saveMesh(path);
 }
 
 void MainWindow::setupSelectionMode() {

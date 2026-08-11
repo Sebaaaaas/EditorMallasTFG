@@ -17,6 +17,7 @@ public:
 	~Canvas();
 
 	bool loadMesh(const QString& fileName);
+	bool saveMesh(const QString& path);
 
 	Editor* getEditor() const;
 

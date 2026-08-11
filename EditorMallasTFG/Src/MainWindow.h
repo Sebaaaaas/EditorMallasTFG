@@ -22,6 +22,8 @@ private:
 
 	bool openFile();
 
+	bool saveFile();
+
 	// Menu de seleccion para cambiar entre seleccion de vertices, segmentos y caras
 	void setupSelectionMode();
 
