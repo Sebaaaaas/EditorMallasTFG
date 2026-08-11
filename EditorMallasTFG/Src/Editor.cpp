@@ -128,6 +128,9 @@ void Editor::run() {
 void Editor::setWindowSize(int w, int h) {
     win_w = w;
     win_h = h;
+
+    if (camera != nullptr)
+        camera->setAspectRatio(w, h);
 }
 
 bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve false, si esta corrupto el archivo o es un path invalido, explota la aplicacion

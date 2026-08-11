@@ -82,6 +82,7 @@ void Canvas::paintGL() {
 }
 
 void Canvas::resizeGL(int w, int h) {
+
 	glViewport(0, 0, w, h);
 
     if (editor)
