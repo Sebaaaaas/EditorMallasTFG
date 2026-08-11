@@ -36,6 +36,16 @@ bool Canvas::loadMesh(const QString& fileName)
     return loaded;
 }
 
+bool Canvas::saveMesh(const QString& path) {
+    
+    if (!editor)
+        return false;
+
+    editor->saveMesh(path.toStdString());
+
+    return true;
+}
+
 Editor* Canvas::getEditor() const {
     return editor;
 }
