@@ -220,6 +220,10 @@ void Editor::logic() {
     if (Input::isKeyPressed(Qt::Key_E))
         meshManipulator->extrudeSelection(0.5);
 
+    if (Input::isKeyPressed(Qt::Key_Delete)) {
+        meshManipulator->deleteSelection();
+        hoveredElement = -1;
+    }
 }
 
 void Editor::render() {

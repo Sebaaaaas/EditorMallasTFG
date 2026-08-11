@@ -317,6 +317,52 @@ void MeshManipulator::extrudeSelection(float distance) {
     currentMesh->rebuildTopology();
 }
 
+
+void MeshManipulator::deleteSelection() {
+
+    if (!currentMesh)
+        return;
+
+    if (!selectedPolygons.empty()) {
+        currentMesh->deletePolygons(selectedPolygons);
+    }
+    else if (!selectedEdges.empty()) {
+
+        std::unordered_set<unsigned int> polygonsToDelete;
+
+        for (unsigned int edgeIndex : selectedEdges) {
+
+            const Edge& edge = currentMesh->edges[edgeIndex];
+            auto targetPair = std::minmax(currentMesh->vertexToGroup[edge.v0],
+                currentMesh->vertexToGroup[edge.v1]);
+
+            for (size_t i = 0; i < currentMesh->polygons.size(); ++i) {
+
+                const std::vector<unsigned int>& verts = currentMesh->polygons[i].vertices;
+                size_t count = verts.size();
+
+                for (size_t j = 0; j < count; ++j) {
+
+                    auto pair = std::minmax(currentMesh->vertexToGroup[verts[j]],
+                        currentMesh->vertexToGroup[verts[(j + 1) % count]]);
+
+                    if (pair == targetPair) {
+                        polygonsToDelete.insert((unsigned int)i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        currentMesh->deletePolygons(polygonsToDelete);
+    }
+    else if (!selectedGroups.empty()) {
+        currentMesh->deleteVertexGroups(selectedGroups);
+    }
+
+    clearSelection();
+}
+
 void MeshManipulator::setSelectedXPosition(double value) {
 
     if (selectedGroups.empty() || dragging)
@@ -462,3 +508,4 @@ void MeshManipulator::createSidePolygons(const std::vector<unsigned int>& baseVe
         currentMesh->addPolygon(side);
     }
 }
+

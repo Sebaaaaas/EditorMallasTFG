@@ -65,6 +65,7 @@ public:
 
     void extrudeSelection(float distance);
 
+    void deleteSelection();
 
 signals:
     // Cuando cambia la posicion, actualizamos el los spinbox
@@ -98,7 +99,7 @@ private:
 
     glm::vec3 transformPivot;
 
-    std::vector<unsigned int> selectedVertices;
+    std::vector<unsigned int> selectedVertices; // !! Probablemente sea posible deshacerse de esto para evitar confusiones con selectedGroups?
     std::vector<glm::vec3> originalPositions;
 
     glm::vec3 selectionCenter() const;
