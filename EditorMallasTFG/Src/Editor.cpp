@@ -126,6 +126,7 @@ void Editor::run() {
 }
 
 void Editor::setWindowSize(int w, int h) {
+
     win_w = w;
     win_h = h;
 

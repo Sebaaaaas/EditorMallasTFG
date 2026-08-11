@@ -30,6 +30,7 @@ MainWindow::MainWindow() {
 
 	QObject::connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
 
+	mainToolBar = addToolBar("Main Toolbar");
 
 	// Seleccion vertice/segmento/cara
 	setupSelectionMode();
@@ -80,11 +81,9 @@ bool MainWindow::saveFile() {
 
 void MainWindow::setupSelectionMode() {
 
-	QToolBar* toolbar = addToolBar("Modo seleccion");
-
-	QAction* vertexAction = toolbar->addAction(QIcon("Assets/icons/vertex.png"), "Vertice");
-	QAction* edgeAction = toolbar->addAction(QIcon("Assets/icons/edge.png"), "Segmento");
-	QAction* faceAction = toolbar->addAction(QIcon("Assets/icons/face.png"), "Cara");
+	QAction* vertexAction = mainToolBar->addAction(QIcon("Assets/icons/vertex.png"), "Vertice");
+	QAction* edgeAction = mainToolBar->addAction(QIcon("Assets/icons/edge.png"), "Segmento");
+	QAction* faceAction = mainToolBar->addAction(QIcon("Assets/icons/face.png"), "Cara");
 
 	vertexAction->setCheckable(true);
 	edgeAction->setCheckable(true);
@@ -103,6 +102,8 @@ void MainWindow::setupSelectionMode() {
 	edgeAction->setShortcut(Qt::Key_2);
 	faceAction->setShortcut(Qt::Key_3);
 
+	vertexAction->setStatusTip("say gex");
+
 	connect(vertexAction, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setSelectionMode(SelectionMode::Vertex);
 		});
@@ -118,11 +119,11 @@ void MainWindow::setupSelectionMode() {
 
 void MainWindow::setupTransformMode() {
 
-	QToolBar* toolbar = addToolBar("Modo transform");
+	QAction* moveAction = mainToolBar->addAction(QIcon("Assets/icons/move.png"), "Mover");
+	QAction* rotateAction = mainToolBar->addAction(QIcon("Assets/icons/rotate.png"), "Rotar");
+	QAction* scaleAction = mainToolBar->addAction(QIcon("Assets/icons/scale.png"), "Escalar");
 
-	QAction* moveAction = toolbar->addAction(QIcon("Assets/icons/move.png"), "Mover");
-	QAction* rotateAction = toolbar->addAction(QIcon("Assets/icons/rotate.png"), "Rotar");
-	QAction* scaleAction = toolbar->addAction(QIcon("Assets/icons/scale.png"), "Escalar");
+	mainToolBar->insertSeparator(moveAction);
 
 	moveAction->setCheckable(true);
 	rotateAction->setCheckable(true);
@@ -187,12 +188,13 @@ void MainWindow::setupXYZPanel() {
 }
 
 void MainWindow::setupAxes() {
-	QToolBar* toolbar = addToolBar("Modo transform");
 
-	QAction* X = toolbar->addAction(QIcon("Assets/icons/x.png"), "Mover");
-	QAction* Y = toolbar->addAction(QIcon("Assets/icons/y.png"), "Rotar");
-	QAction* Z = toolbar->addAction(QIcon("Assets/icons/z.png"), "Escalar");
-	QAction* All = toolbar->addAction(QIcon("Assets/icons/all.png"), "Todos");
+	QAction* X = mainToolBar->addAction(QIcon("Assets/icons/x.png"), "Eje X");
+	QAction* Y = mainToolBar->addAction(QIcon("Assets/icons/y.png"), "Eje Y");
+	QAction* Z = mainToolBar->addAction(QIcon("Assets/icons/z.png"), "Eje Z");
+	QAction* All = mainToolBar->addAction(QIcon("Assets/icons/all.png"), "Todos");
+
+	mainToolBar->insertSeparator(X);
 
 	X->setCheckable(true);
 	Y->setCheckable(true);
@@ -244,11 +246,11 @@ void MainWindow::updateXYZPanel(double x, double y, double z) {
 
 void MainWindow::setupRenderMode() {
 
-	QToolBar* toolbar = addToolBar("Render");
+	QAction* solid = mainToolBar->addAction(QIcon("Assets/icons/solid.png"), "Solido");
 
-	QAction* solid = toolbar->addAction(QIcon("Assets/icons/solid.png"), "Solid");
+	QAction* wire = mainToolBar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe");
 
-	QAction* wire = toolbar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe");
+	mainToolBar->insertSeparator(solid);
 
 	solid->setCheckable(true);
 	wire->setCheckable(true);
