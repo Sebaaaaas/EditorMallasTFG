@@ -1,35 +1,21 @@
 #pragma once
 
 #include <glm.hpp>
+#include <QObject>
 #include <unordered_set>
 
 #include "Mesh.h"
+#include "EditorTypes.h"
 
-#include <QObject>
 
 class Ray;
 class Mesh;
 class Camera;
 
-enum class TransformMode
-{
-    Translate,
-    Rotate,
-    Scale
-};
-
-enum class TransformAxis 
-{
-    X, 
-    Y,
-    Z,
-    All
-};
-
 // Dada una malla e input de raton, permite editar la malla
-class MeshManipulator : public QObject {
+class MeshManipulator : public QObject{
 
-    Q_OBJECT // usar "public:" despues de esto para declarar las variables publicas, esto es necesario para detectar que es un QObject
+    Q_OBJECT
 
 public:
 
@@ -67,14 +53,15 @@ public:
 
     void deleteSelection();
 
-signals:
-    // Cuando cambia la posicion, actualizamos el los spinbox
-    void selectedPositionChanged(double x, double y, double z);
-
-public slots: // Permite recibir seniales de QWidgets cuando cambian sus valores https://doc.qt.io/qt-6/signalsandslots.html
     void setSelectedXPosition(double value);
     void setSelectedYPosition(double value);
     void setSelectedZPosition(double value);
+
+signals:
+
+    // Cuando cambia la posicion, actualizamos el los spinbox
+    void selectedPositionChanged(double x, double y, double z);
+
 
 private:
     // Indica si el usuario esta arrastrando con el raton

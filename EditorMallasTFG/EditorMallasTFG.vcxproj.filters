@@ -54,11 +54,11 @@
     <ClCompile Include="Src\Canvas.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\EditorTypes.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Editor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Src\checkML.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -88,10 +88,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Src\MeshManipulator.h">
+    <QtMoc Include="Src\Canvas.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Src\Canvas.h">
+    <QtMoc Include="Src\Editor.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Src\MeshManipulator.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

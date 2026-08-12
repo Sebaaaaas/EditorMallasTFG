@@ -40,5 +40,7 @@ private:
 
 	void setupRenderMode();
 
+	void setupProjectionMode();
+
 	void onEditorReady(Editor* editor);
 };

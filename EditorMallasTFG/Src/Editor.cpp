@@ -82,7 +82,11 @@ bool Editor::init() {
     debugShader = new Shader("Assets/debugShader.vert", "Assets/debugShader.frag");
 
     selector = new Selector();
+
     meshManipulator = new MeshManipulator();
+    connect(meshManipulator, &MeshManipulator::selectedPositionChanged, // Conectamos la funcion de MeshManipulator para que se pueda enviar hasta
+        this, &Editor::onManipulatorPositionChanged);                   //  MainWindow un cambio de posicion del elemento seleccionado
+
     debugRenderer = new DebugRenderer();
 
 	return true;
@@ -155,13 +159,38 @@ void Editor::setSelectionMode(SelectionMode mode) {
     selector->setSelectionMode(mode);
 }
 
-MeshManipulator* Editor::getMeshManipulator() const {
-    return meshManipulator;
+void Editor::setProjectionMode(ProjectionMode mode) {
+    camera->setProjectionMode(mode);
+}
+
+void Editor::setTransformMode(TransformMode mode) {
+    meshManipulator->setTransformMode(mode);
+}
+
+void Editor::setTransformAxis(TransformAxis mode) {
+    meshManipulator->setTransformAxis(mode);
+}
+
+void Editor::setSelectedXPosition(double value) {
+    meshManipulator->setSelectedXPosition(value);
+}
+
+void Editor::setSelectedYPosition(double value) {
+    meshManipulator->setSelectedYPosition(value);
+}
+
+void Editor::setSelectedZPosition(double value) {
+    meshManipulator->setSelectedZPosition(value);
 }
 
 void Editor::setRenderMode(RenderMode mode) {
     renderMode = mode;
 }
+
+void Editor::onManipulatorPositionChanged(double x, double y, double z) {
+    emit selectedPositionChanged(x, y, z);
+}
+
 
 void Editor::logic() {
 

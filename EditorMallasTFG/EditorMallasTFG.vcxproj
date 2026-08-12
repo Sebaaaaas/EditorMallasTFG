@@ -16,6 +16,7 @@
     <ClCompile Include="Src\Canvas.cpp" />
     <ClCompile Include="Src\DebugRenderer.cpp" />
     <ClCompile Include="Src\Editor.cpp" />
+    <ClCompile Include="Src\EditorTypes.h" />
     <ClCompile Include="Src\Input.cpp" />
     <ClCompile Include="Src\main.cpp" />
     <ClCompile Include="Src\MainWindow.cpp" />
@@ -30,7 +31,7 @@
     <QtMoc Include="Src\Canvas.h" />
     <ClInclude Include="Src\checkML.h" />
     <ClInclude Include="Src\DebugRenderer.h" />
-    <ClInclude Include="Src\Editor.h" />
+    <QtMoc Include="Src\Editor.h" />
     <ClInclude Include="Src\Input.h" />
     <ClInclude Include="Src\MainWindow.h" />
     <ClInclude Include="Src\Mesh.h" />
