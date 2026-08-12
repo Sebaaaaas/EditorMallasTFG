@@ -15,7 +15,7 @@ void main()
 
     float diff = max(dot(norm, light), 0.0);
 
-    float ambient = 0.1;
+    float ambient = 0.2;
 
     vec3 color = (ambient + diff) * objectColor;
 

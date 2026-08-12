@@ -18,12 +18,13 @@ Canvas::Canvas(QWidget* parent) {
 }
 
 Canvas::~Canvas() {
+
 	delete editor;
 	editor = nullptr;
 }
 
-bool Canvas::loadMesh(const QString& fileName)
-{
+bool Canvas::loadMesh(const QString& fileName) {
+
     if (!editor)
         return false;
 
@@ -89,13 +90,11 @@ void Canvas::resizeGL(int w, int h) {
         editor->setWindowSize(w, h);
 }
 
-void Canvas::keyPressEvent(QKeyEvent* event)
-{
+void Canvas::keyPressEvent(QKeyEvent* event) {
     Input::setKey(event->key(), true);
 }
 
-void Canvas::keyReleaseEvent(QKeyEvent* event)
-{
+void Canvas::keyReleaseEvent(QKeyEvent* event) {
     Input::setKey(event->key(), false);
 }
 
@@ -127,7 +126,6 @@ void Canvas::mouseMoveEvent(QMouseEvent* event) {
     Input::setMousePosition(event->position().x(), event->position().y());
 }
 
-void Canvas::wheelEvent(QWheelEvent* event)
-{
+void Canvas::wheelEvent(QWheelEvent* event) {
     Input::addScrollDelta(event->angleDelta().y() / 120.0); // Dividido entre 120 porque el evento devuelve ese valor cuando haces scroll
 }

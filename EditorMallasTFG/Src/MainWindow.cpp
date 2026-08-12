@@ -9,7 +9,6 @@
 
 #include "Canvas.h"
 #include "Editor.h"
-#include "MeshManipulator.h"
 
 MainWindow::MainWindow() {
 	
@@ -44,6 +43,8 @@ MainWindow::MainWindow() {
 	setupAxes();
 
 	setupRenderMode();
+
+	setupProjectionMode();
 
 	// Una vez el editor este cargado, llamaremos a onEditorReady para conectar elementos de la IU a funciones del editor
 	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
@@ -81,9 +82,9 @@ bool MainWindow::saveFile() {
 
 void MainWindow::setupSelectionMode() {
 
-	QAction* vertexAction = mainToolBar->addAction(QIcon("Assets/icons/vertex.png"), "Vertice");
-	QAction* edgeAction = mainToolBar->addAction(QIcon("Assets/icons/edge.png"), "Segmento");
-	QAction* faceAction = mainToolBar->addAction(QIcon("Assets/icons/face.png"), "Cara");
+	QAction* vertexAction = mainToolBar->addAction(QIcon("Assets/icons/vertex.png"), "Vertice (1)");
+	QAction* edgeAction = mainToolBar->addAction(QIcon("Assets/icons/edge.png"), "Segmento (2)");
+	QAction* faceAction = mainToolBar->addAction(QIcon("Assets/icons/face.png"), "Cara (3)");
 
 	vertexAction->setCheckable(true);
 	edgeAction->setCheckable(true);
@@ -102,8 +103,6 @@ void MainWindow::setupSelectionMode() {
 	edgeAction->setShortcut(Qt::Key_2);
 	faceAction->setShortcut(Qt::Key_3);
 
-	vertexAction->setStatusTip("say gex");
-
 	connect(vertexAction, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setSelectionMode(SelectionMode::Vertex);
 		});
@@ -119,9 +118,9 @@ void MainWindow::setupSelectionMode() {
 
 void MainWindow::setupTransformMode() {
 
-	QAction* moveAction = mainToolBar->addAction(QIcon("Assets/icons/move.png"), "Mover");
-	QAction* rotateAction = mainToolBar->addAction(QIcon("Assets/icons/rotate.png"), "Rotar");
-	QAction* scaleAction = mainToolBar->addAction(QIcon("Assets/icons/scale.png"), "Escalar");
+	QAction* moveAction = mainToolBar->addAction(QIcon("Assets/icons/move.png"), "Mover (G)");
+	QAction* rotateAction = mainToolBar->addAction(QIcon("Assets/icons/rotate.png"), "Rotar (R)");
+	QAction* scaleAction = mainToolBar->addAction(QIcon("Assets/icons/scale.png"), "Escalar (S)");
 
 	mainToolBar->insertSeparator(moveAction);
 
@@ -143,15 +142,15 @@ void MainWindow::setupTransformMode() {
 	scaleAction->setShortcut(Qt::Key_S);
 
 	connect(moveAction, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Translate);
+		canvas->getEditor()->setTransformMode(TransformMode::Translate);
 		});
 
 	connect(rotateAction, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Rotate);
+		canvas->getEditor()->setTransformMode(TransformMode::Rotate);
 		});
 
 	connect(scaleAction, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformMode(TransformMode::Scale);
+		canvas->getEditor()->setTransformMode(TransformMode::Scale);
 		});
 }
 
@@ -189,10 +188,10 @@ void MainWindow::setupXYZPanel() {
 
 void MainWindow::setupAxes() {
 
-	QAction* X = mainToolBar->addAction(QIcon("Assets/icons/x.png"), "Eje X");
-	QAction* Y = mainToolBar->addAction(QIcon("Assets/icons/y.png"), "Eje Y");
-	QAction* Z = mainToolBar->addAction(QIcon("Assets/icons/z.png"), "Eje Z");
-	QAction* All = mainToolBar->addAction(QIcon("Assets/icons/all.png"), "Todos");
+	QAction* X = mainToolBar->addAction(QIcon("Assets/icons/x.png"), "Eje X (X)");
+	QAction* Y = mainToolBar->addAction(QIcon("Assets/icons/y.png"), "Eje Y (Y)");
+	QAction* Z = mainToolBar->addAction(QIcon("Assets/icons/z.png"), "Eje Z (Z)");
+	QAction* All = mainToolBar->addAction(QIcon("Assets/icons/all.png"), "Todos (A)");
 
 	mainToolBar->insertSeparator(X);
 
@@ -217,19 +216,19 @@ void MainWindow::setupAxes() {
 	All->setShortcut(Qt::Key_A);
 
 	connect(X, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::X);
+		canvas->getEditor()->setTransformAxis(TransformAxis::X);
 		});
 
 	connect(Y, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::Y);
+		canvas->getEditor()->setTransformAxis(TransformAxis::Y);
 		});
 
 	connect(Z, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::Z);
+		canvas->getEditor()->setTransformAxis(TransformAxis::Z);
 		});
 	
 	connect(All, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->getMeshManipulator()->setTransformAxis(TransformAxis::All);
+		canvas->getEditor()->setTransformAxis(TransformAxis::All);
 		});
 }
 
@@ -246,9 +245,9 @@ void MainWindow::updateXYZPanel(double x, double y, double z) {
 
 void MainWindow::setupRenderMode() {
 
-	QAction* solid = mainToolBar->addAction(QIcon("Assets/icons/solid.png"), "Solido");
+	QAction* solid = mainToolBar->addAction(QIcon("Assets/icons/solid.png"), "Solido (Q)");
 
-	QAction* wire = mainToolBar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe");
+	QAction* wire = mainToolBar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe (W)");
 
 	mainToolBar->insertSeparator(solid);
 
@@ -275,27 +274,56 @@ void MainWindow::setupRenderMode() {
 		});
 }
 
-void MainWindow::onEditorReady(Editor* editor) {
+void MainWindow::setupProjectionMode() {
 
-	MeshManipulator* manipulator = editor->getMeshManipulator();
+	QAction* perspective = mainToolBar->addAction(QIcon("Assets/icons/perspective.png"), "Perspectiva (P)");
+
+	QAction* orthogonal = mainToolBar->addAction(QIcon("Assets/icons/orthogonal.png"), "Ortogonal (O)");
+
+	mainToolBar->insertSeparator(perspective);
+
+	perspective->setCheckable(true);
+	orthogonal->setCheckable(true);
+
+	QActionGroup* group = new QActionGroup(this);
+	group->setExclusive(true);
+
+	group->addAction(perspective);
+	group->addAction(orthogonal);
+
+	perspective->setChecked(true);
+
+	perspective->setShortcut(Qt::Key_P);
+	orthogonal->setShortcut(Qt::Key_O);
+
+	connect(perspective, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->setProjectionMode(ProjectionMode::Perspective);
+		});
+
+	connect(orthogonal, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->setProjectionMode(ProjectionMode::Orthographic);
+		});
+}
+
+void MainWindow::onEditorReady(Editor* editor) {
 
 	connect(xSpin, &QDoubleSpinBox::editingFinished,
 		this, [this]() {
-			canvas->getEditor()->getMeshManipulator()->setSelectedXPosition(xSpin->value());
+			canvas->getEditor()->setSelectedXPosition(xSpin->value());
 		});
 
 	connect(ySpin, &QDoubleSpinBox::editingFinished,
 		this, [this]() {
-			canvas->getEditor()->getMeshManipulator()->setSelectedYPosition(ySpin->value());
+			canvas->getEditor()->setSelectedYPosition(ySpin->value());
 		});
 
 	connect(zSpin, &QDoubleSpinBox::editingFinished,
 		this, [this]() {
-			canvas->getEditor()->getMeshManipulator()->setSelectedZPosition(zSpin->value());
+			canvas->getEditor()->setSelectedZPosition(zSpin->value());
 		});
 
-	connect(manipulator,
-		&MeshManipulator::selectedPositionChanged,
+	connect(editor,
+		&Editor::selectedPositionChanged,
 		this,
 		&MainWindow::updateXYZPanel);
 }
