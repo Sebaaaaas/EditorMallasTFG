@@ -92,7 +92,6 @@ public:
     // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path"
     void loadOBJ(const std::string& path);
 
-    // !! arreglar, lo guardamos triangulado
     void saveOBJ(const std::string& path);
     
     // Actualiza las normales de TODA la malla >> !! posible mejora es que solo recalcule normales que cambien
@@ -102,6 +101,8 @@ public:
     void updateAllVertices();        
 
     unsigned int addVertex(const Vertex& vertex);
+    // Para cuando no introducimos un nuevo vertice a un grupo nuevo, sino uno ya existente
+    unsigned int addVertexToGroup(const Vertex& vertex, unsigned int groupIndex);
 
     unsigned int addPolygon(const Polygon& polygon);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm.hpp>
+#include <unordered_set>
 
 class Mesh;
 class Camera;
@@ -35,7 +36,21 @@ public:
 
     SelectionMode getSelectionMode() const;
 
+    void selectVertex(int vertexIndex, Mesh* mesh, bool additive = false);
+    void selectEdge(unsigned int edgeIndex, Mesh* mesh, bool additive = false);
+    void selectPolygon(unsigned int polygonIndex, Mesh* mesh, bool additive = false);
+
+    const std::unordered_set<unsigned int>& getSelectedGroups() const;
+    const std::unordered_set<unsigned int>& getSelectedEdges() const;
+    const std::unordered_set<unsigned int>& getSelectedPolygons() const;
+
+    void clearSelection();
+    bool hasSelection() const;
+
 private:
+    std::unordered_set<unsigned int> selectedGroups;
+    std::unordered_set<unsigned int> selectedEdges;
+    std::unordered_set<unsigned int> selectedPolygons;
 
     SelectionMode currentSelectionMode;
 

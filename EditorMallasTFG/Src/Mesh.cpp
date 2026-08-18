@@ -94,6 +94,7 @@ void Mesh::loadOBJ(const std::string& path) {
         // Iteramos sobre las caras de cada malla
         for (int face = 0; face < shape.mesh.num_face_vertices.size(); ++face) {
 
+            // Cantidad de vertices logicos de la cara
             int faceVertices = shape.mesh.num_face_vertices[face];
 
             // Construimos y almacenamos nuestros poligonos
@@ -356,9 +357,20 @@ unsigned int Mesh::addVertex(const Vertex& vertex) {
     unsigned int idx = (unsigned int)vertices.size();
     vertices.push_back(vertex);
 
-    // Como al crear un nuevo vertice, asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
+    // Como al crear un nuevo vertice asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
     unsigned int groupIndex = (unsigned int)vertexGroups.size();
     vertexGroups.push_back({idx});
+    vertexToGroup.push_back(groupIndex);
+
+    return idx;
+}
+
+unsigned int Mesh::addVertexToGroup(const Vertex& vertex, unsigned int groupIndex) {
+
+    unsigned int idx = (unsigned int)vertices.size();
+    vertices.push_back(vertex);
+
+    vertexGroups[groupIndex].push_back(idx);
     vertexToGroup.push_back(groupIndex);
 
     return idx;

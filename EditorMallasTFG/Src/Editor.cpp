@@ -83,7 +83,9 @@ bool Editor::init() {
 
     selector = new Selector();
 
-    meshManipulator = new MeshManipulator();
+    meshManipulator = new MeshManipulator(selector);
+    meshManipulator->setEditingMesh(defaultMesh);
+
     connect(meshManipulator, &MeshManipulator::selectedPositionChanged, // Conectamos la funcion de MeshManipulator para que se pueda enviar hasta
         this, &Editor::onManipulatorPositionChanged);                   //  MainWindow un cambio de posicion del elemento seleccionado
 
@@ -146,7 +148,8 @@ bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve fal
     defaultMesh = newMesh;
 
     hoveredElement = -1;
-    meshManipulator->clearSelection();
+    selector->clearSelection();
+    meshManipulator->setEditingMesh(defaultMesh);
 
     return true;
 }
@@ -200,8 +203,6 @@ void Editor::logic() {
     if (Input::isKeyDown(Qt::Key_Escape))
         QApplication::quit();
 
-    meshManipulator->setEditingMesh(defaultMesh);
-
     camera->manageInput();
 
     // !! no creo que haga falta hacer esto continuamente
@@ -221,13 +222,13 @@ void Editor::logic() {
             switch (currentSelectionMode)
             {
             case SelectionMode::Vertex:
-                meshManipulator->selectVertex(hoveredElement, additive);
+                selector->selectVertex(hoveredElement, defaultMesh, additive);
                 break;
             case SelectionMode::Edge:
-                meshManipulator->selectEdge(hoveredElement, additive);
+                selector->selectEdge(hoveredElement, defaultMesh, additive);
                 break;
             case SelectionMode::Face:
-                meshManipulator->selectPolygon(hoveredElement, additive);
+                selector->selectPolygon(hoveredElement, defaultMesh, additive);
                 break;
             default:
                 break;
@@ -236,7 +237,7 @@ void Editor::logic() {
             meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY(), win_w, win_h);
         }
         else if (!additive) {
-            meshManipulator->clearSelection();
+            selector->clearSelection();
         }
     }
 
@@ -300,7 +301,7 @@ void Editor::render() {
 
 void Editor::drawDebug(const glm::mat4& MVP) {
 
-    if (!meshManipulator->hasSelection())
+    if (!selector->hasSelection())
         return;
 
     debugShader->use();
@@ -315,7 +316,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
 
     case SelectionMode::Vertex: {
 
-        for (unsigned int group : meshManipulator->getSelectedGroups()) {
+        for (unsigned int group : selector->getSelectedGroups()) {
             for (unsigned int idx : defaultMesh->vertexGroups[group]) {
                 debugRenderer->drawPoint(defaultMesh->vertices[idx].Position);
             }
@@ -327,7 +328,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
         break;
     case SelectionMode::Edge: {
 
-        for (unsigned int edgeIndex : meshManipulator->getSelectedEdges()) {
+        for (unsigned int edgeIndex : selector->getSelectedEdges()) {
 
             const Edge& edge = defaultMesh->edges[edgeIndex];
             debugRenderer->drawEdge(*defaultMesh, edge);
@@ -336,7 +337,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
         break;
     case SelectionMode::Face: {
 
-        for (unsigned int polygonIndex : meshManipulator->getSelectedPolygons()) {
+        for (unsigned int polygonIndex : selector->getSelectedPolygons()) {
 
             const Polygon& polygon = defaultMesh->polygons[polygonIndex];
             debugRenderer->drawPolygon(*defaultMesh, polygon);

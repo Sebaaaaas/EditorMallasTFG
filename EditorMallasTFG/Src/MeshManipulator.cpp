@@ -1,16 +1,17 @@
 #include "MeshManipulator.h"
 
 #include "Mesh.h"
-#include "Camera.h"
 #include "Ray.h"
-#include "Editor.h"
+#include "Camera.h"
+#include "Selector.h"
 
-MeshManipulator::MeshManipulator() {
+MeshManipulator::MeshManipulator(Selector* selector_) {
 
     dragPlaneNormal = glm::vec3(0.f, 0.f, 0.f);
     dragStartPoint = glm::vec3(0.f, 0.f, 0.f);
 
     ray = nullptr;
+    selector = selector_; // No es necesario borrar selector, ya se encarga el editor
     currentMesh = nullptr;
 
     transformPivot = glm::vec3(0.f, 0.f, 0.f);
@@ -31,7 +32,7 @@ void MeshManipulator::setEditingMesh(Mesh* mesh) {
 
 void MeshManipulator::beginTransform(const Camera& camera, float mouseX, float mouseY, int w, int h) {
 
-    if (selectedGroups.empty())
+    if (selector->getSelectedGroups().empty())
         return;
 
     dragging = true;
@@ -42,8 +43,8 @@ void MeshManipulator::beginTransform(const Camera& camera, float mouseX, float m
 
     dragPlaneNormal = camera.getPosition() - transformPivot;
 
-    // Encontramos el punto real donde el rayo del click inicial corta el plano de arrastre, para que el delta de traslacion empiece en cero sin importar donde dentro de la
-    // seleccion se haya hecho click
+    // Encontramos el punto real donde el rayo del click inicial corta el plano de arrastre, para que el delta de traslacion 
+    // empiece en cero sin importar donde dentro de la seleccion se haya hecho click
     glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, w, h, camera.getViewMatrix(), camera.getProjectionMatrix());
     glm::vec3 rayOrigin = camera.getPosition();
 
@@ -73,153 +74,8 @@ void MeshManipulator::endTransform() {
     dragging = false;
 }
 
-void MeshManipulator::updateTranslation(float mouseX, float mouseY, int w, int h, const Camera& camera) {
-    
-    glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, w, h, camera.getViewMatrix(), camera.getProjectionMatrix());
-
-    glm::vec3 rayOrigin = camera.getPosition();
-
-    glm::vec3 hit = ray->intersectRayPlane(rayOrigin, rayDir, dragStartPoint, dragPlaneNormal);
-
-    glm::vec3 delta = hit - dragStartPoint;
-
-    glm::vec3 axis;
-
-    switch (transformAxis)
-    {
-    case TransformAxis::X:
-        axis = glm::vec3(1, 0, 0);
-        break;
-
-    case TransformAxis::Y:
-        axis = glm::vec3(0, 1, 0);
-        break;
-
-    case TransformAxis::Z:
-        axis = glm::vec3(0, 0, 1);
-        break;
-
-    case TransformAxis::All: // En este caso no hay eje
-        translateSelection(delta);
-        return;
-
-    }
-    float amount = glm::dot(delta, axis);
-
-    translateSelection(axis * amount);
-}
-
-void MeshManipulator::updateRotation(float mouseX, float mouseY) {
-
-    float dx = mouseX - transformStartMouse.x;
-
-    // Multiplicamos por 0.1 para que no sea demasiado rapido
-    float angle = dx * 0.1f;
-
-    switch (transformAxis)
-    {
-    case TransformAxis::X:
-        rotateSelection(angle, glm::vec3(1, 0, 0));
-        break;
-
-    case TransformAxis::Y:
-        rotateSelection(angle, glm::vec3(0, 1, 0));
-        break;
-
-    case TransformAxis::Z:
-        rotateSelection(angle, glm::vec3(0, 0, 1));        
-        break;
-    case TransformAxis::All:
-        rotateSelection(angle, dragPlaneNormal);
-        break;
-    }
-
-}
-
-void MeshManipulator::updateScale(float mouseX, float mouseY) {
-
-    float dx = mouseX - transformStartMouse.x;
-
-    // Multiplicamos por 0.01 para que no sea demasiado rapido
-    float factor = 1.0f + dx * 0.01f;
-
-    switch (transformAxis)
-    {
-    case TransformAxis::X:
-        scaleSelection(glm::vec3(factor, 1, 1));
-        break;
-
-    case TransformAxis::Y:
-        scaleSelection(glm::vec3(1, factor, 1));
-        break;
-
-    case TransformAxis::Z:
-        scaleSelection(glm::vec3(1, 1, factor));
-        break;
-
-    case TransformAxis::All:
-        scaleSelection(glm::vec3(factor));
-        break;
-    }
-}
-
-void MeshManipulator::selectVertex(int vertexIndex, bool additive) {
-
-    if (!additive)
-        clearSelection();
-
-    unsigned int group = currentMesh->vertexToGroup[vertexIndex];
-
-    selectedGroups.insert(group);
-}
-
-void MeshManipulator::selectEdge(unsigned int edgeIndex, bool additive) {
-
-    if (!additive)
-        clearSelection();
-
-    selectedEdges.insert(edgeIndex);
-
-    const Edge& edge = currentMesh->edges[edgeIndex];
-
-    selectedGroups.insert(currentMesh->vertexToGroup[edge.v0]);
-    selectedGroups.insert(currentMesh->vertexToGroup[edge.v1]);
-}
-
-void MeshManipulator::selectPolygon(unsigned int polygonIndex, bool additive) {
-
-    if (!additive)
-        clearSelection();
-
-    selectedPolygons.insert(polygonIndex);
-
-    const Polygon& polygon = currentMesh->polygons[polygonIndex];
-
-    for (unsigned int vertex : polygon.vertices) {
-        selectedGroups.insert(currentMesh->vertexToGroup[vertex]);
-    }
-}
-
-void MeshManipulator::clearSelection() {    
-    selectedGroups.clear();
-    selectedEdges.clear();
-    selectedPolygons.clear();
-}
-
-bool MeshManipulator::hasSelection() const {
-    return !selectedGroups.empty() || !selectedEdges.empty() || !selectedPolygons.empty();
-}
-
-const std::unordered_set<unsigned int>& MeshManipulator::getSelectedGroups() const {
-    return selectedGroups;
-}
-
-const std::unordered_set<unsigned int>& MeshManipulator::getSelectedEdges() const {
-    return selectedEdges;
-}
-
-const std::unordered_set<unsigned int>& MeshManipulator::getSelectedPolygons() const {
-    return selectedPolygons;
+bool MeshManipulator::isDragging() const {
+    return dragging;
 }
 
 void MeshManipulator::setTransformMode(TransformMode mode) {
@@ -232,6 +88,8 @@ void MeshManipulator::setTransformAxis(TransformAxis axis) {
 
 void MeshManipulator::extrudeSelection(float distance) {
 
+    const auto& selectedPolygons = selector->getSelectedPolygons();
+
     if (!currentMesh || selectedPolygons.empty())
         return;
 
@@ -242,9 +100,9 @@ void MeshManipulator::extrudeSelection(float distance) {
 
         glm::vec3 normal = currentMesh->polygonNormal(polygonIndex);
 
-        for (unsigned int v : currentMesh->polygons[polygonIndex].vertices) {
+        for (unsigned int vertexIndex : currentMesh->polygons[polygonIndex].vertices) {
 
-            unsigned int group = currentMesh->vertexToGroup[v];
+            unsigned int group = currentMesh->vertexToGroup[vertexIndex];
             normalSum[group] += normal;
         }
     }
@@ -255,12 +113,13 @@ void MeshManipulator::extrudeSelection(float distance) {
     for (auto& [group, sum] : normalSum) {
 
         unsigned int templateVertex = currentMesh->vertexGroups[group][0];
+
         Vertex newVertex = currentMesh->vertices[templateVertex];
         newVertex.Position += glm::normalize(sum) * distance;
         groupToNew[group] = currentMesh->addVertex(newVertex);
     }
 
-    // Calculamos cuantas caras hacen uso de cada arista, para solamente crear poligonos nuevos en los bordes cuando hay seleccion multiple
+    // Calculamos cuantas caras hacen uso de cada arista, para solamente crear poligonos nuevos en los bordes cuando hay seleccion de multiples caras
     std::map<std::pair<unsigned int, unsigned int>, int> edgeUseCount;
 
     for (unsigned int polygonIndex : selectedPolygons) {
@@ -317,20 +176,19 @@ void MeshManipulator::extrudeSelection(float distance) {
     currentMesh->rebuildTopology();
 }
 
-
 void MeshManipulator::deleteSelection() {
 
     if (!currentMesh)
         return;
 
-    if (!selectedPolygons.empty()) {
-        currentMesh->deletePolygons(selectedPolygons);
+    if (!selector->getSelectedPolygons().empty()) {
+        currentMesh->deletePolygons(selector->getSelectedPolygons());
     }
-    else if (!selectedEdges.empty()) {
+    else if (!selector->getSelectedEdges().empty()) {
 
         std::unordered_set<unsigned int> polygonsToDelete;
 
-        for (unsigned int edgeIndex : selectedEdges) {
+        for (unsigned int edgeIndex : selector->getSelectedEdges()) {
 
             const Edge& edge = currentMesh->edges[edgeIndex];
             auto targetPair = std::minmax(currentMesh->vertexToGroup[edge.v0],
@@ -356,16 +214,16 @@ void MeshManipulator::deleteSelection() {
 
         currentMesh->deletePolygons(polygonsToDelete);
     }
-    else if (!selectedGroups.empty()) {
-        currentMesh->deleteVertexGroups(selectedGroups);
+    else if (!selector->getSelectedGroups().empty()) {
+        currentMesh->deleteVertexGroups(selector->getSelectedGroups());
     }
 
-    clearSelection();
+    selector->clearSelection();
 }
 
 void MeshManipulator::setSelectedXPosition(double value) {
 
-    if (selectedGroups.empty() || dragging)
+    if (selector->getSelectedGroups().empty() || dragging)
         return;
 
     refreshSelectionSnapshot();
@@ -375,7 +233,7 @@ void MeshManipulator::setSelectedXPosition(double value) {
 
 void MeshManipulator::setSelectedYPosition(double value) {
 
-    if (selectedGroups.empty() || dragging)
+    if (selector->getSelectedGroups().empty() || dragging)
         return;
 
     refreshSelectionSnapshot();
@@ -385,7 +243,7 @@ void MeshManipulator::setSelectedYPosition(double value) {
 
 void MeshManipulator::setSelectedZPosition(double value) {
 
-    if (selectedGroups.empty() || dragging)
+    if (selector->getSelectedGroups().empty() || dragging)
         return;
 
     refreshSelectionSnapshot();
@@ -397,6 +255,8 @@ glm::vec3 MeshManipulator::selectionCenter() const {
 
     glm::vec3 center(0.0f);
     int count = 0;
+
+    const auto& selectedGroups = selector->getSelectedGroups();
 
     for (unsigned int group : selectedGroups) {
 
@@ -423,28 +283,116 @@ void MeshManipulator::refreshSelectionSnapshot() {
     
     transformPivot = selectionCenter();
 
-    selectedVertices.clear();
     originalPositions.clear();
 
-    for (unsigned int group : selectedGroups) {
+    for (unsigned int group : selector->getSelectedGroups()) {
         for (unsigned int idx : currentMesh->vertexGroups[group]) {
-            selectedVertices.push_back(idx);
-            originalPositions.push_back(currentMesh->vertices[idx].Position);
+            originalPositions[idx] = currentMesh->vertices[idx].Position;
         }
+    }
+}
+
+void MeshManipulator::updateTranslation(float mouseX, float mouseY, int w, int h, const Camera& camera) {
+
+    glm::vec3 rayDir = ray->mouseRay(mouseX, mouseY, w, h, camera.getViewMatrix(), camera.getProjectionMatrix()); // !! revisar si hace de verdad falta hacer todo esto
+
+    glm::vec3 rayOrigin = camera.getPosition();
+
+    glm::vec3 hit = ray->intersectRayPlane(rayOrigin, rayDir, dragStartPoint, dragPlaneNormal);
+
+    glm::vec3 delta = hit - dragStartPoint;
+
+    glm::vec3 axis;
+
+    switch (transformAxis)
+    {
+    case TransformAxis::X:
+        axis = glm::vec3(1, 0, 0);
+        break;
+
+    case TransformAxis::Y:
+        axis = glm::vec3(0, 1, 0);
+        break;
+
+    case TransformAxis::Z:
+        axis = glm::vec3(0, 0, 1);
+        break;
+
+    case TransformAxis::All: // En este caso no hay eje
+        translateSelection(delta);
+        return;
+
+    }
+    float amount = glm::dot(delta, axis);
+
+    translateSelection(axis * amount);
+}
+
+void MeshManipulator::updateRotation(float mouseX, float mouseY) {
+
+    float dx = mouseX - transformStartMouse.x;
+
+    // Multiplicamos por 0.1 para que no sea demasiado rapido
+    float angle = dx * 0.1f;
+
+    switch (transformAxis)
+    {
+    case TransformAxis::X:
+        rotateSelection(angle, glm::vec3(1, 0, 0));
+        break;
+
+    case TransformAxis::Y:
+        rotateSelection(angle, glm::vec3(0, 1, 0));
+        break;
+
+    case TransformAxis::Z:
+        rotateSelection(angle, glm::vec3(0, 0, 1));
+        break;
+    case TransformAxis::All:
+        rotateSelection(angle, dragPlaneNormal);
+        break;
+    }
+
+}
+
+void MeshManipulator::updateScale(float mouseX, float mouseY) {
+
+    float dx = mouseX - transformStartMouse.x;
+
+    // Multiplicamos por 0.01 para que no sea demasiado rapido (el 1.0 es para que cuando el delta sea 0, la escala se mantenga multiplicada por 1 y no por 0)
+    float factor = 1.0f + dx * 0.01f;
+
+    switch (transformAxis)
+    {
+    case TransformAxis::X:
+        scaleSelection(glm::vec3(factor, 1, 1));
+        break;
+
+    case TransformAxis::Y:
+        scaleSelection(glm::vec3(1, factor, 1));
+        break;
+
+    case TransformAxis::Z:
+        scaleSelection(glm::vec3(1, 1, factor));
+        break;
+
+    case TransformAxis::All:
+        scaleSelection(glm::vec3(factor));
+        break;
     }
 }
 
 void MeshManipulator::transformSelection(const glm::mat4& transform) {
 
-    for (size_t i = 0; i < selectedVertices.size(); ++i) {
+    for (unsigned int vertexGroup : selector->getSelectedGroups()) {
+        for (unsigned int vertex : currentMesh->vertexGroups[vertexGroup]) {
 
-        unsigned int idx = selectedVertices[i];
+            glm::vec3 local = originalPositions[vertex] - transformPivot;
 
-        glm::vec3 local = originalPositions[i] - transformPivot;
+            glm::vec3 transformed = glm::vec3(transform * glm::vec4(local, 1.0f));
 
-        glm::vec3 transformed = glm::vec3(transform * glm::vec4(local, 1.0f));
-
-        currentMesh->vertices[idx].Position = transformPivot + transformed;
+            currentMesh->vertices[vertex].Position = transformPivot + transformed;
+        }
     }
 
     currentMesh->recalculateNormals();
@@ -479,33 +427,5 @@ void MeshManipulator::scaleSelection(glm::vec3 scale) {
     transform = glm::scale(transform, scale);
 
     transformSelection(transform);
-}
-
-void MeshManipulator::moveVerticesAlongNormal(std::vector<unsigned int> vertexIndices, glm::vec3 normal, float distance) {
-
-    for (unsigned int vertexIndex : vertexIndices) {
-        currentMesh->vertices[vertexIndex].Position += normal * distance;
-    }
-}
-
-void MeshManipulator::createSidePolygons(const std::vector<unsigned int>& baseVertices, const std::vector<unsigned int>& topVertices) {
-
-    size_t vertexCount = baseVertices.size();
-
-    for (size_t i = 0; i < vertexCount; ++i) {
-
-        size_t next = (i + 1) % vertexCount;
-
-        Polygon side;
-
-        side.vertices = {
-            baseVertices[i],
-            baseVertices[next],
-            topVertices[next],
-            topVertices[i]
-        };
-
-        currentMesh->addPolygon(side);
-    }
 }
 
