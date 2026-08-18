@@ -93,10 +93,6 @@ void Camera::setTarget(const glm::vec3& newTarget) {
     target = newTarget;
 }
 
-glm::vec3 Camera::getTarget() const {
-    return target;
-}
-
 void Camera::reset() {
 
     setTarget(glm::vec3(0, 0, 0));

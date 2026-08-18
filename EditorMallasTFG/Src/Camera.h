@@ -23,7 +23,6 @@ public:
 
     void setPosition(const glm::vec3& pos);
     void setTarget(const glm::vec3& newTarget);
-    glm::vec3 getTarget() const;
 
     // Resetea la camara a su posicion inicial
     void reset();
