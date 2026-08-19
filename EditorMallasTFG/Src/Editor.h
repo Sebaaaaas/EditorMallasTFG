@@ -60,7 +60,7 @@ private:
 	Camera* camera;
 
 	Mesh* defaultMesh;
-	Shader* debugShader;
+	Shader* selectionShader;
 	Shader* defaultShader;
 
 	// Clase que sirve para escoger vertices de la malla

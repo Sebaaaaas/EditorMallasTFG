@@ -192,7 +192,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         // Calculo de longitud del vector ab(hacerlo asi ahorra raices cuadradas)
         float len = glm::dot(ab, ab);
 
-        // Ingoramos si es muy pequenio
+        // Ingoramos si es muy pequenio !! igual ni hace falta
         if (len < 0.00001f)
             continue;
 
