@@ -24,7 +24,7 @@
 Editor::Editor() {
     defaultMesh = nullptr;
     defaultShader = nullptr;
-    debugShader = nullptr;
+    selectionShader = nullptr;
 
     camera = nullptr;
     selector = nullptr;
@@ -39,8 +39,8 @@ Editor::~Editor() {
     delete defaultShader;
     defaultShader = nullptr;
     
-    delete debugShader;
-    debugShader = nullptr;
+    delete selectionShader;
+    selectionShader = nullptr;
 
     delete defaultMesh;
     defaultMesh = nullptr;
@@ -78,8 +78,8 @@ bool Editor::init() {
     defaultMesh = new Mesh("Assets/cubo.obj");
 
     // Creacion de shader
-    defaultShader = new Shader("Assets/mainShader.vert", "Assets/mainShader.frag");
-    debugShader = new Shader("Assets/debugShader.vert", "Assets/debugShader.frag");
+    defaultShader = new Shader("Assets/shaders/mainShader.vert", "Assets/shaders/mainShader.frag");
+    selectionShader = new Shader("Assets/shaders/selectionShader.vert", "Assets/shaders/selectionShader.frag");
 
     selector = new Selector();
 
@@ -208,7 +208,7 @@ void Editor::logic() {
     // !! no creo que haga falta hacer esto continuamente
     selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
 
-    hoveredElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+    hoveredElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! igual se puede combinar esto con selector->select...?
 
     // Click izquierdo
     if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
@@ -304,9 +304,9 @@ void Editor::drawDebug(const glm::mat4& MVP) {
     if (!selector->hasSelection())
         return;
 
-    debugShader->use();
+    selectionShader->use();
 
-    debugShader->setMat4("MVP", MVP);
+    selectionShader->setMat4("MVP", MVP);
 
     glDisable(GL_DEPTH_TEST);
 
