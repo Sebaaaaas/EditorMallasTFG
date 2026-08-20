@@ -2,9 +2,9 @@
 
 #include <glad/gl.h>
 
-//#include <glm.hpp> - actualmente en el .h
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
+//#include <glm/glm.hpp> - actualmente en el .h
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <stdio.h>
 #include <assert.h>

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <QObject>
-#include <qopenglwidget.h>
-#include <qopenglfunctions.h>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 
 
 class Editor;
