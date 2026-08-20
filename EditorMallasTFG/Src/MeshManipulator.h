@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QObject>
 #include <glm/glm.hpp>
 #include <unordered_set>
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <unordered_set>
 
 class Mesh;
 class Camera;
