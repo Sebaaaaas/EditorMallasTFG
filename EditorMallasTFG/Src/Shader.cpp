@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <glad/gl.h>
-#include <gtc/type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath) // !! CUIDADO, SI FALLA CONSTRUCTORA DEJA LEAK, MEJOR CON INICIALIZACION EN DOS FASES
 {
@@ -78,7 +78,7 @@ std::string Shader::readFile(const std::string& path) {
 
     FILE* file = nullptr;
 
-    if (fopen_s(&file, path.c_str(), "rb"))
+    if ((file = fopen(path.c_str(), "rb")) == nullptr)
     {
         std::cout << "Error al intentar abrir el fichero: " << path << std::endl;
         return "";

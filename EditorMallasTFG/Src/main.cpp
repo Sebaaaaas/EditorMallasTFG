@@ -1,12 +1,17 @@
 #include <QApplication>
 
 #include "MainWindow.h"
+
+#ifdef _WIN32
 #include "checkML.h"
+#endif
 
 int main(int argc, char* argv[])
 {
     // Deteccion de memory leaks en Debug
+#ifdef _WIN32
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
     QApplication app(argc, argv);
 
