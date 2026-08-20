@@ -473,8 +473,8 @@ void Mesh::removeLooseVertices() {
 
     // Si no habia vertices sueltos, podemos volver
     if (numUnreferencedVertices == 0)
-        return;
-    
+        return;    
+
     // Determinamos como resulta el nuevo vector Vertices tras la eliminacion de los sueltos. Remap almacena donde quedan los vertices tras la eliminacion
     // de los anteriores (donde antes iba el 3, ahora va el 4...)
     std::vector<int> remap(vertices.size(), -1);
