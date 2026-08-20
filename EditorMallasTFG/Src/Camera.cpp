@@ -2,7 +2,6 @@
 
 #include "Input.h"
 
-#include <GLFW/glfw3.h>
 #include <QOpenGLContext>
 #include <iostream>
 
@@ -29,6 +28,9 @@ Camera::Camera(float width, float height)
     panSensitivity = 0.001f;
     zoomSensitivity = 0.1f;
     distance = glm::length(position - target);
+
+    projectionMode = ProjectionMode::Perspective;
+    orthogonalZoom = 4.f;
 }
 
 glm::vec3 Camera::getPosition() const {
@@ -40,19 +42,27 @@ glm::mat4 Camera::getViewMatrix() const {
 }
 
 glm::mat4 Camera::getProjectionMatrix() const {
-    return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+
+    if (projectionMode == ProjectionMode::Perspective) {
+        return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
+    }
+    else {
+
+        float halfHeight = orthogonalZoom;
+        float halfWidth = halfHeight * aspectRatio;
+
+        return glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, nearPlane, farPlane);
+    }
 }
 
 void Camera::manageInput() {
 
-    if (Input::isMouseButtonDown(2))
-    {
-        if (Input::isKeyDown(Qt::Key_Shift))
-        {
+    if (Input::isMouseButtonDown(2)) {
+
+        if (Input::isKeyDown(Qt::Key_Shift)) {
             pan(Input::getMouseDeltaX(), Input::getMouseDeltaY());
         }
-        else
-        {
+        else {
             orbit(Input::getMouseDeltaX(), Input::getMouseDeltaY());
         }
     }
@@ -81,10 +91,6 @@ void Camera::setPosition(const glm::vec3& pos) {
 
 void Camera::setTarget(const glm::vec3& newTarget) {
     target = newTarget;
-}
-
-glm::vec3 Camera::getTarget() const {
-    return target;
 }
 
 void Camera::reset() {
@@ -131,9 +137,20 @@ void Camera::pan(float xoffset, float yoffset) {
 
 void Camera::zoom(float amount) {
 
-    // Zoom que dependa de la distancia al objeto lo hace mas "intuitivo"
-    distance -= amount * (distance * zoomSensitivity);
+    if (projectionMode == ProjectionMode::Perspective) {
 
-    glm::vec3 direction = glm::normalize(position - target);
-    position = target + direction * distance;
+        // Zoom que dependa de la distancia al objeto lo hace mas "intuitivo"
+        distance -= amount * (distance * zoomSensitivity);
+
+        glm::vec3 direction = glm::normalize(position - target);
+        position = target + direction * distance;
+    }
+    else {
+        orthogonalZoom -= amount;
+        orthogonalZoom = glm::clamp(orthogonalZoom, 0.5f, 100.0f);
+    }
+}
+
+void Camera::setProjectionMode(ProjectionMode mode) {
+    projectionMode = mode;
 }
