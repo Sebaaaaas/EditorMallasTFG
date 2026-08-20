@@ -93,7 +93,7 @@ void MeshManipulator::extrudeSelection(float distance) {
     if (!currentMesh || selectedPolygons.empty())
         return;
 
-    // Acumulamos las normales por grupo, para mover las caras el la direccion media de las normales
+    // Acumulamos las normales por grupo, para mover las caras en la direccion media de las normales
     std::unordered_map<unsigned int, glm::vec3> normalSum;
 
     for (unsigned int polygonIndex : selectedPolygons) {
@@ -107,8 +107,9 @@ void MeshManipulator::extrudeSelection(float distance) {
         }
     }
 
-    // Se crea un vertice nuevo por cada grupo
-    std::unordered_map<unsigned int, unsigned int> groupToNew;
+    // Creamos un vertice "ancla" por cada grupo extruido. Este define el nuevo grupo posicional y es el que usara la cara superior
+    std::unordered_map<unsigned int, unsigned int> groupToTopAnchor;
+    std::unordered_map<unsigned int, unsigned int> groupToTopGroup;
 
     for (auto& [group, sum] : normalSum) {
 
@@ -116,10 +117,14 @@ void MeshManipulator::extrudeSelection(float distance) {
 
         Vertex newVertex = currentMesh->vertices[templateVertex];
         newVertex.Position += glm::normalize(sum) * distance;
-        groupToNew[group] = currentMesh->addVertex(newVertex);
+
+        // Creamos grupo posicional nuevo
+        unsigned int anchor = currentMesh->addVertex(newVertex); 
+        groupToTopAnchor[group] = anchor;
+        groupToTopGroup[group] = currentMesh->vertexToGroup[anchor];
     }
 
-    // Calculamos cuantas caras hacen uso de cada arista, para solamente crear poligonos nuevos en los bordes cuando hay seleccion de multiples caras
+    // Calculamos cuantas caras hacen uso de cada arista, para solamente crear poligonos nuevos en los bordes (no creamos poligonos extra al extruir multiples poligonos)
     std::map<std::pair<unsigned int, unsigned int>, int> edgeUseCount;
 
     for (unsigned int polygonIndex : selectedPolygons) {
@@ -136,16 +141,17 @@ void MeshManipulator::extrudeSelection(float distance) {
         }
     }
 
-    // Reconstruimos los poligonos seleccionados si cumplen las condiciones deseadas
+    // Reconstruimos los poligonos seleccionados
     for (unsigned int polygonIndex : selectedPolygons) {
 
         const Polygon base = currentMesh->polygons[polygonIndex];
         size_t count = base.vertices.size();
 
+        // La cara superior usa el ancla de cada grupo directamente
         std::vector<unsigned int> topVertices;
         for (unsigned int v : base.vertices) {
             unsigned int group = currentMesh->vertexToGroup[v];
-            topVertices.push_back(groupToNew[group]);
+            topVertices.push_back(groupToTopAnchor[group]);
         }
 
         for (size_t i = 0; i < count; ++i) {
@@ -155,23 +161,29 @@ void MeshManipulator::extrudeSelection(float distance) {
             unsigned int groupA = currentMesh->vertexToGroup[base.vertices[i]];
             unsigned int groupB = currentMesh->vertexToGroup[base.vertices[next]];
 
-            // Saltamos arista interior compartida con una cara interior
+            // Saltamos arista interior compartida con otra cara seleccionada
             if (edgeUseCount[std::minmax(groupA, groupB)] > 1)
                 continue;
 
+            // Cada poligono lateral obtiene sus 4 vertices propios (misma posicion que el resto del grupo, pero vertice de renderizado distinto), para que no comparta normal
+            // con otros poligonos
+            unsigned int bottomA = currentMesh->addVertexToGroup(currentMesh->vertices[base.vertices[i]], groupA);
+            unsigned int bottomB = currentMesh->addVertexToGroup(currentMesh->vertices[base.vertices[next]], groupB);
+
+            unsigned int topA = currentMesh->addVertexToGroup(currentMesh->vertices[groupToTopAnchor[groupA]], groupToTopGroup[groupA]);
+            unsigned int topB = currentMesh->addVertexToGroup(currentMesh->vertices[groupToTopAnchor[groupB]], groupToTopGroup[groupB]);
+
             Polygon side;
-            side.vertices = {
-                base.vertices[i],
-                base.vertices[next],
-                topVertices[next],
-                topVertices[i]
-            };
+            side.vertices = { bottomA, bottomB, topB, topA };
 
             currentMesh->addPolygon(side);
         }
 
         currentMesh->polygons[polygonIndex].vertices = topVertices;
     }
+
+    // Los vertices originales del borde pueden quedar sin uso si no los comparte ninguna cara sin seleccionar
+    currentMesh->removeLooseVertices();
 
     currentMesh->rebuildTopology();
 }
