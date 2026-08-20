@@ -1,7 +1,6 @@
 #pragma once
 
-#include <QObject>
-#include <glm.hpp>
+#include <glm/glm.hpp>
 #include <string>
 
 #include "EditorTypes.h"

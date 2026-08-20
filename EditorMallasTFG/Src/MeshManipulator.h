@@ -1,7 +1,6 @@
 #pragma once
 
-#include <glm.hpp>
-#include <QObject>
+#include <glm/glm.hpp>
 #include <unordered_set>
 
 #include "Mesh.h"
