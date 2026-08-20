@@ -2,6 +2,8 @@
 
 #include <gtc/matrix_transform.hpp>
 
+#include "EditorTypes.h"
+
 class Camera
 {
 public:
@@ -21,13 +23,14 @@ public:
 
     void setPosition(const glm::vec3& pos);
     void setTarget(const glm::vec3& newTarget);
-    glm::vec3 getTarget() const;
 
     // Resetea la camara a su posicion inicial
     void reset();
     void orbit(float xoffset, float yoffset);
     void pan(float xoffset, float yoffset);
     void zoom(float amount);
+
+    void setProjectionMode(ProjectionMode mode);
 
 private:
     glm::vec3 position; // Posicion de la camara
@@ -45,4 +48,7 @@ private:
     float aspectRatio; // Relacion de x(ancho) respecto a y(alto) de la camara
     float nearPlane; // Siempre debe ser positivo
     float farPlane; // Siempre debe ser positivo
+
+    ProjectionMode projectionMode;
+    float orthogonalZoom;
 };

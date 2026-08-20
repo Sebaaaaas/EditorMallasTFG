@@ -94,6 +94,7 @@ void Mesh::loadOBJ(const std::string& path) {
         // Iteramos sobre las caras de cada malla
         for (int face = 0; face < shape.mesh.num_face_vertices.size(); ++face) {
 
+            // Cantidad de vertices logicos de la cara
             int faceVertices = shape.mesh.num_face_vertices[face];
 
             // Construimos y almacenamos nuestros poligonos
@@ -205,20 +206,21 @@ void Mesh::saveOBJ(const std::string& path) {
             << v.Normal.z << "\n";
     }
 
-    // Guardamos indices
-    for (size_t i = 0; i < indices.size(); i += 3) {
+    // Guardamos los poligonos
+    for (const Polygon& polygon : polygons) {
+
+        if (polygon.vertices.size() < 3)
+            continue;
 
         file << "f ";
 
-        for (int j = 0; j < 3; ++j)
-        {
-            unsigned int render = indices[i + j];
+        for (unsigned int vertex : polygon.vertices) {
 
-            unsigned int group = vertexToGroup[render];
+            unsigned int group = vertexToGroup[vertex];
 
             file << groupToObjIndex[group]
                 << "//"
-                << render + 1
+                << vertex + 1
                 << " ";
         }
 
@@ -355,9 +357,20 @@ unsigned int Mesh::addVertex(const Vertex& vertex) {
     unsigned int idx = (unsigned int)vertices.size();
     vertices.push_back(vertex);
 
-    // Como al crear un nuevo vertice, asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
+    // Como al crear un nuevo vertice asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
     unsigned int groupIndex = (unsigned int)vertexGroups.size();
     vertexGroups.push_back({idx});
+    vertexToGroup.push_back(groupIndex);
+
+    return idx;
+}
+
+unsigned int Mesh::addVertexToGroup(const Vertex& vertex, unsigned int groupIndex) {
+
+    unsigned int idx = (unsigned int)vertices.size();
+    vertices.push_back(vertex);
+
+    vertexGroups[groupIndex].push_back(idx);
     vertexToGroup.push_back(groupIndex);
 
     return idx;
@@ -460,8 +473,8 @@ void Mesh::removeLooseVertices() {
 
     // Si no habia vertices sueltos, podemos volver
     if (numUnreferencedVertices == 0)
-        return;
-    
+        return;    
+
     // Determinamos como resulta el nuevo vector Vertices tras la eliminacion de los sueltos. Remap almacena donde quedan los vertices tras la eliminacion
     // de los anteriores (donde antes iba el 3, ahora va el 4...)
     std::vector<int> remap(vertices.size(), -1);

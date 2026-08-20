@@ -50,6 +50,66 @@ SelectionMode Selector::getSelectionMode() const {
     return currentSelectionMode;
 }
 
+void Selector::selectVertex(int vertexIndex, Mesh* mesh, bool additive) {
+
+    if (!additive)
+        clearSelection();
+
+    unsigned int group = mesh->vertexToGroup[vertexIndex];
+
+    selectedGroups.insert(group);
+}
+
+void Selector::selectEdge(unsigned int edgeIndex, Mesh* mesh, bool additive) {
+
+    if (!additive)
+        clearSelection();
+
+    selectedEdges.insert(edgeIndex);
+
+    const Edge& edge = mesh->edges[edgeIndex];
+
+    selectedGroups.insert(mesh->vertexToGroup[edge.v0]);
+    selectedGroups.insert(mesh->vertexToGroup[edge.v1]);
+}
+
+void Selector::selectPolygon(unsigned int polygonIndex, Mesh* mesh, bool additive) {
+
+    if (!additive)
+        clearSelection();
+
+    selectedPolygons.insert(polygonIndex);
+
+    const Polygon& polygon = mesh->polygons[polygonIndex];
+
+    for (unsigned int vertex : polygon.vertices) {
+        selectedGroups.insert(mesh->vertexToGroup[vertex]);
+    }
+}
+
+const std::unordered_set<unsigned int>& Selector::getSelectedGroups() const {
+    return selectedGroups;
+}
+
+const std::unordered_set<unsigned int>& Selector::getSelectedEdges() const {
+    return selectedEdges;
+}
+
+const std::unordered_set<unsigned int>& Selector::getSelectedPolygons() const {
+    return selectedPolygons;
+}
+
+void Selector::clearSelection() {
+
+    selectedGroups.clear();
+    selectedEdges.clear();
+    selectedPolygons.clear();
+}
+
+bool Selector::hasSelection() const {
+    return !selectedGroups.empty() || !selectedEdges.empty() || !selectedPolygons.empty();
+}
+
 ProjectedVertex Selector::worldToScreen(const glm::vec3& p, int width, int height, const glm::mat4& viewProjection) { // !! se puede seguir haciendo mas eficiente sacando cosas
 
     ProjectedVertex result;
@@ -132,7 +192,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         // Calculo de longitud del vector ab(hacerlo asi ahorra raices cuadradas)
         float len = glm::dot(ab, ab);
 
-        // Ingoramos si es muy pequenio
+        // Ingoramos si es muy pequenio !! igual ni hace falta
         if (len < 0.00001f)
             continue;
 

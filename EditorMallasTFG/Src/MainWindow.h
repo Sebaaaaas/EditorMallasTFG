@@ -20,7 +20,11 @@ private:
 	QDoubleSpinBox* ySpin;
 	QDoubleSpinBox* zSpin;
 
+	QToolBar* mainToolBar;
+
 	bool openFile();
+
+	bool saveFile();
 
 	// Menu de seleccion para cambiar entre seleccion de vertices, segmentos y caras
 	void setupSelectionMode();
@@ -35,6 +39,8 @@ private:
 	void updateXYZPanel(double x, double y, double z);
 
 	void setupRenderMode();
+
+	void setupProjectionMode();
 
 	void onEditorReady(Editor* editor);
 };

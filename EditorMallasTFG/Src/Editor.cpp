@@ -24,7 +24,7 @@
 Editor::Editor() {
     defaultMesh = nullptr;
     defaultShader = nullptr;
-    debugShader = nullptr;
+    selectionShader = nullptr;
 
     camera = nullptr;
     selector = nullptr;
@@ -39,8 +39,8 @@ Editor::~Editor() {
     delete defaultShader;
     defaultShader = nullptr;
     
-    delete debugShader;
-    debugShader = nullptr;
+    delete selectionShader;
+    selectionShader = nullptr;
 
     delete defaultMesh;
     defaultMesh = nullptr;
@@ -78,11 +78,17 @@ bool Editor::init() {
     defaultMesh = new Mesh("Assets/cubo.obj");
 
     // Creacion de shader
-    defaultShader = new Shader("Assets/mainShader.vert", "Assets/mainShader.frag");
-    debugShader = new Shader("Assets/debugShader.vert", "Assets/debugShader.frag");
+    defaultShader = new Shader("Assets/shaders/mainShader.vert", "Assets/shaders/mainShader.frag");
+    selectionShader = new Shader("Assets/shaders/selectionShader.vert", "Assets/shaders/selectionShader.frag");
 
     selector = new Selector();
-    meshManipulator = new MeshManipulator();
+
+    meshManipulator = new MeshManipulator(selector);
+    meshManipulator->setEditingMesh(defaultMesh);
+
+    connect(meshManipulator, &MeshManipulator::selectedPositionChanged, // Conectamos la funcion de MeshManipulator para que se pueda enviar hasta
+        this, &Editor::onManipulatorPositionChanged);                   //  MainWindow un cambio de posicion del elemento seleccionado
+
     debugRenderer = new DebugRenderer();
 
 	return true;
@@ -126,8 +132,12 @@ void Editor::run() {
 }
 
 void Editor::setWindowSize(int w, int h) {
+
     win_w = w;
     win_h = h;
+
+    if (camera != nullptr)
+        camera->setAspectRatio(w, h);
 }
 
 bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve false, si esta corrupto el archivo o es un path invalido, explota la aplicacion
@@ -138,22 +148,52 @@ bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve fal
     defaultMesh = newMesh;
 
     hoveredElement = -1;
-    meshManipulator->clearSelection();
+    selector->clearSelection();
+    meshManipulator->setEditingMesh(defaultMesh);
 
     return true;
+}
+
+void Editor::saveMesh(const std::string& path) {
+    defaultMesh->saveOBJ(path);
 }
 
 void Editor::setSelectionMode(SelectionMode mode) {
     selector->setSelectionMode(mode);
 }
 
-MeshManipulator* Editor::getMeshManipulator() const {
-    return meshManipulator;
+void Editor::setProjectionMode(ProjectionMode mode) {
+    camera->setProjectionMode(mode);
+}
+
+void Editor::setTransformMode(TransformMode mode) {
+    meshManipulator->setTransformMode(mode);
+}
+
+void Editor::setTransformAxis(TransformAxis mode) {
+    meshManipulator->setTransformAxis(mode);
+}
+
+void Editor::setSelectedXPosition(double value) {
+    meshManipulator->setSelectedXPosition(value);
+}
+
+void Editor::setSelectedYPosition(double value) {
+    meshManipulator->setSelectedYPosition(value);
+}
+
+void Editor::setSelectedZPosition(double value) {
+    meshManipulator->setSelectedZPosition(value);
 }
 
 void Editor::setRenderMode(RenderMode mode) {
     renderMode = mode;
 }
+
+void Editor::onManipulatorPositionChanged(double x, double y, double z) {
+    emit selectedPositionChanged(x, y, z);
+}
+
 
 void Editor::logic() {
 
@@ -163,14 +203,12 @@ void Editor::logic() {
     if (Input::isKeyDown(Qt::Key_Escape))
         QApplication::quit();
 
-    meshManipulator->setEditingMesh(defaultMesh);
-
     camera->manageInput();
 
     // !! no creo que haga falta hacer esto continuamente
     selector->projectVerticesToScreen(*defaultMesh, win_w, win_h, camera->getViewMatrix(), camera->getProjectionMatrix());
 
-    hoveredElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera);
+    hoveredElement = selector->pick(*defaultMesh, Input::getMouseX(), Input::getMouseY(), win_w, win_h, camera); // !! igual se puede combinar esto con selector->select...?
 
     // Click izquierdo
     if (Input::isMouseButtonDown(0) && !meshManipulator->isDragging()) {
@@ -184,13 +222,13 @@ void Editor::logic() {
             switch (currentSelectionMode)
             {
             case SelectionMode::Vertex:
-                meshManipulator->selectVertex(hoveredElement, additive);
+                selector->selectVertex(hoveredElement, defaultMesh, additive);
                 break;
             case SelectionMode::Edge:
-                meshManipulator->selectEdge(hoveredElement, additive);
+                selector->selectEdge(hoveredElement, defaultMesh, additive);
                 break;
             case SelectionMode::Face:
-                meshManipulator->selectPolygon(hoveredElement, additive);
+                selector->selectPolygon(hoveredElement, defaultMesh, additive);
                 break;
             default:
                 break;
@@ -199,7 +237,7 @@ void Editor::logic() {
             meshManipulator->beginTransform(*camera, Input::getMouseX(), Input::getMouseY(), win_w, win_h);
         }
         else if (!additive) {
-            meshManipulator->clearSelection();
+            selector->clearSelection();
         }
     }
 
@@ -209,12 +247,6 @@ void Editor::logic() {
 
     if (meshManipulator->isDragging()) {
         meshManipulator->updateTransform(Input::getMouseX(), Input::getMouseY(), win_w, win_h, *camera);
-    }
-
-    // Guardar modelo !! siempre se guarda con el mismo nombre
-    if (Input::isKeyDown(Qt::Key_Control) && Input::isKeyPressed(Qt::Key_S)) {
-        std::cout << "Mesh saved" << std::endl;
-        defaultMesh->saveOBJ("Assets/edited.obj");
     }
 
     if (Input::isKeyPressed(Qt::Key_E))
@@ -269,12 +301,12 @@ void Editor::render() {
 
 void Editor::drawDebug(const glm::mat4& MVP) {
 
-    if (!meshManipulator->hasSelection())
+    if (!selector->hasSelection())
         return;
 
-    debugShader->use();
+    selectionShader->use();
 
-    debugShader->setMat4("MVP", MVP);
+    selectionShader->setMat4("MVP", MVP);
 
     glDisable(GL_DEPTH_TEST);
 
@@ -284,7 +316,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
 
     case SelectionMode::Vertex: {
 
-        for (unsigned int group : meshManipulator->getSelectedGroups()) {
+        for (unsigned int group : selector->getSelectedGroups()) {
             for (unsigned int idx : defaultMesh->vertexGroups[group]) {
                 debugRenderer->drawPoint(defaultMesh->vertices[idx].Position);
             }
@@ -296,7 +328,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
         break;
     case SelectionMode::Edge: {
 
-        for (unsigned int edgeIndex : meshManipulator->getSelectedEdges()) {
+        for (unsigned int edgeIndex : selector->getSelectedEdges()) {
 
             const Edge& edge = defaultMesh->edges[edgeIndex];
             debugRenderer->drawEdge(*defaultMesh, edge);
@@ -305,7 +337,7 @@ void Editor::drawDebug(const glm::mat4& MVP) {
         break;
     case SelectionMode::Face: {
 
-        for (unsigned int polygonIndex : meshManipulator->getSelectedPolygons()) {
+        for (unsigned int polygonIndex : selector->getSelectedPolygons()) {
 
             const Polygon& polygon = defaultMesh->polygons[polygonIndex];
             debugRenderer->drawPolygon(*defaultMesh, polygon);
