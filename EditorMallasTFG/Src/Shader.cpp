@@ -78,7 +78,7 @@ std::string Shader::readFile(const std::string& path) {
 
     FILE* file = nullptr;
 
-    if ((file = fopen(path.c_str(), "rb")) == nullptr)
+    /*if ((file = fopen(path.c_str(), "rb")) == nullptr)*/if (fopen_s(&file, path.c_str(), "rb"))
     {
         std::cout << "Error al intentar abrir el fichero: " << path << std::endl;
         return "";
