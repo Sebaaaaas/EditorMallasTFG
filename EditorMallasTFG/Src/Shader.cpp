@@ -78,11 +78,13 @@ std::string Shader::readFile(const std::string& path) {
 
     FILE* file = nullptr;
 
-    /*if ((file = fopen(path.c_str(), "rb")) == nullptr)*/if (fopen_s(&file, path.c_str(), "rb"))
-    {
+#pragma warning(suppress : 4996) // Para poder usar fopen() en lugar de fopen_s(), ya que el segundo es exclusivo de windows
+    if ((file = fopen(path.c_str(), "rb")) == nullptr) {
+
         std::cout << "Error al intentar abrir el fichero: " << path << std::endl;
         return "";
     }
+#pragma warning(disable : 4996)
 
     // Get file size
     fseek(file, 0, SEEK_END);
