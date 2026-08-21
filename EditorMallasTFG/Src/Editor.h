@@ -81,7 +81,7 @@ private:
 	void render();
 
 	// Dibuja el elemento actualmente seleccionado para remarcarlo
-	void drawDebug(const glm::mat4& MVP);
+	void drawSelection(const glm::mat4& MVP);
 
 };
 

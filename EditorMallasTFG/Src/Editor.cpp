@@ -279,6 +279,8 @@ void Editor::render() {
 
     glm::mat4 MVP = projection * view * model;
 
+    glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+
     if (!defaultMesh)
         return;
 
@@ -286,6 +288,7 @@ void Editor::render() {
 
     defaultShader->setMat4("MVP", MVP);
     defaultShader->setMat4("model", model);
+    defaultShader->setMat3("normalMatrix", normalMatrix);
     defaultShader->setVec3("lightDir", glm::vec3(-0.5f, -1.0f, -0.3f));
     defaultShader->setVec3("objectColor", glm::vec3(0.6f, 0.7f, 1.0f));
 
@@ -294,12 +297,12 @@ void Editor::render() {
     // Aseguramos que otras cosas no se rendericen con el modo equivocado
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // Lineas debug de elementos seleccionados
-    drawDebug(MVP);
+    // Dibujado de elementos seleccionados por enima de la malla
+    drawSelection(MVP);
     
 }
 
-void Editor::drawDebug(const glm::mat4& MVP) {
+void Editor::drawSelection(const glm::mat4& MVP) {
 
     if (!selector->hasSelection())
         return;
