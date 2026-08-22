@@ -7,15 +7,15 @@ class Mesh;
 struct Edge;
 struct Polygon;
 
-class DebugRenderer
+class SelectionRenderer
 {
 private:
     GLuint vao, vbo;
 
 public:
 
-    DebugRenderer();
-    ~DebugRenderer();
+    SelectionRenderer();
+    ~SelectionRenderer();
 
     void drawPoint(const glm::vec3& pos);
     void drawLine(const glm::vec3& a, const glm::vec3& b);

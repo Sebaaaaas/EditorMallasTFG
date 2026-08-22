@@ -10,7 +10,7 @@
 #include <assert.h>
 
 #include "MeshManipulator.h"
-#include "DebugRenderer.h"
+#include "SelectionRenderer.h"
 #include "Selector.h"
 #include "Camera.h"
 #include "Shader.h"
@@ -29,7 +29,7 @@ Editor::Editor() {
     camera = nullptr;
     selector = nullptr;
     meshManipulator = nullptr;
-    debugRenderer = nullptr;
+    selectionRenderer = nullptr;
 
     hoveredElement = -1;
     renderMode = RenderMode::Solid;
@@ -54,8 +54,8 @@ Editor::~Editor() {
     delete meshManipulator;
     meshManipulator = nullptr;
 
-    delete debugRenderer;
-    debugRenderer = nullptr;
+    delete selectionRenderer;
+    selectionRenderer = nullptr;
 
 }
 
@@ -89,7 +89,7 @@ bool Editor::init() {
     connect(meshManipulator, &MeshManipulator::selectedPositionChanged, // Conectamos la funcion de MeshManipulator para que se pueda enviar hasta
         this, &Editor::onManipulatorPositionChanged);                   //  MainWindow un cambio de posicion del elemento seleccionado
 
-    debugRenderer = new DebugRenderer();
+    selectionRenderer = new SelectionRenderer();
 
 	return true;
 }
@@ -321,12 +321,12 @@ void Editor::drawSelection(const glm::mat4& MVP) {
 
         for (unsigned int group : selector->getSelectedGroups()) {
             for (unsigned int idx : defaultMesh->vertexGroups[group]) {
-                debugRenderer->drawPoint(defaultMesh->vertices[idx].Position);
+                selectionRenderer->drawPoint(defaultMesh->vertices[idx].Position);
             }
         }
 
         //glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
-        //debugRenderer->drawPoint(pos);
+        //selectionRenderer->drawPoint(pos);
     }
         break;
     case SelectionMode::Edge: {
@@ -334,7 +334,7 @@ void Editor::drawSelection(const glm::mat4& MVP) {
         for (unsigned int edgeIndex : selector->getSelectedEdges()) {
 
             const Edge& edge = defaultMesh->edges[edgeIndex];
-            debugRenderer->drawEdge(*defaultMesh, edge);
+            selectionRenderer->drawEdge(*defaultMesh, edge);
         }
     }
         break;
@@ -343,7 +343,7 @@ void Editor::drawSelection(const glm::mat4& MVP) {
         for (unsigned int polygonIndex : selector->getSelectedPolygons()) {
 
             const Polygon& polygon = defaultMesh->polygons[polygonIndex];
-            debugRenderer->drawPolygon(*defaultMesh, polygon);
+            selectionRenderer->drawPolygon(*defaultMesh, polygon);
         }
     }
         break;
