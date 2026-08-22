@@ -87,8 +87,8 @@ public:
     //std::vector<Texture> textures;
 
     // Mapeado para mover vertices en misma posicion
-    std::vector<std::vector<unsigned int>> vertexGroups; // Grupos de vertices con la misma posicion
-    std::vector<unsigned int> vertexToGroup;             // Mapeado de vertice a su grupo
+    std::vector<std::vector<unsigned int>> logicGroups; // Grupos de vertices "logicos", con la misma posicion
+    std::vector<unsigned int> vertexToGroup;             // Mapeado de vertice a su grupo logico
 
 
     std::vector<Edge> edges; // !! igual no deberian ser publicos estos

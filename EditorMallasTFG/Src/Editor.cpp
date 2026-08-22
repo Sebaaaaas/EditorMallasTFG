@@ -320,7 +320,7 @@ void Editor::drawSelection(const glm::mat4& MVP) {
     case SelectionMode::Vertex: {
 
         for (unsigned int group : selector->getSelectedGroups()) {
-            for (unsigned int idx : defaultMesh->vertexGroups[group]) {
+            for (unsigned int idx : defaultMesh->logicGroups[group]) {
                 selectionRenderer->drawPoint(defaultMesh->vertices[idx].Position);
             }
         }

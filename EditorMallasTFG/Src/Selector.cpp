@@ -17,12 +17,13 @@ Selector::~Selector() {
 
 void Selector::projectVerticesToScreen(const Mesh& mesh, int width, int height, const glm::mat4& view, const glm::mat4& projection) {
 
-    projectedVertices.resize(mesh.vertices.size());
+    projectedVertices.resize(mesh.logicGroups.size());
 
     glm::mat4 viewProjection = projection * view;
 
-    for (size_t i = 0; i < mesh.vertices.size(); ++i) {
-        projectedVertices[i] = worldToScreen(mesh.vertices[i].Position, width, height, viewProjection);
+    for (size_t i = 0; i < mesh.logicGroups.size(); ++i) {
+        unsigned int representative = mesh.logicGroups[i][0];
+        projectedVertices[i] = worldToScreen(mesh.vertices[representative].Position, width, height, viewProjection);
     }
 }
 
@@ -148,21 +149,20 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
     float minDepth = std::numeric_limits<float>::max();
 
     // Recorremos todos los vertices de la malla
-    for (int i = 0; i < mesh.vertices.size(); i++) {
+    for (size_t group = 0; group < mesh.logicGroups.size(); ++group) {
 
-        const ProjectedVertex& projected = projectedVertices[i];
+        const ProjectedVertex& projected = projectedVertices[group];
 
         if (!projected.visible)
             continue;
 
-        // Calculamos la distancia entre vertice en pantalla y raton
         float dist = glm::distance(projected.screenPosition, glm::vec2(mouseX, mouseY));
 
-        // Comprobamos si el nuevo candidato es mejor
         if (isBetterCandidate(dist, projected.depth, minScreenDistance, minDepth)) {
-            selectedVertex = i;
+            selectedVertex = mesh.logicGroups[group][0];
         }
     }
+
 
     return selectedVertex;
 }
@@ -181,8 +181,8 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         const Edge& edge = mesh.edges[i];
 
         // Obtenemos las dos proyecciones de los vertices del segmento
-        const ProjectedVertex& pa = projectedVertices[edge.v0];
-        const ProjectedVertex& pb = projectedVertices[edge.v1];
+        const ProjectedVertex& pa = projectedVertices[mesh.vertexToGroup[edge.v0]];
+        const ProjectedVertex& pb = projectedVertices[mesh.vertexToGroup[edge.v1]];
 
         if (!pa.visible || !pb.visible)
             continue;
@@ -234,7 +234,7 @@ int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, 
         bool visible = true;
 
         for (unsigned int idx : polygon.vertices) {
-            if (!projectedVertices[idx].visible) {
+            if (!projectedVertices[mesh.vertexToGroup[idx]].visible) {
                 visible = false;
                 break;
             }
@@ -242,14 +242,14 @@ int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, 
 
         if (!visible)
             continue;
-
+        
         // Recorremos los vertices del poligono, creando triangulos a partir del vertice inicial seleccionado
-        const ProjectedVertex& pa = projectedVertices[polygon.vertices[0]];
+        const ProjectedVertex& pa = projectedVertices[mesh.vertexToGroup[polygon.vertices[0]]];
 
         for (int j = 1; j + 1 < polygon.vertices.size(); ++j) {
 
-            const ProjectedVertex& pb = projectedVertices[polygon.vertices[j]];
-            const ProjectedVertex& pc = projectedVertices[polygon.vertices[j + 1]];
+            const ProjectedVertex& pb = projectedVertices[mesh.vertexToGroup[polygon.vertices[j]]];
+            const ProjectedVertex& pc = projectedVertices[mesh.vertexToGroup[polygon.vertices[j + 1]]];
 
             float u, v;
 

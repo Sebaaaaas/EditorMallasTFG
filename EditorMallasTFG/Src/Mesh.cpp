@@ -137,18 +137,18 @@ void Mesh::loadOBJ(const std::string& path) {
 
                     if (it2 == positionToGroup.end()) { // No encontrado antes, creamos nuevo grupo posicional
 
-                        groupIndex = (unsigned int)vertexGroups.size();
+                        groupIndex = (unsigned int)logicGroups.size();
 
                         positionToGroup[vertex.Position] = groupIndex;
 
                         // Creamos un grupo nuevo vacio
-                        vertexGroups.push_back({});
+                        logicGroups.push_back({});
                     }
                     else {
                         groupIndex = it2->second;
                     }
 
-                    vertexGroups[groupIndex].push_back(vertexIndex);
+                    logicGroups[groupIndex].push_back(vertexIndex);
                     vertexToGroup.push_back(groupIndex);
                 }
                 else { // Ya existia el vertice previamente, no lo duplicamos sino que usamos el ya existente
@@ -166,7 +166,7 @@ void Mesh::loadOBJ(const std::string& path) {
     }
 
     std::cout << "Vertices: " << vertices.size() << std::endl;
-    std::cout << "VertexGroups: " << vertexGroups.size() << std::endl;
+    std::cout << "VertexGroups: " << logicGroups.size() << std::endl;
 
 }
 
@@ -178,13 +178,13 @@ void Mesh::saveOBJ(const std::string& path) {
         return;
 
     // Guardamos vertices, solo uno por cada vertexGroup, para que no pongamos de mas
-    std::vector<unsigned int> groupToObjIndex(vertexGroups.size());
+    std::vector<unsigned int> groupToObjIndex(logicGroups.size());
 
     unsigned int objIndex = 1;
 
-    for (size_t group = 0; group < vertexGroups.size(); ++group) {
+    for (size_t group = 0; group < logicGroups.size(); ++group) {
 
-        unsigned int renderVertex = vertexGroups[group][0];
+        unsigned int renderVertex = logicGroups[group][0];
 
         const glm::vec3& p = vertices[renderVertex].Position;
 
@@ -357,8 +357,8 @@ unsigned int Mesh::addVertex(const Vertex& vertex) {
     vertices.push_back(vertex);
 
     // Como al crear un nuevo vertice asumimos que se quiere colocar en una posicion nueva en el espacio, le asignamos un nuevo grupo
-    unsigned int groupIndex = (unsigned int)vertexGroups.size();
-    vertexGroups.push_back({idx});
+    unsigned int groupIndex = (unsigned int)logicGroups.size();
+    logicGroups.push_back({idx});
     vertexToGroup.push_back(groupIndex);
 
     return idx;
@@ -369,7 +369,7 @@ unsigned int Mesh::addVertexToGroup(const Vertex& vertex, unsigned int groupInde
     unsigned int idx = (unsigned int)vertices.size();
     vertices.push_back(vertex);
 
-    vertexGroups[groupIndex].push_back(idx);
+    logicGroups[groupIndex].push_back(idx);
     vertexToGroup.push_back(groupIndex);
 
     return idx;
@@ -495,12 +495,12 @@ void Mesh::removeLooseVertices() {
         for (unsigned int& vertex : polygon.vertices)
             vertex = (unsigned int)remap[vertex];
 
-    // Reconstruimos vertexGroups y vertexToGroups, ya que han cambiado, e incluso podria quedar eliminado un grupo completo de vertices
+    // Reconstruimos logicGroups y vertexToGroups, ya que han cambiado, e incluso podria quedar eliminado un grupo completo de vertices
     std::vector<std::vector<unsigned int>> postDeletionVertexGroups;
     std::vector<unsigned int> newVertexToGroup(vertices.size());
 
     // Recorremos cada vertezGroup (grupo geometrico de vertices)
-    for (const auto& oldGroup : vertexGroups) {
+    for (const auto& oldGroup : logicGroups) {
 
         // Buscamos aquellos casos donde queden vertices de renderizado restantes dentro de cada grupo
         std::vector<unsigned int> survivors;
@@ -521,7 +521,7 @@ void Mesh::removeLooseVertices() {
         postDeletionVertexGroups.push_back(std::move(survivors));
     }
 
-    vertexGroups = std::move(postDeletionVertexGroups);
+    logicGroups = std::move(postDeletionVertexGroups);
     vertexToGroup = std::move(newVertexToGroup);
 }
 
