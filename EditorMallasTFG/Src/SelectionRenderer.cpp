@@ -1,9 +1,9 @@
-#include "DebugRenderer.h"
+#include "SelectionRenderer.h"
 
 #include "Mesh.h"
 
-DebugRenderer::DebugRenderer()
-{
+SelectionRenderer::SelectionRenderer() {
+
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
 
@@ -21,14 +21,13 @@ DebugRenderer::DebugRenderer()
     glBindVertexArray(0);
 }
 
-DebugRenderer::~DebugRenderer()
-{
+SelectionRenderer::~SelectionRenderer() {
     glDeleteBuffers(1, &vbo);
     glDeleteVertexArrays(1, &vao);
 }
 
-void DebugRenderer::drawPoint(const glm::vec3& pos)
-{
+void SelectionRenderer::drawPoint(const glm::vec3& pos) {
+
     float vertex[3] = {
         pos.x, pos.y, pos.z
     };
@@ -48,8 +47,7 @@ void DebugRenderer::drawPoint(const glm::vec3& pos)
     glBindVertexArray(0);
 }
 
-void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
-{
+void SelectionRenderer::drawLine(const glm::vec3& a, const glm::vec3& b) {
     float vertices[6] = {
         a.x, a.y, a.z,
         b.x, b.y, b.z
@@ -70,7 +68,7 @@ void DebugRenderer::drawLine(const glm::vec3& a, const glm::vec3& b)
     glBindVertexArray(0);
 }
 
-void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+void SelectionRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
 
     float vertices[9] =
     {
@@ -94,14 +92,14 @@ void DebugRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const g
     glBindVertexArray(0);
 }
 
-void DebugRenderer::drawEdge(const Mesh& mesh, const Edge& edge) {
+void SelectionRenderer::drawEdge(const Mesh& mesh, const Edge& edge) {
     glm::vec3 a = mesh.vertices[edge.v0].Position;
     glm::vec3 b = mesh.vertices[edge.v1].Position;
 
     drawLine(a, b);
 }
 
-void DebugRenderer::drawPolygon(const Mesh& mesh, const Polygon& polygon) {
+void SelectionRenderer::drawPolygon(const Mesh& mesh, const Polygon& polygon) {
     
     for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i) {
 

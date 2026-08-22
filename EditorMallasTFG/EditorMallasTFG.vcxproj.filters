@@ -42,7 +42,7 @@
     <ClCompile Include="Src\MeshManipulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\DebugRenderer.cpp">
+    <ClCompile Include="Src\SelectionRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\Ray.cpp">
@@ -77,7 +77,7 @@
     <ClInclude Include="Src\Selector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Src\DebugRenderer.h">
+    <ClInclude Include="Src\SelectionRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Ray.h">

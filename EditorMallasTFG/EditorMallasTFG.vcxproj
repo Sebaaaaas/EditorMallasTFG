@@ -14,7 +14,7 @@
     <ClCompile Include="Dependencies\glad\src\gl.c" />
     <ClCompile Include="Src\Camera.cpp" />
     <ClCompile Include="Src\Canvas.cpp" />
-    <ClCompile Include="Src\DebugRenderer.cpp" />
+    <ClCompile Include="Src\SelectionRenderer.cpp" />
     <ClCompile Include="Src\Editor.cpp" />
     <ClCompile Include="Src\EditorTypes.h" />
     <ClCompile Include="Src\Input.cpp" />
@@ -30,7 +30,7 @@
     <ClInclude Include="Src\Camera.h" />
     <QtMoc Include="Src\Canvas.h" />
     <ClInclude Include="Src\checkML.h" />
-    <ClInclude Include="Src\DebugRenderer.h" />
+    <ClInclude Include="Src\SelectionRenderer.h" />
     <QtMoc Include="Src\Editor.h" />
     <ClInclude Include="Src\Input.h" />
     <ClInclude Include="Src\MainWindow.h" />

@@ -7,8 +7,8 @@
 #include "EditorTypes.h"
 #include "Selector.h"
 
+class SelectionRenderer;
 class MeshManipulator;
-class DebugRenderer;
 class Camera;
 class Shader;
 class Mesh;
@@ -68,7 +68,7 @@ private:
 
 	MeshManipulator* meshManipulator;
 
-	DebugRenderer* debugRenderer;
+	SelectionRenderer* selectionRenderer;
 
 	RenderMode renderMode;
 
