@@ -113,7 +113,7 @@ void MeshManipulator::extrudeSelection(float distance) {
 
     for (auto& [group, sum] : normalSum) {
 
-        unsigned int templateVertex = currentMesh->vertexGroups[group][0];
+        unsigned int templateVertex = currentMesh->logicGroups[group][0];
 
         Vertex newVertex = currentMesh->vertices[templateVertex];
         newVertex.Position += glm::normalize(sum) * distance;
@@ -272,7 +272,7 @@ glm::vec3 MeshManipulator::selectionCenter() const {
 
     for (unsigned int group : selectedGroups) {
 
-        const std::vector<unsigned int>& groupVertices = currentMesh->vertexGroups[group];
+        const std::vector<unsigned int>& groupVertices = currentMesh->logicGroups[group];
 
         if (groupVertices.empty())
             continue;
@@ -298,7 +298,7 @@ void MeshManipulator::refreshSelectionSnapshot() {
     originalPositions.clear();
 
     for (unsigned int group : selector->getSelectedGroups()) {
-        for (unsigned int idx : currentMesh->vertexGroups[group]) {
+        for (unsigned int idx : currentMesh->logicGroups[group]) {
             originalPositions[idx] = currentMesh->vertices[idx].Position;
         }
     }
@@ -397,7 +397,7 @@ void MeshManipulator::updateScale(float mouseX, float mouseY) {
 void MeshManipulator::transformSelection(const glm::mat4& transform) {
 
     for (unsigned int vertexGroup : selector->getSelectedGroups()) {
-        for (unsigned int vertex : currentMesh->vertexGroups[vertexGroup]) {
+        for (unsigned int vertex : currentMesh->logicGroups[vertexGroup]) {
 
             glm::vec3 local = originalPositions[vertex] - transformPivot;
 
