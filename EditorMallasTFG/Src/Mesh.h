@@ -130,6 +130,6 @@ public:
     
     void deletePolygons(const std::unordered_set<unsigned int>& polygonIndices);
     // Para borrar grupos geometricos de vertices
-    void deleteVertexGroups(const std::unordered_set<unsigned int>& groups);
+    void deleteLogicGroups(const std::unordered_set<unsigned int>& groups);
 };
 
