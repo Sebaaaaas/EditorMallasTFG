@@ -2,10 +2,9 @@
 
 #include <unordered_map>
 #include <algorithm>
+#include <glad/gl.h>
 #include <iostream>
 #include <set>
-
-#include <glad/gl.h>
 
 #pragma warning(push)
 #pragma warning(disable: 26495) // Deshabilitamos warnings de este archivo especificamente, ya que no es nuestro
@@ -84,7 +83,7 @@ void Mesh::loadOBJ(const std::string& path) {
     
     // Utilizamos uniqueVertices para deduplicacion
     std::unordered_map<Vertex, unsigned int> uniqueVertices;
-    std::unordered_map<int, unsigned int> positionIndexToGroup;
+    std::unordered_map<glm::vec3, unsigned int, VectorHash> positionToGroup;
 
     // Por cada malla separada(por ejemplo, dos cubos que no comparten topologia)
     for (const tinyobj::shape_t shape : shapes) {
@@ -134,13 +133,13 @@ void Mesh::loadOBJ(const std::string& path) {
                     unsigned int groupIndex;
 
                     // Asignamos un grupo por cada posicion unica para vertices
-                    auto it2 = positionIndexToGroup.find(index.vertex_index);
+                    auto it2 = positionToGroup.find(vertex.Position);
 
-                    if (it2 == positionIndexToGroup.end()) { // No encontrado antes, creamos nuevo grupo posicional
+                    if (it2 == positionToGroup.end()) { // No encontrado antes, creamos nuevo grupo posicional
 
                         groupIndex = (unsigned int)vertexGroups.size();
 
-                        positionIndexToGroup[index.vertex_index] = groupIndex;
+                        positionToGroup[vertex.Position] = groupIndex;
 
                         // Creamos un grupo nuevo vacio
                         vertexGroups.push_back({});

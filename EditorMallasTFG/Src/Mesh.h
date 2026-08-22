@@ -6,6 +6,16 @@
 
 #include <glm/glm.hpp>
 
+// Para poder usar un vector de glm en un hashmap
+struct VectorHash {
+    size_t operator()(const glm::vec3& v) const noexcept {
+        size_t h1 = std::hash<float>()(v.x);
+        size_t h2 = std::hash<float>()(v.y);
+        size_t h3 = std::hash<float>()(v.z);
+        return ((h1 ^ (h2 << 1)) ^ (h3 << 1));
+    }
+};
+
 struct Vertex
 {
     glm::vec3 Position;
