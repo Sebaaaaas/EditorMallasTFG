@@ -166,7 +166,7 @@ void Mesh::loadOBJ(const std::string& path) {
     }
 
     std::cout << "Vertices: " << vertices.size() << std::endl;
-    std::cout << "VertexGroups: " << logicGroups.size() << std::endl;
+    std::cout << "LogicGroups: " << logicGroups.size() << std::endl;
 
 }
 
@@ -496,7 +496,7 @@ void Mesh::removeLooseVertices() {
             vertex = (unsigned int)remap[vertex];
 
     // Reconstruimos logicGroups y vertexToGroups, ya que han cambiado, e incluso podria quedar eliminado un grupo completo de vertices
-    std::vector<std::vector<unsigned int>> postDeletionVertexGroups;
+    std::vector<std::vector<unsigned int>> postDeletionLogicGroups;
     std::vector<unsigned int> newVertexToGroup(vertices.size());
 
     // Recorremos cada vertezGroup (grupo geometrico de vertices)
@@ -514,14 +514,14 @@ void Mesh::removeLooseVertices() {
             continue;
 
         // Asignamos nuevo indice de grupo a los supertvivientes
-        unsigned int newGroupIndex = (unsigned int)postDeletionVertexGroups.size();
+        unsigned int newGroupIndex = (unsigned int)postDeletionLogicGroups.size();
         for (unsigned int newIdx : survivors)
             newVertexToGroup[newIdx] = newGroupIndex;
 
-        postDeletionVertexGroups.push_back(std::move(survivors));
+        postDeletionLogicGroups.push_back(std::move(survivors));
     }
 
-    logicGroups = std::move(postDeletionVertexGroups);
+    logicGroups = std::move(postDeletionLogicGroups);
     vertexToGroup = std::move(newVertexToGroup);
 }
 
@@ -550,7 +550,7 @@ void Mesh::deletePolygons(const std::unordered_set<unsigned int>& polygonIndices
     rebuildTopology();
 }
 
-void Mesh::deleteVertexGroups(const std::unordered_set<unsigned int>& groups) {
+void Mesh::deleteLogicGroups(const std::unordered_set<unsigned int>& groups) {
 
     if (groups.empty())
         return;

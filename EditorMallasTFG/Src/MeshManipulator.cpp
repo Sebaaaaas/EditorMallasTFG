@@ -227,7 +227,7 @@ void MeshManipulator::deleteSelection() {
         currentMesh->deletePolygons(polygonsToDelete);
     }
     else if (!selector->getSelectedGroups().empty()) {
-        currentMesh->deleteVertexGroups(selector->getSelectedGroups());
+        currentMesh->deleteLogicGroups(selector->getSelectedGroups());
     }
 
     selector->clearSelection();
