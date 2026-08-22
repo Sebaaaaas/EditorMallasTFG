@@ -68,7 +68,7 @@ bool Editor::init() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
-    // Para el transparente de debug
+    // Para el transparente de seleccion
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
