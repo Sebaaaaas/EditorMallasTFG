@@ -10,7 +10,7 @@ SelectionRenderer::SelectionRenderer() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    // Reservamos espacio para una linea (2 puntos, 6 floats -> posicion y normales) !! ahora es una cara, ha subido de 6 a 9 floats
+    // Reservamos espacio para una cara (3 vertices, 9 floats -> posicion)
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, nullptr, GL_DYNAMIC_DRAW);
 
     // layout(location = 0) -> vec3 position
@@ -48,6 +48,7 @@ void SelectionRenderer::drawPoint(const glm::vec3& pos) {
 }
 
 void SelectionRenderer::drawLine(const glm::vec3& a, const glm::vec3& b) {
+
     float vertices[6] = {
         a.x, a.y, a.z,
         b.x, b.y, b.z
@@ -93,6 +94,7 @@ void SelectionRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, con
 }
 
 void SelectionRenderer::drawEdge(const Mesh& mesh, const Edge& edge) {
+
     glm::vec3 a = mesh.vertices[edge.v0].Position;
     glm::vec3 b = mesh.vertices[edge.v1].Position;
 
