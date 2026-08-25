@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "MeshManipulator.h"
 #include "SelectionRenderer.h"
+#include "MeshManipulator.h"
 #include "Selector.h"
 #include "Camera.h"
 #include "Shader.h"
@@ -315,18 +315,20 @@ void Editor::drawSelection(const glm::mat4& MVP) {
 
     SelectionMode currentSelectionMode = selector->getSelectionMode();
 
+    // Rellenamos con los vertices de los elementos a dibujar
+    std::vector<glm::vec3> vertices;
+
     switch (currentSelectionMode) {
 
     case SelectionMode::Vertex: {
 
         for (unsigned int group : selector->getSelectedGroups()) {
             for (unsigned int idx : defaultMesh->logicGroups[group]) {
-                selectionRenderer->drawPoint(defaultMesh->vertices[idx].Position);
+                vertices.push_back(defaultMesh->vertices[idx].Position);
             }
         }
 
-        //glm::vec3 pos = defaultMesh->vertices[selectedElement].Position;
-        //selectionRenderer->drawPoint(pos);
+        selectionRenderer->drawPoints(vertices);
     }
         break;
     case SelectionMode::Edge: {
@@ -334,8 +336,12 @@ void Editor::drawSelection(const glm::mat4& MVP) {
         for (unsigned int edgeIndex : selector->getSelectedEdges()) {
 
             const Edge& edge = defaultMesh->edges[edgeIndex];
-            selectionRenderer->drawEdge(*defaultMesh, edge);
+
+            vertices.push_back(defaultMesh->vertices[edge.v0].Position);
+            vertices.push_back(defaultMesh->vertices[edge.v1].Position);
         }
+
+        selectionRenderer->drawLines(vertices);
     }
         break;
     case SelectionMode::Face: {
@@ -343,8 +349,16 @@ void Editor::drawSelection(const glm::mat4& MVP) {
         for (unsigned int polygonIndex : selector->getSelectedPolygons()) {
 
             const Polygon& polygon = defaultMesh->polygons[polygonIndex];
-            selectionRenderer->drawPolygon(*defaultMesh, polygon);
+            
+            for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i) {
+
+                vertices.push_back(defaultMesh->vertices[polygon.vertices[0]].Position);
+                vertices.push_back(defaultMesh->vertices[polygon.vertices[i]].Position);
+                vertices.push_back(defaultMesh->vertices[polygon.vertices[i + 1]].Position);
+            }
         }
+
+        selectionRenderer->drawTriangles(vertices);
     }
         break;
     default:

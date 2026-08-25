@@ -188,32 +188,36 @@ void MainWindow::setupXYZPanel() {
 
 void MainWindow::setupAxes() {
 
+	QAction* All = mainToolBar->addAction(QIcon("Assets/icons/all.png"), "Todos (A)");
 	QAction* X = mainToolBar->addAction(QIcon("Assets/icons/x.png"), "Eje X (X)");
 	QAction* Y = mainToolBar->addAction(QIcon("Assets/icons/y.png"), "Eje Y (Y)");
 	QAction* Z = mainToolBar->addAction(QIcon("Assets/icons/z.png"), "Eje Z (Z)");
-	QAction* All = mainToolBar->addAction(QIcon("Assets/icons/all.png"), "Todos (A)");
 
 	mainToolBar->insertSeparator(X);
 
+	All->setCheckable(true);
 	X->setCheckable(true);
 	Y->setCheckable(true);
 	Z->setCheckable(true);
-	All->setCheckable(true);
 
 	QActionGroup* selectionGroup = new QActionGroup(this);
 	selectionGroup->setExclusive(true);
 
+	selectionGroup->addAction(All);
 	selectionGroup->addAction(X);
 	selectionGroup->addAction(Y);
 	selectionGroup->addAction(Z);
-	selectionGroup->addAction(All);
 
-	X->setChecked(true);
+	All->setChecked(true);
 
+	All->setShortcut(Qt::Key_A);
 	X->setShortcut(Qt::Key_X);
 	Y->setShortcut(Qt::Key_Y);
 	Z->setShortcut(Qt::Key_Z);
-	All->setShortcut(Qt::Key_A);
+
+	connect(All, &QAction::triggered, this, [this]() {
+		canvas->getEditor()->setTransformAxis(TransformAxis::All);
+		});
 
 	connect(X, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setTransformAxis(TransformAxis::X);
@@ -225,11 +229,7 @@ void MainWindow::setupAxes() {
 
 	connect(Z, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setTransformAxis(TransformAxis::Z);
-		});
-	
-	connect(All, &QAction::triggered, this, [this]() {
-		canvas->getEditor()->setTransformAxis(TransformAxis::All);
-		});
+		});	
 }
 
 void MainWindow::updateXYZPanel(double x, double y, double z) {

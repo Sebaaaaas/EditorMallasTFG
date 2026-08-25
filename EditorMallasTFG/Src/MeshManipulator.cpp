@@ -16,7 +16,7 @@ MeshManipulator::MeshManipulator(Selector* selector_) {
 
     transformPivot = glm::vec3(0.f, 0.f, 0.f);
     transformMode = TransformMode::Translate;
-    transformAxis = TransformAxis::X;
+    transformAxis = TransformAxis::All;
 
     transformStartMouse = glm::vec2(0.f, 0.f);
 }

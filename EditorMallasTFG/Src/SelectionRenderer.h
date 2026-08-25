@@ -17,9 +17,7 @@ public:
     SelectionRenderer();
     ~SelectionRenderer();
 
-    void drawPoint(const glm::vec3& pos);
-    void drawLine(const glm::vec3& a, const glm::vec3& b);
-    void drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
-    void drawEdge(const Mesh& mesh, const Edge& edge);
-    void drawPolygon(const Mesh& mesh, const Polygon& polygon);
+    void drawPoints(const std::vector<glm::vec3>& vertices);
+    void drawLines(const std::vector<glm::vec3>& vertices);
+    void drawTriangles(const std::vector<glm::vec3>& vertices);
 };
