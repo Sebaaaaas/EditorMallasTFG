@@ -26,89 +26,45 @@ SelectionRenderer::~SelectionRenderer() {
     glDeleteVertexArrays(1, &vao);
 }
 
-void SelectionRenderer::drawPoint(const glm::vec3& pos) {
+void SelectionRenderer::drawPoints(const std::vector<glm::vec3>& vertices) {
 
-    float vertex[3] = {
-        pos.x, pos.y, pos.z
-    };
+    if (vertices.empty())
+        return;
 
     glPointSize(5.0f);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    // Actualizamos solo la posicion
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertex), vertex);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_DYNAMIC_DRAW);
 
-    glDrawArrays(GL_POINTS, 0, 1);
-
-    // Volvemos a estado base
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(vertices.size()));
 }
 
-void SelectionRenderer::drawLine(const glm::vec3& a, const glm::vec3& b) {
+void SelectionRenderer::drawLines(const std::vector<glm::vec3>& vertices) {
 
-    float vertices[6] = {
-        a.x, a.y, a.z,
-        b.x, b.y, b.z
-    };
+    if (vertices.empty())
+        return;
 
     glLineWidth(5.0f);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    // Actualizamos con los nuevos valores
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_DYNAMIC_DRAW);
 
-    glDrawArrays(GL_LINES, 0, 2);
-
-    // Volvemos a estado base
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(vertices.size()));
 }
 
-void SelectionRenderer::drawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
+void SelectionRenderer::drawTriangles(const std::vector<glm::vec3>& vertices) {
 
-    float vertices[9] =
-    {
-        a.x,a.y,a.z,
-        b.x,b.y,b.z,
-        c.x,c.y,c.z
-    };
+    if (vertices.empty())
+        return;
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    glBufferSubData(
-        GL_ARRAY_BUFFER,
-        0,
-        sizeof(vertices),
-        vertices);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_DYNAMIC_DRAW);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
-void SelectionRenderer::drawEdge(const Mesh& mesh, const Edge& edge) {
-
-    glm::vec3 a = mesh.vertices[edge.v0].Position;
-    glm::vec3 b = mesh.vertices[edge.v1].Position;
-
-    drawLine(a, b);
-}
-
-void SelectionRenderer::drawPolygon(const Mesh& mesh, const Polygon& polygon) {
-    
-    for (size_t i = 1; i + 1 < polygon.vertices.size(); ++i) {
-
-        glm::vec3 a = mesh.vertices[polygon.vertices[0]].Position;
-        glm::vec3 b = mesh.vertices[polygon.vertices[i]].Position;
-        glm::vec3 c = mesh.vertices[polygon.vertices[i + 1]].Position;
-
-        drawTriangle(a, b, c);
-    }
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertices.size()));    
 }

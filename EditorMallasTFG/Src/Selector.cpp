@@ -45,6 +45,7 @@ int Selector::pick(const Mesh& mesh, float mouseX, float mouseY, int width, int 
 
 void Selector::setSelectionMode(SelectionMode newMode) {
     currentSelectionMode = newMode;
+    selectedGroups.clear();
 }
 
 SelectionMode Selector::getSelectionMode() const {
