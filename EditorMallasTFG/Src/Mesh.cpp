@@ -258,7 +258,7 @@ void Mesh::setupMesh() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, // indice de atributo (igual que en el vertex shader - layout (location = 0) in), numero de componentes (x, y, z), que tipo es, deberia OpenGL normalizar los valores?
         sizeof(Vertex),                             // stride: tamanio total de un vertice
-        (void*)0);                                  // offset: donde comienza este atributo
+        nullptr);                                  // offset: donde comienza este atributo
     
     // Normales         
     glEnableVertexAttribArray(1);
