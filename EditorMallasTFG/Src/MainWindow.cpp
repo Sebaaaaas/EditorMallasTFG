@@ -1,10 +1,11 @@
 #include "MainWindow.h"
 
-#include <QMenuBar>
 #include <QActionGroup>
 #include <QDockWidget>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QMessageBox>
+#include <QMenuBar>
 #include <QToolBar>
 
 #include "Canvas.h"
@@ -45,6 +46,8 @@ MainWindow::MainWindow() {
 	setupRenderMode();
 
 	setupProjectionMode();
+
+	createHelpBox(menuBar);
 
 	// Una vez el editor este cargado, llamaremos a onEditorReady para conectar elementos de la IU a funciones del editor
 	connect(canvas, &Canvas::editorReady, this, &MainWindow::onEditorReady);
@@ -326,4 +329,37 @@ void MainWindow::onEditorReady(Editor* editor) {
 		&Editor::selectedPositionChanged,
 		this,
 		&MainWindow::updateXYZPanel);
+}
+
+void MainWindow::createHelpBox(QMenuBar* menuBar) {
+
+	QMenu* helpMenu = menuBar->addMenu("Ayuda");
+
+	QAction* cameraHelpAction = new QAction("Controles del editor", this);
+
+	helpMenu->addAction(cameraHelpAction);
+
+	connect(cameraHelpAction, &QAction::triggered, this, [this]() { 
+		
+		QMessageBox helpBox(this); 
+
+		helpBox.setWindowTitle("Ayuda"); 
+		helpBox.setIcon(QMessageBox::Question); 
+		helpBox.setText("<b>Controles del editor</b>"); 
+
+		helpBox.setInformativeText(
+			"<table>"
+			"<tr><th colspan='2' align='left'>Selecci\u00F3n</th></tr>"
+			"<tr><td>Clic izquierdo</td><td>&nbsp;&nbsp;Seleccionar / deseleccionar</td></tr>"
+			"<tr><td>Shift + clic izquierdo</td><td>&nbsp;&nbsp;A\u00F1adir a la selecci\u00F3n</td></tr>"
+			"<tr><td><br></td></tr>" "<tr><th colspan='2' align='left'>C\u00E1mara</th></tr>"
+			"<tr><td>F</td><td>&nbsp;&nbsp;Recentrar c\u00E1mara</td></tr>"
+			"<tr><td>Clic central + arrastrar</td><td>&nbsp;&nbsp;Orbitar</td></tr>"
+			"<tr><td>Shift + clic central + arrastrar</td><td>&nbsp;&nbsp;Panear</td></tr>"
+			"<tr><td>Rueda del rat\u00F3n</td><td>&nbsp;&nbsp;Zoom</td></tr>" "</table>");
+
+		helpBox.adjustSize();
+		helpBox.exec(); 
+		});
+
 }

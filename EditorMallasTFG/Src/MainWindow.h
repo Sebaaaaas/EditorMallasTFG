@@ -43,4 +43,7 @@ private:
 	void setupProjectionMode();
 
 	void onEditorReady(Editor* editor);
+
+	void createHelpBox(QMenuBar* menuBar);
+
 };

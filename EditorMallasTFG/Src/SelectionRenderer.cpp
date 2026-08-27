@@ -10,14 +10,11 @@ SelectionRenderer::SelectionRenderer() {
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    // Reservamos espacio para una cara (3 vertices, 9 floats -> posicion)
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 9, nullptr, GL_DYNAMIC_DRAW);
-
     // layout(location = 0) -> vec3 position
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // !! hace falta?
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
 
