@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
 #endif
 
     QApplication app(argc, argv);
+    QApplication::setApplicationName("Editor de mallas");
 
     // Mejora visibilidad de los tooltips de Qt
     qApp->setStyleSheet(

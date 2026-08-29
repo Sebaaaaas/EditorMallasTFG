@@ -10,25 +10,43 @@
 
 #include "Canvas.h"
 #include "Editor.h"
+#include "qmenubar.h"
 
 MainWindow::MainWindow() {
-	
+
 	canvas = new Canvas();
 	setCentralWidget(canvas);
 
 	// Crea un menu para abrir archivos
 	QMenuBar* menuBar = this->menuBar();
-	QMenu* fileMenu = menuBar->addMenu("Archivo");
-	QAction* openAction = new QAction("Abrir", this);
+	QMenu* fileMenu = menuBar->addMenu("&Archivo");
+	QAction* openAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), "&Abrir", this);
+	openAction->setShortcuts(QKeySequence::Open);
 	fileMenu->addAction(openAction);
 
 	QObject::connect(openAction, &QAction::triggered, this, &MainWindow::openFile);
 
 	// Crea un menu para guardar archivos
-	QAction* saveAction = new QAction("Guardar", this);
+	QAction* saveAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave), "&Guardar", this);
+	saveAction->setShortcuts(QKeySequence::Save);
 	fileMenu->addAction(saveAction);
 
-	QObject::connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
+	QObject::connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);  // TODO: con el mismo nombre, lo que había antes
+
+	QAction* saveAsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Guardar &como...", this);
+	saveAsAction->setShortcuts(QKeySequence::SaveAs);
+	fileMenu->addAction(saveAsAction);
+
+	QObject::connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveFile);
+
+	QAction* quitAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::WindowClose), "&Salir", this);
+	quitAction->setShortcuts(QKeySequence::Quit);
+	fileMenu->addAction(quitAction);
+
+	QObject::connect(quitAction, &QAction::triggered, this, &MainWindow::close);
+
+	// Menú Ver
+	QMenu* viewMenu = menuBar->addMenu("&Ver");
 
 	mainToolBar = addToolBar("Main Toolbar");
 
@@ -43,9 +61,9 @@ MainWindow::MainWindow() {
 
 	setupAxes();
 
-	setupRenderMode();
+	setupRenderMode(viewMenu);
 
-	setupProjectionMode();
+	setupProjectionMode(viewMenu);
 
 	createHelpBox(menuBar);
 
@@ -196,7 +214,7 @@ void MainWindow::setupAxes() {
 	QAction* Y = mainToolBar->addAction(QIcon("Assets/icons/y.png"), "Eje Y (Y)");
 	QAction* Z = mainToolBar->addAction(QIcon("Assets/icons/z.png"), "Eje Z (Z)");
 
-	mainToolBar->insertSeparator(X);
+	mainToolBar->insertSeparator(All);
 
 	All->setCheckable(true);
 	X->setCheckable(true);
@@ -246,11 +264,11 @@ void MainWindow::updateXYZPanel(double x, double y, double z) {
 	zSpin->setValue(z);
 }
 
-void MainWindow::setupRenderMode() {
+void MainWindow::setupRenderMode(QMenu* viewMenu) {
 
-	QAction* solid = mainToolBar->addAction(QIcon("Assets/icons/solid.png"), "Solido (Q)");
+	QAction* solid = mainToolBar->addAction(QIcon("Assets/icons/solid.png"), "Sólido");
 
-	QAction* wire = mainToolBar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe (W)");
+	QAction* wire = mainToolBar->addAction(QIcon("Assets/icons/wireframe.png"), "Wireframe");
 
 	mainToolBar->insertSeparator(solid);
 
@@ -275,13 +293,17 @@ void MainWindow::setupRenderMode() {
 	connect(wire, &QAction::triggered, this, [this]() {
 			canvas->getEditor()->setRenderMode(RenderMode::Wireframe);
 		});
+
+	// Añade las acciones también al menú
+	viewMenu->addAction(solid);
+	viewMenu->addAction(wire);
 }
 
-void MainWindow::setupProjectionMode() {
+void MainWindow::setupProjectionMode(QMenu* viewMenu) {
 
-	QAction* perspective = mainToolBar->addAction(QIcon("Assets/icons/perspective.png"), "Perspectiva (P)");
+	QAction* perspective = mainToolBar->addAction(QIcon("Assets/icons/perspective.png"), "Perspectiva");
 
-	QAction* orthogonal = mainToolBar->addAction(QIcon("Assets/icons/orthogonal.png"), "Ortogonal (O)");
+	QAction* orthogonal = mainToolBar->addAction(QIcon("Assets/icons/orthogonal.png"), "Ortogonal");
 
 	mainToolBar->insertSeparator(perspective);
 
@@ -306,6 +328,11 @@ void MainWindow::setupProjectionMode() {
 	connect(orthogonal, &QAction::triggered, this, [this]() {
 		canvas->getEditor()->setProjectionMode(ProjectionMode::Orthographic);
 		});
+
+	// Añade las acciones también al menú
+	viewMenu->addSeparator();
+	viewMenu->addAction(perspective);
+	viewMenu->addAction(orthogonal);
 }
 
 void MainWindow::onEditorReady(Editor* editor) {
@@ -333,18 +360,19 @@ void MainWindow::onEditorReady(Editor* editor) {
 
 void MainWindow::createHelpBox(QMenuBar* menuBar) {
 
-	QMenu* helpMenu = menuBar->addMenu("Ayuda");
+	QMenu* helpMenu = menuBar->addMenu("&Ayuda");
 
-	QAction* cameraHelpAction = new QAction("Controles del editor", this);
+	QAction* cameraHelpAction = new QAction("&Controles del editor", this);
+	cameraHelpAction->setShortcuts(QKeySequence::HelpContents);
 
 	helpMenu->addAction(cameraHelpAction);
 
 	connect(cameraHelpAction, &QAction::triggered, this, [this]() { 
-		
+
 		QMessageBox helpBox(this); 
 
 		helpBox.setWindowTitle("Ayuda"); 
-		helpBox.setIcon(QMessageBox::Question); 
+		helpBox.setIcon(QMessageBox::Information); 
 		helpBox.setText("<b>Controles del editor</b>"); 
 
 		helpBox.setInformativeText(
