@@ -2,7 +2,6 @@ project('editor', 'cpp', 'c', default_options : ['cpp_std=c++20'])
 
 # Program dependencies
 dependencies = [
-	dependency('gl'),
 	dependency('qt6', modules: ['Core', 'Widgets', 'OpenGL', 'OpenGLWidgets']),
 	dependency('glm'),
 ]
@@ -23,7 +22,7 @@ sourceFiles = [
 	'Src/MainWindow.cpp',
 	'Src/Input.cpp',
 	'Src/Editor.cpp',
-	'Src/DebugRenderer.cpp',
+	'Src/SelectionRenderer.cpp',
 	'Src/Canvas.cpp',
 	'Src/Camera.cpp',
 ]
@@ -33,6 +32,7 @@ qt = import('qt6')
 
 moc_headers = [
 	'Src/Canvas.h',
+	'Src/Editor.h',
 	'Src/MeshManipulator.h',
 ]
 

@@ -38,9 +38,9 @@ private:
 
 	void updateXYZPanel(double x, double y, double z);
 
-	void setupRenderMode();
+	void setupRenderMode(QMenu* viewMenu);
 
-	void setupProjectionMode();
+	void setupProjectionMode(QMenu* viewMenu);
 
 	void onEditorReady(Editor* editor);
 
