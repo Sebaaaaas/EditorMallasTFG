@@ -10,7 +10,6 @@
 
 #include "Canvas.h"
 #include "Editor.h"
-#include "qmenubar.h"
 
 MainWindow::MainWindow() {
 
