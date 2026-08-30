@@ -1,0 +1,56 @@
+\chapter{Introducción}
+\label{cap:introduccion}
+
+En este capítulo se presentan el contexto y las motivaciones que han dado lugar al desarrollo de este proyecto. Asimismo, se describen los objetivos planteados y el enfoque seguido para su compleción.
+
+El proyecto se plantea tanto como el desarrollo de una herramienta de edición como un estudio de las operaciones que pueden resultar necesarias en un editor orientado a la modificación sencilla de modelos tridimensionales. De este modo, se pretende analizar qué operaciones de transformación y edición resultan adecuadas para permitir a usuarios con experiencia principalmente en herramientas bidimensionales realizar modificaciones sobre modelos 3D sin necesidad de disponer de conocimientos avanzados sobre software de modelado.
+
+\section{Motivación}
+
+La generación y transformación de contenido bidimensional en modelos tridimensionales constituye un área ampliamente estudiada dentro de los gráficos de computador. Uno de los principales objetivos de este tipo de técnicas es facilitar la creación de mallas 3D a partir de contenido bidimensional, permitiendo que usuarios familiarizados con herramientas y procesos de trabajo 2D puedan obtener representaciones tridimensionales sin necesidad de adquirir todos los conocimientos asociados al modelado y desarrollo de contenido 3D.
+
+En la actualidad existen diferentes herramientas capaces de generar modelos tridimensionales a partir de imágenes bidimensionales. Sin embargo, el resultado obtenido mediante estos procesos automáticos no siempre coincide con las expectativas del usuario, y en estas situaciones puede resultar necesario realizar modificaciones sobre el modelo generado. No obstante, se carece de herramientas que permitan a estos mismos usuarios realizar transformaciones sencillas sobre dichos resultados cuando estos no son exactamente los esperados.
+
+La edición de modelos tridimensionales suele requerir el uso de aplicaciones especializadas, cuyo manejo puede implicar un conocimiento previo de conceptos como la geometría de mallas, los sistemas de coordenadas o las diferentes técnicas de transformación y modelado. Esta complejidad puede suponer una barrera para aquellos usuarios cuyo ámbito de trabajo habitual se encuentra principalmente en el entorno bidimensional y que únicamente necesitan realizar modificaciones sencillas sobre un modelo 3D previamente generado.
+
+A partir de esta necesidad surge de este proyecto. Se plantea el estudio de las operaciones básicas que pueden formar parte de un editor de mallas tridimensionales orientado a la realización de transformaciones sencillas. El objetivo consiste en analizar y proporcionar un conjunto de operaciones que permitan modificar fácilmente los resultados obtenidos a partir de procesos de transformación de 2D a 3D.
+
+De esta manera, se busca reducir la complejidad asociada a la edición tridimensional y proporcionar una interfaz que permita al usuario interactuar con el modelo mediante operaciones sencillas, manteniendo al mismo tiempo la utilidad necesaria para adaptar el resultado generado.
+
+
+\section{Objetivos} \label{sec:objetivos}
+
+El objetivo principal de este Trabajo de Fin de Grado es estudiar y desarrollar un conjunto de operaciones de edición para un editor de mallas tridimensionales orientado a usuarios que no disponen necesariamente de conocimientos avanzados sobre modelado o desarrollo 3D.
+
+Con este fin se establecen los siguientes objetivos:
+
+\begin{itemize}
+    \item Estudiar las características y necesidades asociadas a la edición de modelos tridimensionales generados a partir de contenido bidimensional.
+    \item Analizar qué operaciones de transformación y edición pueden resultar más útiles para realizar modificaciones sencillas sobre una malla tridimensional.
+    \item Diseñar una herramienta que permita aplicar dichas operaciones de manera intuitiva.
+    \item Implementar un sistema de visualización e interacción con modelos tridimensionales.
+    \item Permitir la selección y manipulación de los elementos necesarios de una malla para llevar a cabo las operaciones de edición definidas.
+    \item Integrar las operaciones estudiadas de manera que se facilite la modificación de los modelos obtenidos.
+\end{itemize}
+
+El proyecto se centra, por tanto, en el estudio y desarrollo de las operaciones necesarias para realizar modificaciones sencillas sobre modelos tridimensionales y así desarrollar una herramienta que permita intervenir sobre mallas tridimensionales generadas previamente cuando estos requieran ajustes adicionales.
+
+\section{Plan de trabajo}
+
+Para la consecución de los objetivos planteados, el desarrollo del proyecto se ha estructurado en varias fases de trabajo.
+
+En primer lugar, se realizará un estudio del problema y contexto en el que se desarrolla la aplicación. Se analizarán las características de los modelos tridimensionales que deben ser tratados y estudiarán las diferentes operaciones de edición que puedan resultar de utilidad. Asimismo, se llevará a cabo una revisión de los conceptos necesarios para la representación, interacción y manipulación con mallas tridimensionales.
+
+A continuación, se realizará un análisis de las operaciones que deberá proporcionar el editor, que permitirá determinar qué mecanismos de edición resultan adecuados para el propósito de la herramienta. Se estudiará la forma en que dichas operaciones pueden aplicarse sobre una malla y cómo deben presentarse al usuario para facilitar su utilización.
+
+Posteriormente, se abordará el diseño de la aplicación. En esta fase se definirán la arquitectura general del sistema, la organización de los diferentes componentes y los mecanismos necesarios para el manejo de los modelos tridimensionales. También se diseñará la interacción del usuario con el editor y la forma en que se aplicarán las distintas operaciones sobre las mallas.
+
+Finalmente se procederá a la implementación de la herramienta. El desarrollo se realizará de forma progresiva, comenzando por las funcionalidades necesarias para la carga y visualización de los modelos y continuando con la implementación de los mecanismos de interacción y de las diferentes operaciones de edición estudiadas.
+
+\section{Estructura de la memoria}
+
+El resto de esta memoria se organiza en los siguientes capítulos. El capítulo~\ref{cap:estadoDeLaCuestion} presenta las tecnologías empleadas en el desarrollo del proyecto, así como los conceptos y técnicas de gráficos por computador en los que se apoya, y sitúa el trabajo frente a herramientas de edición de mallas 3D ya existentes. El capítulo~\ref{cap:descripcionTrabajo} describe la arquitectura general del programa, las funcionalidades que ofrece, y los detalles de su implementación. Finalmente, el capítulo~\ref{cap:conclusiones} valora el grado de cumplimiento de los objetivos planteados y recoge las limitaciones y posibles líneas de mejora del proyecto.
+
+Se puede encontrar un enlace al repositorio aquí:
+
+--- INSERTAR ENLACE REPO ---

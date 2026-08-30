@@ -1,0 +1,47 @@
+\chapter{Conclusiones y trabajo futuro}
+\label{cap:conclusiones}
+
+\section{Conclusiones}
+
+Este trabajo se planteaba como el estudio y desarrollo de un conjunto de operaciones de edición para un editor de mallas tridimensionales orientado a usuarios sin conocimientos avanzados de modelado 3D. A la vista del resultado obtenido, puede considerarse que los objetivos planteados en la sección~\ref{sec:objetivos} se han alcanzado parcialmente.
+
+Se ha estudiado el contexto de la edición de modelos tridimensionales generados a partir de contenido bidimensional, así como el panorama de herramientas de edición ya existentes, lo cual ha permitido analizar y seleccionar un conjunto de operaciones (selección, transformación, eliminación y extrusión) que cubren algunas de las necesidades más habituales de edición sencilla sobre una malla, sin requerir la amplitud de funcionalidades de una aplicación de creación 3D de propósito general. Sobre esta base, se ha diseñado e implementado una herramienta que integra dichas operaciones: importación de un modelo, visualización e interacción con la escena tridimensional mediante una cámara orbital, selección de sus elementos (vértices, aristas y polígonos) y aplicación de las operaciones de edición estudiadas, tanto mediante interacción directa con el ratón como, en el caso de la posición, mediante ajuste numérico mediante un panel de la interfaz.
+
+El desarrollo del proyecto ha requerido, además, profundizar en aspectos propios de los gráficos: la representación interna de una malla editable a partir de un formato orientado al renderizado, la resolución de la selección de elementos en un espacio de pantalla bidimensional a partir de una escena tridimensional, o el cálculo de las transformaciones geométricas aplicadas sobre los elementos seleccionados.
+
+Cabe señalar también que determinadas decisiones de diseño priorizan la sencillez de implementación frente a una separación de responsabilidades más estricta, como ocurre con el acoplamiento entre la lógica de edición del programa y el sistema de señales de Qt (sección~\ref{sec:UI}), así como frente al rendimiento en casos de uso más exigentes que los contemplados durante el desarrollo.
+
+\section{Trabajo futuro}
+
+A lo largo del desarrollo de este proyecto se han identificado posibles mejoras, recogidas a continuación.
+
+\subsection{Rendimiento}
+
+\begin{itemize}
+    \item La deduplicación de aristas durante la carga del modelo emplea un conjunto ordenado (\texttt{std::set}), con un coste de $O(n \log n)$, en lugar de una tabla de \emph{hash} (\texttt{std::unordered\_set}), que reduciría dicho coste a $O(n)$ en promedio (sección~\ref{sec:aristas}).
+    \item Tanto la deduplicación de vértices como la agrupación por posición geométrica emplean una comparación exacta de valores en punto flotante, sin ningún margen de tolerancia (\emph{epsilon}), por lo que posiciones geométricamente equivalentes pero con un redondeo distinto no se reconocen como el mismo vértice lógico (sección~\ref{sec:vertices}).
+    \item Los algoritmos de selección (\emph{picking}) recorren linealmente la totalidad de los vértices lógicos, aristas o polígonos de la malla en cada frame, sin emplear ninguna estructura de aceleración espacial, como un un octree, que permitiría descartar rápidamente los elementos alejados de la posición del ratón en mallas de mayor densidad (sección~\ref{sec:seleccion}).
+    \item El cálculo de las operaciones de transformación se realiza íntegramente en la CPU, y cada actualización durante un arrastre reenvía a la GPU el contenido completo del VBO de la malla, en lugar de únicamente los vértices modificados.
+\end{itemize}
+
+\subsection{Funcionalidad}
+
+\begin{itemize}
+    \item El editor no ofrece ninguna funcionalidad de deshacer o rehacer (\emph{undo}/\emph{redo}) sobre las operaciones de edición aplicadas, una funcionalidad habitual en herramientas de este tipo.
+    \item La distancia de extrusión está fijada en el propio código, sin admitir un valor interactivo controlado por arrastre del ratón o por el panel numérico de la interfaz, a diferencia del resto de operaciones de transformación (sección~\ref{sec:extrusion}).
+    \item El comportamiento de la eliminación de elementos es fijo, aplicando siempre una limpieza automática de la geometría que queda sin uso. Herramientas como Blender permiten al usuario decidir explícitamente cuánta geometría conectada desea conservar.
+    \item El modelo de iluminación se limita a un término ambiente constante y un término difuso, sin componente especular, empleando una única fuente de luz direccional con dirección y color fijados en el código, sin posibilidad de configuración por parte del usuario (sección~\ref{sec:shaders}).
+    \item El editor permite crear nueva geometría mediante extrusión, pero no ofrece ninguna operación para crear vértices completamente independientes, desconectados de la selección actual. En consecuencia, no es posible construir una malla desde cero dentro del propio editor, ni añadir geometría en una posición arbitraria sin partir de un elemento ya existente.
+\end{itemize}
+
+\subsection{Robustez}
+
+\begin{itemize}
+    \item La carga de un modelo no gestiona adecuadamente los casos de error: si el archivo especificado está corrupto o la ruta no es válida, la aplicación termina de forma abrupta en lugar de notificar el fallo al usuario (sección~\ref{sec:representacion-malla}).
+\end{itemize}
+
+\subsection{Extensiones}
+
+\begin{itemize}
+    \item El editor admite exclusivamente el formato OBJ, tanto para la importación como para la exportación de modelos. La incorporación de una biblioteca como Assimp, descartada durante el desarrollo por la sencillez que ofrecía tinyobjloader para el alcance de este trabajo, permitiría ampliar el soporte a otros formatos de intercambio de modelos tridimensionales.
+\end{itemize}
