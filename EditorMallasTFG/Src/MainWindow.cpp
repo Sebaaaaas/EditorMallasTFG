@@ -30,13 +30,13 @@ MainWindow::MainWindow() {
 	saveAction->setShortcuts(QKeySequence::Save);
 	fileMenu->addAction(saveAction);
 
-	QObject::connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);  // TODO: con el mismo nombre, lo que había antes
+	QObject::connect(saveAction, &QAction::triggered, this, &MainWindow::saveFile);
 
 	QAction* saveAsAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), "Guardar &como...", this);
 	saveAsAction->setShortcuts(QKeySequence::SaveAs);
 	fileMenu->addAction(saveAsAction);
 
-	QObject::connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveFile);
+	QObject::connect(saveAsAction, &QAction::triggered, this, &MainWindow::saveFileAs);
 
 	QAction* quitAction = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::WindowClose), "&Salir", this);
 	quitAction->setShortcuts(QKeySequence::Quit);
@@ -82,15 +82,30 @@ bool MainWindow::openFile() {
 	if (fileName.isEmpty())
 		return false;
 
-	return canvas->loadMesh(fileName);
+	if (canvas->loadMesh(fileName)) {
+		currentFilePath = fileName;	
+		return true;
+	}
+
+	return false;	
 }
 
 bool MainWindow::saveFile() {
 
+	if (currentFilePath.isEmpty())
+		return saveFileAs();
+
+	canvas->getEditor()->saveMesh(currentFilePath.toStdString());
+	
+	return true;
+}
+
+bool MainWindow::saveFileAs() {
+
 	QString path = QFileDialog::getSaveFileName(
 		nullptr,
 		"Guardar malla",
-		"Assets/ourNewLilSave.obj",
+		QString(),
 		"Wavefront OBJ (*.obj)"
 	);
 

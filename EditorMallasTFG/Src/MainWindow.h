@@ -22,9 +22,12 @@ private:
 
 	QToolBar* mainToolBar;
 
-	bool openFile();
+	// Ruta del ultimo archivo abierto o guardado. Vacio si es una malla nueva sin guardar
+	QString currentFilePath;
 
+	bool openFile();
 	bool saveFile();
+	bool saveFileAs();
 
 	// Menu de seleccion para cambiar entre seleccion de vertices, segmentos y caras
 	void setupSelectionMode();
