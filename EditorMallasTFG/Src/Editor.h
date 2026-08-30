@@ -30,7 +30,7 @@ public:
 	// Intenta cargar la malla en formato .obj en el directorio path(dentro de Bin/Assets). Si falla emite mensaje de error
 	bool loadMesh(const std::string& path);
 
-	void saveMesh(const std::string& path);
+	bool saveMesh(const std::string& path);
 
 	void setSelectionMode(SelectionMode mode);
 	void setProjectionMode(ProjectionMode mode);

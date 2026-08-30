@@ -87,6 +87,9 @@ bool MainWindow::openFile() {
 		return true;
 	}
 
+	QMessageBox::warning(this, "Error abriendo archivo", "Archivo potencialmente corrupto");
+
+
 	return false;	
 }
 
@@ -95,7 +98,10 @@ bool MainWindow::saveFile() {
 	if (currentFilePath.isEmpty())
 		return saveFileAs();
 
-	canvas->getEditor()->saveMesh(currentFilePath.toStdString());
+	if (!canvas->saveMesh(currentFilePath)) {
+		QMessageBox::warning(this, "Error al guardar", "No se pudo guardar el archivo en:\n" + currentFilePath);
+		return false;
+	}
 	
 	return true;
 }
@@ -112,7 +118,15 @@ bool MainWindow::saveFileAs() {
 	if (path.isEmpty())
 		return false;
 
-	return canvas->saveMesh(path);
+	if (canvas->saveMesh(path)) {
+		currentFilePath = path;
+		return true;
+	}
+	else {
+		QMessageBox::warning(this, "Error al guardar", "No se pudo guardar el archivo en:\n" + currentFilePath);
+		return false;
+	}
+
 }
 
 void MainWindow::setupSelectionMode() {
