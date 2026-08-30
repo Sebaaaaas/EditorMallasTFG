@@ -1,26 +1,27 @@
-% Fichero con acrï¿½nimos para su uso con GlossTeX
+% Fichero con acrónimos para su uso con GlossTeX
 %
-% El listado de acrï¿½nimos funciona de manera similar a las referencias
-% bibliogrï¿½ficas. Este  fichero es equivalente por tanto  al .bib, con
-% el listado de  los acrï¿½nimos disponibles. A lo  largo del documento,
+% El listado de acrónimos funciona de manera similar a las referencias
+% bibliográficas. Este  fichero es equivalente por tanto  al .bib, con
+% el listado de  los acrónimos disponibles. A lo  largo del documento,
 % cuando se  utilice alguno  de ellos, se  referencia para  indicar al
-% sistema que queremos que dicho  acrï¿½nimo aparezca en el glosario. En
-% contra de  lo que ocurre con  la bibliografï¿½a, el  texto original no
-% sufre ninguna modificaciï¿½n.
+% sistema que queremos que dicho  acrónimo aparezca en el glosario. En
+% contra de  lo que ocurre con  la bibliografía, el  texto original no
+% sufre ninguna modificación.
 %
 % Las entradas son:
 % @entry{<etiqueta>[,<item>[,<forma larga>]]} [<texto>]
 %
-% La etiqueta es el  nombre del acrï¿½nimo (equivalente a la etiqueta en
+% La etiqueta es el  nombre del acrónimo (equivalente a la etiqueta en
 % BibTeX) que luego se utiliza para "referenciarlo" en el texto.
 
-% Para  que  la  generaciï¿½n   en  Release  con  el  Makefile  funcione
-% correctamente, necesitarï¿½s  al menos tener  referenciado un acrï¿½nimo
+% Para  que  la  generación   en  Release  con  el  Makefile  funcione
+% correctamente, necesitarás  al menos tener  referenciado un acrónimo
+% dentro del  texto.  Si  no quieres usar  acrónimos, o de  momento no
 % tienes ninguno  referenciado, basta con que no  definas la constante
 % \acronimosEnRelease en config.tex
 
 @entry{CVS, , \emph{Control Version System}, Sistema de Control de Versiones}
 
-@entry{GPL, , \emph{General Public License}, Licencia Pï¿½blica General de GNU}
+@entry{GPL, , \emph{General Public License}, Licencia Pública General de GNU}
 
 @entry{PC2, PC$^2$, \emph{Programming Contest Control}}
