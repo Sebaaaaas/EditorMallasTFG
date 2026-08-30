@@ -103,6 +103,11 @@ void Mesh::loadOBJ(const std::string& path) {
 
                 const tinyobj::index_t& index = shape.mesh.indices[indexOffset + v];
 
+                // Comprobamos que el indice de posicion esta dentro de rango antes de usarlo
+                if (index.vertex_index < 0 || 3 * index.vertex_index + 2 >= (int)attrib.vertices.size())
+                    throw std::runtime_error("Indice de vertice fuera de rango en el archivo OBJ");
+
+
                 Vertex vertex{};
 
                 vertex.Position = glm::vec3(attrib.vertices[3 * index.vertex_index + 0], 
@@ -110,6 +115,9 @@ void Mesh::loadOBJ(const std::string& path) {
                                             attrib.vertices[3 * index.vertex_index + 2]);
 
                 if (!attrib.normals.empty() && index.normal_index >= 0) {
+
+                    if (3 * index.normal_index + 2 >= (int)attrib.normals.size())
+                        throw std::runtime_error("Indice de normal fuera de rango en el archivo OBJ");
 
                     vertex.Normal = glm::vec3(
                         attrib.normals[3 * index.normal_index + 0],
@@ -170,12 +178,12 @@ void Mesh::loadOBJ(const std::string& path) {
 
 }
 
-void Mesh::saveOBJ(const std::string& path) {
+bool Mesh::saveOBJ(const std::string& path) {
 
     std::ofstream file(path);
 
     if (!file.is_open())
-        return;
+        return false;
 
     // Guardamos vertices, solo uno por cada vertexGroup, para que no pongamos de mas
     std::vector<unsigned int> groupToObjIndex(logicGroups.size());
@@ -227,6 +235,8 @@ void Mesh::saveOBJ(const std::string& path) {
     }
 
     file.close();
+
+    return true;
 }
 
 // https://learnopengl.com/Model-Loading/Mesh

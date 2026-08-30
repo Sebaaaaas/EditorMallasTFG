@@ -102,7 +102,7 @@ public:
     // Cargamos con tiniobjloader  la malla en formato obj con el nombre "path"
     void loadOBJ(const std::string& path);
 
-    void saveOBJ(const std::string& path);
+    bool saveOBJ(const std::string& path);
     
     // Actualiza las normales de TODA la malla >> !! posible mejora es que solo recalcule normales que cambien
     void recalculateNormals();

@@ -140,9 +140,17 @@ void Editor::setWindowSize(int w, int h) {
         camera->setAspectRatio(w, h);
 }
 
-bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve false, si esta corrupto el archivo o es un path invalido, explota la aplicacion
+bool Editor::loadMesh(const std::string& path) {
 
-    Mesh* newMesh = new Mesh(path);
+    Mesh* newMesh = nullptr;
+
+    try {
+        newMesh = new Mesh(path);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error cargando malla: " << e.what() << std::endl;
+        return false;
+    }
 
     delete defaultMesh;
     defaultMesh = newMesh;
@@ -154,8 +162,8 @@ bool Editor::loadMesh(const std::string& path) { // !! aviso, nunca devuelve fal
     return true;
 }
 
-void Editor::saveMesh(const std::string& path) {
-    defaultMesh->saveOBJ(path);
+bool Editor::saveMesh(const std::string& path) {
+    return defaultMesh->saveOBJ(path);
 }
 
 void Editor::setSelectionMode(SelectionMode mode) {

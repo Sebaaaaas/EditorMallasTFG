@@ -32,6 +32,9 @@ bool Canvas::loadMesh(const QString& fileName) {
 
     bool loaded = editor->loadMesh(fileName.toStdString());
 
+    if (!loaded)
+        return false;
+
     doneCurrent();   // Soltamos el contexto cogido con makeCurrent
 
     return loaded;
@@ -42,9 +45,7 @@ bool Canvas::saveMesh(const QString& path) {
     if (!editor)
         return false;
 
-    editor->saveMesh(path.toStdString());
-
-    return true;
+    return editor->saveMesh(path.toStdString());
 }
 
 Editor* Canvas::getEditor() const {
