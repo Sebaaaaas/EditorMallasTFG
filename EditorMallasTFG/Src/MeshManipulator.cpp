@@ -268,19 +268,61 @@ glm::vec3 MeshManipulator::selectionCenter() const {
     glm::vec3 center(0.0f);
     int count = 0;
 
-    const auto& selectedGroups = selector->getSelectedGroups();
+    switch (selector->getSelectionMode()) {
 
-    for (unsigned int group : selectedGroups) {
+    case SelectionMode::Vertex: {
 
-        const std::vector<unsigned int>& groupVertices = currentMesh->logicGroups[group];
+        for (unsigned int group : selector->getSelectedGroups()) {
 
-        if (groupVertices.empty())
-            continue;
+            const std::vector<unsigned int>& groupVertices = currentMesh->logicGroups[group];
 
-        unsigned int vertexIndex = groupVertices[0];
+            if (groupVertices.empty())
+                continue;
 
-        center += currentMesh->vertices[vertexIndex].Position;
-        ++count;
+            center += currentMesh->vertices[groupVertices[0]].Position;
+            ++count;
+        }
+    }
+                              break;
+
+    case SelectionMode::Edge: {
+
+        for (unsigned int edgeIndex : selector->getSelectedEdges()) {
+
+            const Edge& edge = currentMesh->edges[edgeIndex];
+
+            glm::vec3 middle = (currentMesh->vertices[edge.v0].Position + currentMesh->vertices[edge.v1].Position) * 0.5f;
+
+            center += middle;
+            ++count;
+        }
+    }
+                            break;
+
+    case SelectionMode::Face: {
+
+        for (unsigned int polygonIndex : selector->getSelectedPolygons()) {
+
+            const Polygon& polygon = currentMesh->polygons[polygonIndex];
+
+            if (polygon.vertices.empty())
+                continue;
+
+            glm::vec3 faceCenter(0.0f);
+
+            for (unsigned int v : polygon.vertices)
+                faceCenter += currentMesh->vertices[v].Position;
+
+            faceCenter /= (float)polygon.vertices.size();
+
+            center += faceCenter;
+            ++count;
+        }
+    }
+                            break;
+
+    default:
+        break;
     }
 
     if (count == 0)

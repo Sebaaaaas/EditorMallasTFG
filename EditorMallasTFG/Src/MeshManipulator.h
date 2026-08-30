@@ -71,6 +71,7 @@ private:
     // Guarda indices originales de cada vertice que se transforme en un frame
     std::unordered_map<unsigned int, glm::vec3> originalPositions;
 
+    // Devuelve la media de las posiciones de cada elemento seleccionado
     glm::vec3 selectionCenter() const;
 
     // Calcula transformPivot nuevo y escoge nuevos vertices, ademas de guardar posiciones originales. Llamar antes de realizar una operacion de transform
