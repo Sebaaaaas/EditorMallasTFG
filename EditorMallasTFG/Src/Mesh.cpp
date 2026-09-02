@@ -13,11 +13,29 @@
 #pragma warning(pop)
 
 
-Mesh::Mesh(const std::string& path) {
+Mesh::Mesh(/*const std::string& path*/) {
     
     EBO = 0;
     VBO = 0;
     VAO = 0;
+
+    //loadOBJ(path);
+
+    //generateIndices();
+    //generateEdges();
+
+    //// Se llama despues de generateIndices ya que envia el contenido de indices a la GPU
+    //setupMesh();
+}
+
+Mesh::~Mesh() {
+
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+}
+
+void Mesh::init(const std::string& path) {
 
     loadOBJ(path);
 
@@ -26,13 +44,6 @@ Mesh::Mesh(const std::string& path) {
 
     // Se llama despues de generateIndices ya que envia el contenido de indices a la GPU
     setupMesh();
-}
-
-Mesh::~Mesh() {
-
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
 }
 
 void Mesh::draw() {

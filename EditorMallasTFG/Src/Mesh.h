@@ -94,8 +94,10 @@ public:
     std::vector<Edge> edges; // !! igual no deberian ser publicos estos
     std::vector<Polygon> polygons;
 
-    Mesh(const std::string& path);
+    Mesh(/*const std::string& path*/);
     ~Mesh();
+
+    void init(const std::string& path);
 
     void draw();
 
