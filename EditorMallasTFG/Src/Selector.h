@@ -54,9 +54,9 @@ private:
 
     SelectionMode currentSelectionMode;
 
-    // Distancia minima para la seleccion de un vertice en pixeles
-    float minSelectDistancePixels;
-    float minEdgeDistancePixels;
+    // Distancia minima para la seleccion de un vertice
+    float minSelectDistance;
+    float minEdgeDistance;
 
     // Variable que influye en que priorizamos, distancia al raton del vertice seleccionado o profundidad
     const float distanceEpsilon = 2.0f;

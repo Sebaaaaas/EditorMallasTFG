@@ -1,15 +1,15 @@
 #include "Selector.h"
 
-#include "Mesh.h"
 #include "Camera.h"
+#include "Mesh.h"
 #include "Ray.h"
 
 Selector::Selector() {
 
     currentSelectionMode = SelectionMode::Vertex;
 
-    minSelectDistancePixels = 10.0f;
-    minEdgeDistancePixels = 10.0f;
+    minSelectDistance = 10.0f;
+    minEdgeDistance = 10.0f;
 }
 
 Selector::~Selector() {
@@ -146,7 +146,7 @@ int Selector::pickVertex(const Mesh& mesh, float mouseX, float mouseY, int width
     int selectedVertex = -1;
 
     // Mejores valores encontrados hasta el momento
-    float minScreenDistance = minSelectDistancePixels;
+    float minScreenDistance = minSelectDistance;
     float minDepth = std::numeric_limits<float>::max();
 
     // Recorremos todos los vertices de la malla
@@ -172,7 +172,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
 
     int selectedEdge = -1;
 
-    float minScreenDistance = minEdgeDistancePixels;
+    float minScreenDistance = minEdgeDistance;
     float minDepth = std::numeric_limits<float>::max();
 
     glm::vec2 mouse(mouseX, mouseY);
@@ -185,7 +185,7 @@ int Selector::pickEdge(const Mesh& mesh, float mouseX, float mouseY, int width, 
         const ProjectedVertex& pa = projectedVertices[mesh.vertexToGroup[edge.v0]];
         const ProjectedVertex& pb = projectedVertices[mesh.vertexToGroup[edge.v1]];
 
-        if (!pa.visible || !pb.visible)
+        if (!pa.visible && !pb.visible)
             continue;
 
         glm::vec2 ab = pb.screenPosition - pa.screenPosition;
@@ -231,12 +231,12 @@ int Selector::pickFace(const Mesh& mesh, float mouseX, float mouseY, int width, 
         if (polygon.vertices.size() < 3)
             continue;
 
-        // Si el poligono tiene algun vertice detras de la camara, lo ignoramos directamente
-        bool visible = true;
+        // Si el poligono no tiene vertices visibles, lo ignoramos, con que uno sea visible, cuenta como candidato
+        bool visible = false;
 
         for (unsigned int idx : polygon.vertices) {
-            if (!projectedVertices[mesh.vertexToGroup[idx]].visible) {
-                visible = false;
+            if (projectedVertices[mesh.vertexToGroup[idx]].visible) {
+                visible = true;
                 break;
             }
         }
