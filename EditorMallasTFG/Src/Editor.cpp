@@ -72,10 +72,7 @@ bool Editor::init() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    camera = new Camera((float)win_w, (float)win_h);
-
-    defaultMesh = nullptr; // !! cuando queramos entregar, poner a nullptr
-    //defaultMesh = new Mesh("Assets/cubo.obj");
+    camera = new Camera((float)win_w, (float)win_h);    
 
     // Creacion de shader
     defaultShader = new Shader("Assets/shaders/mainShader.vert", "Assets/shaders/mainShader.frag");
@@ -90,6 +87,10 @@ bool Editor::init() {
         this, &Editor::onManipulatorPositionChanged);                   //  MainWindow un cambio de posicion del elemento seleccionado
 
     selectionRenderer = new SelectionRenderer();
+
+    defaultMesh = nullptr;
+    // Malla default
+    loadMesh("Assets/cubo.obj");
 
 	return true;
 }
@@ -145,9 +146,11 @@ bool Editor::loadMesh(const std::string& path) {
     Mesh* newMesh = nullptr;
 
     try {
-        newMesh = new Mesh(path);
+        newMesh = new Mesh();
+        newMesh->init(path);
     }
     catch (const std::exception& e) {
+        delete newMesh;
         std::cerr << "Error cargando malla: " << e.what() << std::endl;
         return false;
     }
