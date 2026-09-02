@@ -1,11 +1,9 @@
 #include "Ray.h"
 
-Ray::Ray()
-{
+Ray::Ray() {
 }
 
-Ray::~Ray()
-{
+Ray::~Ray() {
 }
 
 // https://antongerdelan.net/opengl/raycasting.html

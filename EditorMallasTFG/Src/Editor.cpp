@@ -74,8 +74,8 @@ bool Editor::init() {
 
     camera = new Camera((float)win_w, (float)win_h);
 
-    //defaultMesh = nullptr; // !! cuando queramos entregar, poner a nullptr
-    defaultMesh = new Mesh("Assets/cubo.obj");
+    defaultMesh = nullptr; // !! cuando queramos entregar, poner a nullptr
+    //defaultMesh = new Mesh("Assets/cubo.obj");
 
     // Creacion de shader
     defaultShader = new Shader("Assets/shaders/mainShader.vert", "Assets/shaders/mainShader.frag");

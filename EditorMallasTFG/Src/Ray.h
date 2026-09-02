@@ -14,7 +14,7 @@ public:
 
     glm::vec3 intersectRayPlane(glm::vec3 rayOrigin, glm::vec3 rayDir, glm::vec3 planePoint, glm::vec3 planeNormal);
 
-    // Algoritmo Moller Trumbore
+    // Algoritmo Moller Trumbore (no usado actualmente)
     bool intersectTriangle(const glm::vec3& rayOrigin, const glm::vec3& rayDir, const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2, float& t) const;
 
 };
