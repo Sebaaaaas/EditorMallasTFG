@@ -410,8 +410,8 @@ void MainWindow::createHelpBox(QMenuBar* menuBar) {
 			"<tr><td>Shift + clic izquierdo</td><td>&nbsp;&nbsp;A\u00F1adir a la selecci\u00F3n</td></tr>"
 			"<tr><td><br></td></tr>" "<tr><th colspan='2' align='left'>C\u00E1mara</th></tr>"
 			"<tr><td>F</td><td>&nbsp;&nbsp;Recentrar c\u00E1mara</td></tr>"
-			"<tr><td>Clic central + arrastrar</td><td>&nbsp;&nbsp;Orbitar</td></tr>"
-			"<tr><td>Shift + clic central + arrastrar</td><td>&nbsp;&nbsp;Desplazar</td></tr>"
+			"<tr><td>Clic derecho + arrastrar</td><td>&nbsp;&nbsp;Orbitar</td></tr>"
+			"<tr><td>Shift + clic derecho + arrastrar</td><td>&nbsp;&nbsp;Desplazar</td></tr>"
 			"<tr><td>Rueda del rat\u00F3n</td><td>&nbsp;&nbsp;Zoom</td></tr>" "</table>");
 
 		helpBox.adjustSize();
