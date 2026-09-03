@@ -57,7 +57,8 @@ glm::mat4 Camera::getProjectionMatrix() const {
 
 void Camera::manageInput() {
 
-    if (Input::isMouseButtonDown(2)) {
+    // Click derecho
+    if (Input::isMouseButtonDown(1)) {
 
         if (Input::isKeyDown(Qt::Key_Shift)) {
             pan(Input::getMouseDeltaX(), Input::getMouseDeltaY());
