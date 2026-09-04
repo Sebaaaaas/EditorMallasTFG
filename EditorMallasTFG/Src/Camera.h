@@ -40,6 +40,7 @@ private:
     // Variables para la rotacion de la camara
     float yaw, pitch;
     float orbitSensitivity, panSensitivity, zoomSensitivity;
+    float arrowPanSpeed;
     // Distancia hasta el objeto de focus de la camara
     float distance; 
 
