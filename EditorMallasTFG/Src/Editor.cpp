@@ -280,6 +280,7 @@ void Editor::render() {
         break;
 
     case RenderMode::Wireframe:
+        glLineWidth(5.0f);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         break;
     }
