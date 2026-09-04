@@ -28,6 +28,7 @@ Camera::Camera(float width, float height)
     panSensitivity = 0.001f;
     zoomSensitivity = 0.1f;
     distance = glm::length(position - target);
+    arrowPanSpeed = 7.0f;
 
     projectionMode = ProjectionMode::Perspective;
     orthogonalZoom = 4.f;
@@ -57,7 +58,8 @@ glm::mat4 Camera::getProjectionMatrix() const {
 
 void Camera::manageInput() {
 
-    if (Input::isMouseButtonDown(2)) {
+    // Click derecho
+    if (Input::isMouseButtonDown(1)) {
 
         if (Input::isKeyDown(Qt::Key_Shift)) {
             pan(Input::getMouseDeltaX(), Input::getMouseDeltaY());
@@ -71,6 +73,19 @@ void Camera::manageInput() {
 
     if (scroll != 0.0f) {
         zoom(scroll);
+    }
+
+    // Desplazamiento de camara con las flechas
+    float arrowDeltaX = 0.0f;
+    float arrowDeltaY = 0.0f;
+
+    if (Input::isKeyDown(Qt::Key_Left))  arrowDeltaX += arrowPanSpeed;
+    if (Input::isKeyDown(Qt::Key_Right)) arrowDeltaX -= arrowPanSpeed;
+    if (Input::isKeyDown(Qt::Key_Up))    arrowDeltaY -= arrowPanSpeed;
+    if (Input::isKeyDown(Qt::Key_Down))  arrowDeltaY += arrowPanSpeed;
+
+    if (arrowDeltaX != 0.0f || arrowDeltaY != 0.0f) {
+        pan(arrowDeltaX, arrowDeltaY);
     }
 
     if (Input::isKeyDown(Qt::Key_F)) {
@@ -96,7 +111,7 @@ void Camera::setTarget(const glm::vec3& newTarget) {
 void Camera::reset() {
 
     setTarget(glm::vec3(0, 0, 0));
-    setPosition(glm::vec3(0, 0, 0) + glm::vec3(0, 0, 5));
+    setPosition(glm::vec3(0, 0, 0) + glm::vec3(0, 0, 5)); // !! magic number
 
     yaw = -90.0f;
     pitch = 0.0f;
