@@ -27,6 +27,7 @@
     <ClCompile Include="Src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Src\Camera.h" />
     <QtMoc Include="Src\Canvas.h" />
     <ClInclude Include="Src\checkML.h" />
@@ -42,6 +43,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="EditorMallasTFG.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Bin\Assets\icons\Icon256.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
